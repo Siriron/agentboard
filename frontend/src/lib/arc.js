@@ -5,8 +5,8 @@ export const arcTestnet = {
   id: 5042002,
   name: 'Arc Testnet',
   nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
-  rpcUrls: { default: { http: ['http://rpc.testnet.arc.network'] } },
-  blockExplorers: { default: { name: 'ArcScan', url: 'http://testnet.arcscan.app' } },
+  rpcUrls: { default: { http: ['https://rpc.testnet.arc.network'] } },
+  blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
 }
 
 export const CONTRACT_ADDRESS = '0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4'
@@ -52,7 +52,7 @@ export const USDC_ABI = [
 let _publicClient = null
 export function getPublicClient() {
   if (!_publicClient) {
-    _publicClient = createPublicClient({ chain: arcTestnet, transport: http('http://rpc.testnet.arc.network') })
+    _publicClient = createPublicClient({ chain: arcTestnet, transport: http('https://rpc.testnet.arc.network') })
   }
   return _publicClient
 }
@@ -78,8 +78,8 @@ export async function switchToArc() {
           chainId: '0x4CE352',
           chainName: 'Arc Testnet',
           nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
-          rpcUrls: ['http://rpc.testnet.arc.network'],
-          blockExplorerUrls: ['http://testnet.arcscan.app'],
+          rpcUrls: ['https://rpc.testnet.arc.network'],
+          blockExplorerUrls: ['https://testnet.arcscan.app'],
         }],
       })
     } else {
