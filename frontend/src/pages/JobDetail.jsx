@@ -4,7 +4,7 @@ import { getPublicClient, getWalletClient, CONTRACT_ADDRESS, CONTRACT_ABI, forma
 import { useWallet } from '../hooks/useWallet'
 import { useToast } from '../components/Toast'
 import TxButton from '../components/TxButton'
-import { ExternalLink, ArrowLeft, CheckCircle, AlertTriangle, Send, UserCheck } from 'lucide-react'
+import { ExternalLink, ArrowLeft, CheckCircle, AlertTriangle, Send, UserCheck, Info } from 'lucide-react'
 
 const STATUS_CLASS = ['open','hired','submitted','validated','disputed','cancelled','expired']
 
@@ -25,8 +25,7 @@ export default function JobDetail() {
   useEffect(() => { load() }, [id])
 
   async function load() {
-    setLoading(true)
-    setNotFound(false)
+    setLoading(true); setNotFound(false)
     try {
       const client = getPublicClient()
       const [core, meta, bidsData] = await Promise.all([
@@ -34,191 +33,117 @@ export default function JobDetail() {
         client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobMeta', args: [BigInt(id)] }),
         client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobBids', args: [BigInt(id)] }),
       ])
-      // BUG FIX: detect empty/uninitialized job (client is zero address)
       if (isZeroAddress(core.client)) { setNotFound(true); return }
-      setJob({ core, meta })
-      setBids(bidsData)
-    } catch (e) {
-      toast('Failed to load job', 'error')
-      setNotFound(true)
-    } finally { setLoading(false) }
+      setJob({ core, meta }); setBids(bidsData)
+    } catch { setNotFound(true) }
+    finally { setLoading(false) }
+  }
+
+  const txFn = (fn) => async (...args) => {
+    const wc = await getWalletClient()
+    const [addr] = await wc.getAddresses()
+    const pc = getPublicClient()
+    const tx = await wc.writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: fn, args, account: addr })
+    await pc.waitForTransactionReceipt({ hash: tx })
+    load()
+    return { txHash: tx }
   }
 
   async function handleBid() {
-    if (!account) { toast('Connect wallet', 'error'); return }
-    if (!bidForm.agentId || !bidForm.amount || !bidForm.proposal) { toast('Fill all bid fields', 'error'); return }
-    const wc = await getWalletClient()
-    const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
-    const amountRaw = BigInt(Math.round(parseFloat(bidForm.amount) * 1e6))
-    const tx = await wc.writeContract({
-      address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-      functionName: 'submitBid',
-      args: [BigInt(id), BigInt(bidForm.agentId), amountRaw, bidForm.proposal, BigInt(bidForm.days)],
-      account: addr,
-    })
-    await pc.waitForTransactionReceipt({ hash: tx })
+    if (!bidForm.agentId || !bidForm.amount || !bidForm.proposal.trim()) { toast('Fill all bid fields', 'error'); return }
+    toast('Submitting bid…', 'info')
+    const result = await txFn('submitBid')(BigInt(id), BigInt(bidForm.agentId), BigInt(Math.round(parseFloat(bidForm.amount) * 1e6)), bidForm.proposal.trim(), BigInt(bidForm.days))
     toast('Bid submitted!', 'success')
-    load()
-    return { txHash: tx }
+    return result
   }
-
-  async function handleHire(bidIndex) {
-    const wc = await getWalletClient()
-    const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
-    // BUG FIX: hire uses caller as validator — but caller must be a registered validator
-    // We pass addr (owner) as validator since owner is auto-registered in constructor
-    const tx = await wc.writeContract({
-      address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-      functionName: 'hireAgent',
-      args: [BigInt(id), BigInt(bidIndex), addr],
-      account: addr,
-    })
-    await pc.waitForTransactionReceipt({ hash: tx })
-    toast('Agent hired!', 'success')
-    load()
-    return { txHash: tx }
+  async function handleHire(idx) {
+    const wc = await getWalletClient(); const [addr] = await wc.getAddresses()
+    toast('Hiring agent…', 'info')
+    const result = await txFn('hireAgent')(BigInt(id), BigInt(idx), addr)
+    toast('Agent hired!', 'success'); return result
   }
-
   async function handleSubmitWork() {
-    if (!workUri.trim()) { toast('Enter a deliverable URI', 'error'); return }
-    const wc = await getWalletClient()
-    const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
-    const tx = await wc.writeContract({
-      address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-      functionName: 'submitWork',
-      args: [BigInt(id), workUri.trim()],
-      account: addr,
-    })
-    await pc.waitForTransactionReceipt({ hash: tx })
-    toast('Work submitted!', 'success')
-    load()
-    return { txHash: tx }
+    if (!workUri.trim()) { toast('Enter deliverable URI', 'error'); return }
+    toast('Submitting work…', 'info')
+    const result = await txFn('submitWork')(BigInt(id), workUri.trim())
+    toast('Work submitted!', 'success'); return result
   }
-
   async function handleValidate() {
-    const wc = await getWalletClient()
-    const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
-    const tx = await wc.writeContract({
-      address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-      functionName: 'validateAndRelease',
-      args: [BigInt(id), validatorNotes],
-      account: addr,
-    })
-    await pc.waitForTransactionReceipt({ hash: tx })
-    toast('Work validated! USDC released.', 'success')
-    load()
-    return { txHash: tx }
+    toast('Releasing payment…', 'info')
+    const result = await txFn('validateAndRelease')(BigInt(id), validatorNotes)
+    toast('Payment released!', 'success'); return result
   }
-
   async function handleDispute() {
-    if (!disputeReason.trim()) { toast('Enter a dispute reason', 'error'); return }
-    const wc = await getWalletClient()
-    const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
-    const tx = await wc.writeContract({
-      address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-      functionName: 'raiseDispute',
-      args: [BigInt(id), disputeReason.trim()],
-      account: addr,
-    })
-    await pc.waitForTransactionReceipt({ hash: tx })
-    toast('Dispute raised', 'info')
-    load()
-    return { txHash: tx }
+    if (!disputeReason.trim()) { toast('Enter dispute reason', 'error'); return }
+    const result = await txFn('raiseDispute')(BigInt(id), disputeReason.trim())
+    toast('Dispute raised', 'info'); return result
   }
-
   async function handleCancel() {
-    const wc = await getWalletClient()
-    const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
-    const tx = await wc.writeContract({
-      address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-      functionName: 'cancelJob',
-      args: [BigInt(id)],
-      account: addr,
-    })
-    await pc.waitForTransactionReceipt({ hash: tx })
-    toast('Job cancelled. USDC refunded.', 'success')
-    return { txHash: tx }
+    const result = await txFn('cancelJob')(BigInt(id))
+    toast('Job cancelled. USDC refunded.', 'success'); return result
   }
 
-  if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}>
-      <span className="spinner" style={{ width: 24, height: 24 }} />
-      <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-muted)' }}>Loading job from Arc…</span>
-    </div>
-  )
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, gap: 12 }}><span className="spinner" style={{ width: 24, height: 24 }} /><span style={{ color: 'var(--text-muted)' }}>Loading job…</span></div>
 
   if (notFound) return (
     <div style={{ textAlign: 'center', padding: 80 }}>
-      <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 12 }}>Job not found</p>
-      <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>This job doesn't exist on Arc Testnet.</p>
+      <p style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>Job not found</p>
       <button className="btn btn-primary" onClick={() => navigate('/board')}>Back to Board</button>
     </div>
   )
 
   const { core, meta } = job
-  const statusNum = Number(core.status)
-
-  // BUG FIX 12: status comparisons must use Number() since core.status comes back as BigInt from viem
+  const sn = Number(core.status)
   const isClient = account?.toLowerCase() === core.client?.toLowerCase()
   const isAgent = !isZeroAddress(core.hiredAgent) && account?.toLowerCase() === core.hiredAgent?.toLowerCase()
-  const isJobValidator = !isZeroAddress(core.validator) && account?.toLowerCase() === core.validator?.toLowerCase()
-  const statusClass = STATUS_CLASS[statusNum] || 'cancelled'
+  const isValidator = !isZeroAddress(core.validator) && account?.toLowerCase() === core.validator?.toLowerCase()
   const activeBids = bids.filter(b => !b.withdrawn)
 
   return (
     <div className="page-enter">
-      <button className="btn btn-ghost btn-sm" onClick={() => navigate('/board')} style={{ marginBottom: 24 }}>
+      <button className="btn btn-ghost btn-sm" onClick={() => navigate('/board')} style={{ marginBottom: 20 }}>
         <ArrowLeft size={13} /> Back to Board
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
-        {/* Main column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
-          {/* Header */}
-          <div className="panel speed-lines" style={{ padding: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <span className={`badge badge-${statusClass}`}><span className="badge-dot" />{STATUS_LABEL[statusNum]}</span>
-              <span className="category-tag">{meta.category}</span>
-              <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>JOB #{id}</span>
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 320px', className: 'job-detail-grid', gap: 20, alignItems: 'start' }}>
+        {/* Main */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Header card */}
+          <div className="card" style={{ padding: 28 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+              <span className={`badge badge-${STATUS_CLASS[sn]}`}><span className="badge-dot" />{STATUS_LABEL[sn]}</span>
+              <span className="tag">{meta.category}</span>
+              <span style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>Job #{id}</span>
             </div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 26, marginBottom: 12 }}>{meta.title}</h1>
-            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7 }}>{meta.description}</p>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 'clamp(20px, 3vw, 28px)', color: 'var(--accent)', letterSpacing: '-0.02em', marginBottom: 12 }}>{meta.title}</h1>
+            <p style={{ color: 'var(--text-secondary)', lineHeight: 1.7, fontSize: 14 }}>{meta.description}</p>
           </div>
 
           {/* Bids */}
-          <div className="panel" style={{ padding: 24 }}>
-            <div className="section-header" style={{ marginBottom: 16 }}>Agent Bids ({activeBids.length})</div>
+          <div className="card" style={{ padding: 24 }}>
+            <div className="section-label" style={{ marginBottom: 16 }}>Bids ({activeBids.length})</div>
             {activeBids.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>No bids yet. Be the first agent to bid.</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>No bids yet.</p>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {activeBids.map((bid, i) => (
-                  <div key={i} className="panel-elevated" style={{ padding: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                  <div key={i} className="card-inset" style={{ padding: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <a href={`http://testnet.arcscan.app/address/${bid.agent}`} target="_blank" rel="noreferrer" className="address-pill">
-                          <ExternalLink size={9} />{formatAddress(bid.agent)}
-                        </a>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>ID #{bid.agentId.toString()}</span>
+                        <a href={`http://testnet.arcscan.app/address/${bid.agent}`} target="_blank" rel="noreferrer" className="address-pill"><ExternalLink size={9} />{formatAddress(bid.agent)}</a>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>#{bid.agentId.toString()}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color: 'var(--accent)' }}>{formatUSDC(bid.proposedAmount)} USDC</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)' }}>{bid.deliveryDays.toString()}d</span>
-                        {isClient && statusNum === 0 && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--accent)' }}>${formatUSDC(bid.proposedAmount)}</span>
+                        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{bid.deliveryDays.toString()}d</span>
+                        {isClient && sn === 0 && (
                           <TxButton onClick={() => handleHire(i)} className="btn btn-primary btn-sm" showTx={false}>
                             <UserCheck size={11} /> Hire
                           </TxButton>
                         )}
                       </div>
                     </div>
-                    <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{bid.proposal}</p>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5 }}>{bid.proposal}</p>
                   </div>
                 ))}
               </div>
@@ -226,76 +151,55 @@ export default function JobDetail() {
           </div>
 
           {/* Submit bid */}
-          {statusNum === 0 && !isClient && (
-            <div className="panel" style={{ padding: 24 }}>
-              <div className="section-header" style={{ marginBottom: 16 }}>Submit Your Bid</div>
+          {sn === 0 && !isClient && account && (
+            <div className="card" style={{ padding: 24 }}>
+              <div className="section-label" style={{ marginBottom: 16 }}>Submit a Bid</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 <div className="grid-2">
-                  <div className="input-group">
-                    <label className="input-label">Your ERC-8004 Agent ID</label>
-                    <input className="input" placeholder="e.g. 1" value={bidForm.agentId} onChange={e => setBidForm(f => ({ ...f, agentId: e.target.value }))} />
-                  </div>
-                  <div className="input-group">
-                    <label className="input-label">Your Price (USDC)</label>
-                    <input className="input" type="number" placeholder={`Max: ${formatUSDC(core.budget)}`} value={bidForm.amount} onChange={e => setBidForm(f => ({ ...f, amount: e.target.value }))} />
-                  </div>
+                  <div className="input-group"><label className="input-label">Your Agent ID (ERC-8004)</label><input className="input" placeholder="e.g. 1" value={bidForm.agentId} onChange={e => setBidForm(f => ({ ...f, agentId: e.target.value }))} /></div>
+                  <div className="input-group"><label className="input-label">Your Price (USDC)</label><input className="input" type="number" placeholder={`Max: $${formatUSDC(core.budget)}`} value={bidForm.amount} onChange={e => setBidForm(f => ({ ...f, amount: e.target.value }))} /></div>
                 </div>
-                <div className="input-group">
-                  <label className="input-label">Delivery Days</label>
-                  <input className="input" type="number" min="1" value={bidForm.days} onChange={e => setBidForm(f => ({ ...f, days: e.target.value }))} />
-                </div>
-                <div className="input-group">
-                  <label className="input-label">Your Proposal</label>
-                  <textarea className="input" rows={4} placeholder="Describe your approach…" value={bidForm.proposal} onChange={e => setBidForm(f => ({ ...f, proposal: e.target.value }))} />
-                </div>
+                <div className="input-group"><label className="input-label">Delivery Days</label><input className="input" type="number" min="1" value={bidForm.days} onChange={e => setBidForm(f => ({ ...f, days: e.target.value }))} /></div>
+                <div className="input-group"><label className="input-label">Proposal</label><textarea className="input" rows={4} placeholder="Describe your approach and why you're the right agent…" value={bidForm.proposal} onChange={e => setBidForm(f => ({ ...f, proposal: e.target.value }))} /></div>
                 <TxButton onClick={handleBid} className="btn btn-primary"><Send size={13} />Submit Bid</TxButton>
               </div>
             </div>
           )}
 
           {/* Submit work */}
-          {statusNum === 1 && isAgent && (
-            <div className="panel" style={{ padding: 24 }}>
-              <div className="section-header" style={{ marginBottom: 16 }}>Submit Deliverable</div>
+          {sn === 1 && isAgent && (
+            <div className="card" style={{ padding: 24 }}>
+              <div className="section-label" style={{ marginBottom: 16 }}>Submit Your Work</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="input-group">
-                  <label className="input-label">Deliverable URI (IPFS / URL)</label>
-                  <input className="input" placeholder="ipfs://... or https://..." value={workUri} onChange={e => setWorkUri(e.target.value)} />
-                </div>
+                <div className="input-group"><label className="input-label">Deliverable URI (IPFS or URL)</label><input className="input" placeholder="ipfs://... or https://..." value={workUri} onChange={e => setWorkUri(e.target.value)} /></div>
                 <TxButton onClick={handleSubmitWork} className="btn btn-primary"><CheckCircle size={13} />Submit Work</TxButton>
               </div>
             </div>
           )}
 
           {/* Validate */}
-          {statusNum === 2 && isJobValidator && (
-            <div className="panel" style={{ padding: 24 }}>
-              <div className="section-header" style={{ marginBottom: 16 }}>Validate Work</div>
+          {sn === 2 && isValidator && (
+            <div className="card" style={{ padding: 24 }}>
+              <div className="section-label" style={{ marginBottom: 16 }}>Validate & Release Payment</div>
               {meta.deliverableURI && (
-                <div style={{ marginBottom: 14, padding: 12, background: 'var(--bg-base)', borderRadius: 2, border: '1px solid var(--border)' }}>
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>DELIVERABLE</span>
+                <div style={{ marginBottom: 14, padding: 12, background: 'var(--bg-surface2)', borderRadius: 8, border: '1px solid var(--border)' }}>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Deliverable</div>
                   <a href={meta.deliverableURI} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', fontSize: 13, wordBreak: 'break-all' }}>{meta.deliverableURI}</a>
                 </div>
               )}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="input-group">
-                  <label className="input-label">Validation Notes</label>
-                  <textarea className="input" rows={3} placeholder="Notes on work quality…" value={validatorNotes} onChange={e => setValidatorNotes(e.target.value)} />
-                </div>
+                <div className="input-group"><label className="input-label">Validation Notes</label><textarea className="input" rows={3} placeholder="Notes on work quality…" value={validatorNotes} onChange={e => setValidatorNotes(e.target.value)} /></div>
                 <TxButton onClick={handleValidate} className="btn btn-primary"><CheckCircle size={13} />Approve &amp; Release USDC</TxButton>
               </div>
             </div>
           )}
 
           {/* Dispute */}
-          {statusNum === 2 && isClient && (
-            <div className="panel" style={{ padding: 24 }}>
-              <div className="section-header" style={{ marginBottom: 16 }}>Raise Dispute</div>
+          {sn === 2 && isClient && (
+            <div className="card" style={{ padding: 24 }}>
+              <div className="section-label" style={{ marginBottom: 16 }}>Raise a Dispute</div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div className="input-group">
-                  <label className="input-label">Reason</label>
-                  <textarea className="input" rows={3} placeholder="Describe the issue…" value={disputeReason} onChange={e => setDisputeReason(e.target.value)} />
-                </div>
+                <div className="input-group"><label className="input-label">Reason</label><textarea className="input" rows={3} placeholder="Describe the issue with the submitted work…" value={disputeReason} onChange={e => setDisputeReason(e.target.value)} /></div>
                 <TxButton onClick={handleDispute} className="btn btn-danger"><AlertTriangle size={13} />Raise Dispute</TxButton>
               </div>
             </div>
@@ -303,51 +207,51 @@ export default function JobDetail() {
         </div>
 
         {/* Sidebar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div className="panel corner-accent" style={{ padding: 20 }}>
-            <div className="metric-label" style={{ marginBottom: 8 }}>Escrowed Budget</div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 32, color: 'var(--accent)', marginBottom: 4 }}>
-              {formatUSDC(core.budget)}
-            </div>
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-muted)' }}>USDC · 1% platform fee on release</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div className="card" style={{ padding: 22 }}>
+            <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Escrowed Budget</div>
+            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 34, color: 'var(--accent)', marginBottom: 4 }}>${formatUSDC(core.budget)}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>USDC · 1% platform fee on release</div>
           </div>
 
-          <div className="panel" style={{ padding: 20 }}>
-            <div className="section-header" style={{ marginBottom: 14 }}>Job Details</div>
+          <div className="card" style={{ padding: 22 }}>
+            <div className="section-label" style={{ marginBottom: 14 }}>Details</div>
             {[
               { label: 'Client', value: formatAddress(core.client), link: `http://testnet.arcscan.app/address/${core.client}` },
               { label: 'Deadline', value: formatDate(core.deadline) },
               { label: 'Posted', value: formatDate(core.postedAt) },
               { label: 'Bids', value: core.bidCount.toString() },
-              ...(!isZeroAddress(core.hiredAgent) ? [
-                { label: 'Hired Agent', value: formatAddress(core.hiredAgent), link: `http://testnet.arcscan.app/address/${core.hiredAgent}` }
-              ] : []),
+              ...(!isZeroAddress(core.hiredAgent) ? [{ label: 'Agent', value: formatAddress(core.hiredAgent), link: `http://testnet.arcscan.app/address/${core.hiredAgent}` }] : []),
             ].map(({ label, value, link }) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)' }}>{label}</span>
                 {link ? (
-                  <a href={link} target="_blank" rel="noreferrer" className="address-pill" style={{ fontSize: 10 }}>
-                    <ExternalLink size={9} />{value}
-                  </a>
+                  <a href={link} target="_blank" rel="noreferrer" className="address-pill" style={{ fontSize: 10 }}><ExternalLink size={9} />{value}</a>
                 ) : (
-                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-primary)' }}>{value}</span>
+                  <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-primary)' }}>{value}</span>
                 )}
               </div>
             ))}
           </div>
 
-          {isClient && statusNum === 0 && (
-            <TxButton onClick={handleCancel} className="btn btn-danger" style={{ width: '100%', justifyContent: 'center' }}>
-              Cancel Job &amp; Refund
+          {isClient && sn === 0 && (
+            <TxButton onClick={handleCancel} className="btn btn-danger" style={{ width: '100%' }}>
+              Cancel &amp; Refund USDC
             </TxButton>
           )}
 
-          <a href={`http://testnet.arcscan.app/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer"
-            className="btn btn-secondary" style={{ justifyContent: 'center' }}>
-            <ExternalLink size={12} />View on ArcScan
+          <a href={`http://testnet.arcscan.app/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" className="btn btn-secondary" style={{ justifyContent: 'center' }}>
+            <ExternalLink size={13} /> View on ArcScan
           </a>
         </div>
       </div>
+
+      {/* Mobile: stack sidebar below on small screens */}
+      <style>{`
+        @media (max-width: 700px) {
+          .job-detail-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   )
 }
