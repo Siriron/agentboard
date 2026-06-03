@@ -1,1 +1,16 @@
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { BrowserRouter } from 'react-router-dom'
+import App from './App'
+import { WalletProvider } from './hooks/useWallet'
+import { ToastContainer } from './components/Toast'
+import './index.css'
 
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <BrowserRouter>
+    <WalletProvider>
+      <App />
+      <ToastContainer />
+    </WalletProvider>
+  </BrowserRouter>
+)
