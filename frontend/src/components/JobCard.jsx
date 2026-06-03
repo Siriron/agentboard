@@ -17,46 +17,52 @@ const CATEGORY_ICONS = {
 
 export default function JobCard({ jobId, core, meta }) {
   const navigate = useNavigate()
-  const statusLabel = STATUS_LABEL[core.status] || 'UNKNOWN'
-  const statusClass = STATUS_CLASS[core.status] || 'cancelled'
+  const statusNum = Number(core.status)
+  const statusLabel = STATUS_LABEL[statusNum] || 'UNKNOWN'
+  const statusClass = STATUS_CLASS[statusNum] || 'cancelled'
   const categoryIcon = CATEGORY_ICONS[meta.category] || <Tag size={11} />
 
   return (
-    <div className="panel corner-accent" onClick={() => navigate(`/job/${jobId}`)}
+    <div className="card" onClick={() => navigate(`/job/${jobId}`)}
       style={{ padding: 20, cursor: 'pointer', transition: 'all 0.2s' }}
-      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.borderColor = 'var(--border-bright)' }}
-      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'var(--border)' }}
+      onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+      onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 12 }}>
+      {/* Top row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <span className={`badge badge-${statusClass}`}>
           <span className="badge-dot" />{statusLabel}
         </span>
-        <span className="category-tag" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+        <span className="tag" style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           {categoryIcon}{meta.category || 'general'}
         </span>
       </div>
 
-      <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, marginBottom: 8, lineHeight: 1.3 }}>
+      {/* Title */}
+      <h3 style={{ fontWeight: 700, fontSize: 15, marginBottom: 8, lineHeight: 1.35, color: 'var(--text-primary)' }}>
         {meta.title}
       </h3>
 
-      <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.5, marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+      {/* Description */}
+      <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.55, marginBottom: 16,
+        display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
         {meta.description}
       </p>
 
-      <div className="ink-divider" style={{ marginBottom: 14 }} />
+      <div className="divider" style={{ marginBottom: 14 }} />
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: 'var(--accent)' }}>
-            {formatUSDC(core.budget)} <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>USDC</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-            <Users size={11} />{core.bidCount.toString()} bids
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: 'var(--text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }}>
-            <Clock size={11} />{formatDate(core.deadline)}
-          </div>
+      {/* Footer */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 19, color: 'var(--accent)' }}>
+            ${formatUSDC(core.budget)} <span style={{ fontSize: 11, fontFamily: 'var(--font-body)', color: 'var(--text-muted)', fontWeight: 400 }}>USDC</span>
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-muted)', fontSize: 12 }}>
+            <Users size={12} />{core.bidCount.toString()}
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-muted)', fontSize: 12 }}>
+            <Clock size={12} />{formatDate(core.deadline)}
+          </span>
         </div>
         <a href={`http://testnet.arcscan.app/address/${core.client}`} target="_blank" rel="noreferrer"
           onClick={e => e.stopPropagation()} className="address-pill" style={{ fontSize: 10 }}>
