@@ -77,7 +77,7 @@ export default function AgentProfile() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
               <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20 }}>Agent</span>
-              <a href={`http://testnet.arcscan.app/address/${address}`} target="_blank" rel="noreferrer" className="address-pill">
+              <a href={`https://testnet.arcscan.app/address/${address}`} target="_blank" rel="noreferrer" className="address-pill">
                 <ExternalLink size={10} />{formatAddress(address)}
               </a>
             </div>

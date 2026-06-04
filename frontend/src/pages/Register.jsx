@@ -3,7 +3,7 @@ import { useWallet } from '../hooks/useWallet'
 import { getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
 import { useToast } from '../components/Toast'
 import TxButton from '../components/TxButton'
-import { User, Shield, CheckCircle, AlertCircle, Info } from 'lucide-react'
+import { User, Shield, CheckCircle, AlertCircle, Info, Fingerprint, Star } from 'lucide-react'
 
 export default function Register() {
   const { account, connect } = useWallet()
@@ -19,7 +19,7 @@ export default function Register() {
     try {
       const result = await getPublicClient().readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'agentIdRegistered', args: [BigInt(parsed)] })
       setRegistered(result)
-    } catch { toast('Check failed — verify your Agent ID is valid', 'error') }
+    } catch { toast('Check failed', 'error') }
     finally { setChecking(false) }
   }
 
@@ -29,9 +29,8 @@ export default function Register() {
     if (isNaN(parsed) || parsed < 0) { toast('Enter a valid Agent ID', 'error'); return }
     const wc = await getWalletClient()
     const [addr] = await wc.getAddresses()
-    const pc = getPublicClient()
     const tx = await wc.writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'registerAgent', args: [BigInt(parsed)], account: addr })
-    await pc.waitForTransactionReceipt({ hash: tx })
+    await getPublicClient().waitForTransactionReceipt({ hash: tx })
     toast('Agent registered!', 'success')
     setRegistered(true)
     return { txHash: tx }
@@ -39,43 +38,39 @@ export default function Register() {
 
   return (
     <div className="page-enter" style={{ maxWidth: 600, margin: '0 auto' }}>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 'clamp(24px, 4vw, 32px)', color: 'var(--accent)', letterSpacing: '-0.02em', marginBottom: 8 }}>Register as Agent</h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
-          AgentBoard uses Arc's ERC-8004 Identity Registry. Your agent token is a non-transferable NFT that builds onchain reputation over time.
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontWeight: 800, fontSize: 'clamp(24px,4vw,36px)', letterSpacing: '-0.03em', marginBottom: 8 }}>
+          <span className="grad-text">Register as Agent</span>
+        </h1>
+        <p style={{ color: 'var(--text-2)', fontSize: 14, lineHeight: 1.6 }}>
+          Use Arc's ERC-8004 Identity Registry to establish your onchain presence. Your agent NFT builds reputation with every completed job.
         </p>
       </div>
 
-      {/* ERC-8004 explainer */}
-      <div className="card" style={{ padding: 24, marginBottom: 20 }}>
-        <div className="section-label" style={{ marginBottom: 16 }}>What is ERC-8004?</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {[
-            { icon: <Shield size={16} color="var(--highlight)" />, title: 'Onchain Identity', desc: 'Each agent has a unique token ID in Arc\'s Identity Registry — verifiable, permanent, and reputation-bearing.' },
-            { icon: <User size={16} color="var(--highlight)" />, title: 'Reputation Tracking', desc: 'Completed jobs build your score permanently on Arc. Validators certify your work quality over time.' },
-            { icon: <CheckCircle size={16} color="var(--highlight)" />, title: 'Trustless Verification', desc: 'Clients verify agent identity before hiring — no centralized profile system, no middlemen.' },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} style={{ display: 'flex', gap: 14, padding: 14, background: 'var(--bg-surface2)', borderRadius: 8, border: '1px solid var(--border)' }}>
-              <div style={{ marginTop: 1, flexShrink: 0 }}>{icon}</div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{title}</div>
-                <div style={{ color: 'var(--text-secondary)', fontSize: 12, lineHeight: 1.5 }}>{desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+      {/* Features */}
+      <div className="grid-3" style={{ marginBottom: 20 }}>
+        {[
+          { icon: <Fingerprint size={20} color="var(--indigo)" />, title: 'Onchain Identity', desc: 'Unique token ID in Arc\'s Identity Registry', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.15)' },
+          { icon: <Star size={20} color="var(--amber)" />, title: 'Reputation', desc: 'Build permanent onchain track record', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)' },
+          { icon: <Shield size={20} color="var(--emerald)" />, title: 'Verified', desc: 'Trustless verification for every client', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.15)' },
+        ].map(({ icon, title, desc, bg, border }) => (
+          <div key={title} className="glass-card" style={{ padding: 20, background: bg, borderColor: border }}>
+            <div style={{ marginBottom: 12 }}>{icon}</div>
+            <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{title}</div>
+            <div style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.5 }}>{desc}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Registration form */}
-      <div className="card" style={{ padding: 24 }}>
+      <div className="glass-card" style={{ padding: 28 }}>
         <div className="section-label" style={{ marginBottom: 20 }}>Register your agent</div>
 
         {!account && (
-          <div style={{ display: 'flex', gap: 10, padding: 14, background: 'var(--amber-bg)', borderRadius: 8, marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 12, padding: 16, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: 8, marginBottom: 20 }}>
             <AlertCircle size={16} color="var(--amber)" style={{ flexShrink: 0 }} />
             <div>
-              <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--amber)', marginBottom: 4 }}>Wallet not connected</p>
-              <button className="btn btn-sm btn-primary" onClick={connect} style={{ marginTop: 4 }}>Connect Wallet</button>
+              <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--amber)', marginBottom: 8 }}>Wallet not connected</p>
+              <button className="btn btn-sm btn-primary" onClick={connect}>Connect Wallet</button>
             </div>
           </div>
         )}
@@ -87,35 +82,34 @@ export default function Register() {
               <input className="input" type="number" min="0" placeholder="e.g. 1" value={agentId}
                 onChange={e => { setAgentId(e.target.value); setRegistered(null) }} />
               <button className="btn btn-secondary" onClick={checkRegistration} disabled={checking || !agentId.trim()} style={{ flexShrink: 0 }}>
-                {checking ? <span className="spinner" style={{ width: 13, height: 13 }} /> : 'Check'}
+                {checking ? <span className="spinner" style={{width:13,height:13}} /> : 'Check'}
               </button>
             </div>
-            <span style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4, display: 'block', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 4, display: 'block', fontFamily: 'var(--font-mono)' }}>
               Identity Registry: 0x8004A818…BD9e
             </span>
           </div>
 
           {registered !== null && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: registered ? 'var(--green-bg)' : 'var(--blue-bg)', border: `1px solid ${registered ? 'var(--green-border)' : 'rgba(26,74,158,0.2)'}`, borderRadius: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: 14, background: registered ? 'rgba(16,185,129,0.08)' : 'rgba(99,102,241,0.08)', border: `1px solid ${registered ? 'rgba(16,185,129,0.2)' : 'rgba(99,102,241,0.2)'}`, borderRadius: 8 }}>
               {registered
-                ? <><CheckCircle size={14} color="var(--green)" /><span style={{ fontSize: 13, color: 'var(--green)', fontWeight: 600 }}>Agent #{agentId} already registered</span></>
-                : <><Info size={14} color="var(--blue)" /><span style={{ fontSize: 13, color: 'var(--blue)' }}>Agent #{agentId} not registered yet</span></>
+                ? <><CheckCircle size={15} color="var(--emerald)" /><span style={{ fontSize: 13, color: 'var(--emerald)', fontWeight: 500 }}>Agent #{agentId} is already registered</span></>
+                : <><Info size={15} color="var(--indigo)" /><span style={{ fontSize: 13, color: '#a5b4fc' }}>Agent #{agentId} is not yet registered — register below</span></>
               }
             </div>
           )}
 
           <div className="divider" />
 
-          <div style={{ display: 'flex', gap: 10, padding: 14, background: 'var(--accent-light)', borderRadius: 8 }}>
-            <Info size={16} color="var(--accent)" style={{ flexShrink: 0, marginTop: 1 }} />
-            <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-              You must own the ERC-8004 token with this ID in Arc's Identity Registry. The contract verifies ownership before registration.
+          <div style={{ display: 'flex', gap: 12, padding: 14, background: 'rgba(99,102,241,0.06)', borderRadius: 8, border: '1px solid rgba(99,102,241,0.1)' }}>
+            <Info size={15} color="var(--indigo)" style={{ flexShrink: 0, marginTop: 1 }} />
+            <p style={{ fontSize: 12, color: 'var(--text-2)', lineHeight: 1.55 }}>
+              You must own the ERC-8004 token with this ID in Arc's Identity Registry. Ownership is verified onchain before registration.
             </p>
           </div>
 
-          <TxButton onClick={handleRegister} className="btn btn-primary btn-lg" disabled={!account || registered === true}>
-            <User size={14} />
-            {registered ? 'Already Registered' : 'Register Agent Identity'}
+          <TxButton onClick={handleRegister} className="btn btn-primary btn-lg w-full" disabled={!account || registered === true}>
+            <User size={14} />{registered ? 'Already Registered' : 'Register Agent Identity'}
           </TxButton>
         </div>
       </div>
