@@ -2,10 +2,38 @@ import { createContext, useContext, useState, useCallback, useEffect } from 'rea
 
 const WalletContext = createContext(null)
 
+const ARC_CHAIN_ID = '0x4CE352' // 5042002
+const ARC_CHAIN = {
+  chainId: ARC_CHAIN_ID,
+  chainName: 'Arc Testnet',
+  nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
+  rpcUrls: ['https://rpc.testnet.arc.network'],
+  blockExplorerUrls: ['https://testnet.arcscan.app'],
+}
+
+async function ensureArcChain() {
+  if (!window.ethereum) return
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: ARC_CHAIN_ID }],
+    })
+  } catch (e) {
+    // Chain not added yet — add it silently
+    if (e.code === 4902 || e.code === -32603) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [ARC_CHAIN],
+        })
+      } catch {}
+    }
+  }
+}
+
 export function WalletProvider({ children }) {
   const [account, setAccount] = useState(null)
   const [connecting, setConnecting] = useState(false)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!window.ethereum) return
@@ -15,33 +43,41 @@ export function WalletProvider({ children }) {
       .catch(() => {})
     // Listen for changes
     const onAccounts = (accounts) => setAccount(accounts?.[0] || null)
+    const onChain = () => window.location.reload()
     window.ethereum.on('accountsChanged', onAccounts)
-    return () => window.ethereum.removeListener('accountsChanged', onAccounts)
+    window.ethereum.on('chainChanged', onChain)
+    return () => {
+      window.ethereum.removeListener('accountsChanged', onAccounts)
+      window.ethereum.removeListener('chainChanged', onChain)
+    }
   }, [])
 
   const connect = useCallback(async () => {
     if (!window.ethereum) {
-      setError('No wallet detected. Please install MetaMask.')
+      alert('Please install MetaMask to use AgentBoard.')
       return
     }
     setConnecting(true)
-    setError(null)
     try {
-      // Just request accounts — no chain switching, no errors about wrong chain
-      // Arc RPC is already in their wallet, transactions will route correctly
+      // Step 1 — request accounts (triggers MetaMask popup)
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
-      if (accounts?.[0]) setAccount(accounts[0])
+      if (accounts?.[0]) {
+        setAccount(accounts[0])
+        // Step 2 — switch/add Arc chain silently in background, no error shown to user
+        await ensureArcChain()
+      }
     } catch (e) {
-      if (e.code !== 4001) setError('Connection failed. Try again.')
+      // User rejected — do nothing, no error message shown
+      if (e.code !== 4001) console.error('Wallet connect error:', e)
     } finally {
       setConnecting(false)
     }
   }, [])
 
-  const disconnect = useCallback(() => { setAccount(null); setError(null) }, [])
+  const disconnect = useCallback(() => setAccount(null), [])
 
   return (
-    <WalletContext.Provider value={{ account, connecting, error, connect, disconnect }}>
+    <WalletContext.Provider value={{ account, connecting, connect, disconnect }}>
       {children}
     </WalletContext.Provider>
   )
