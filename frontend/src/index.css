@@ -386,3 +386,56 @@ select.input { appearance: none; cursor: pointer; background-image: url("data:im
 
 /* ── UTILITY ── */
 .w-full{width:100%} .relative{position:relative} .overflow-hidden{overflow:hidden} .text-center{text-align:center}
+
+/* ── MOBILE RESPONSIVE FIXES ── */
+@media (max-width: 640px) {
+  /* Nav */
+  .hide-mobile { display: none !important; }
+
+  /* Section padding */
+  section { padding-left: 16px !important; padding-right: 16px !important; }
+
+  /* Cards */
+  .card-dark, .card-light { border-radius: 14px !important; }
+
+  /* Buttons — full width on mobile where needed */
+  .btn-lg { padding: 13px 24px !important; font-size: 15px !important; }
+
+  /* Grid — single column on mobile */
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; }
+
+  /* Job detail — stack sidebar below */
+  .job-detail-layout { grid-template-columns: 1fr !important; }
+
+  /* Dashboard stats */
+  .stats-grid { grid-template-columns: 1fr 1fr !important; }
+}
+
+@media (max-width: 900px) {
+  .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+  .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Job detail responsive */
+.job-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 300px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 800px) {
+  .job-detail-layout { grid-template-columns: 1fr !important; }
+}
+
+/* Dashboard stats responsive */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
