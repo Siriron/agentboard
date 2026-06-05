@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC } from '../lib/arc'
 import JobCard from '../components/JobCard'
 import { useNavigate } from 'react-router-dom'
-import { Search, Plus, Zap, Code, BarChart2, FileText, Pen, Layout, Server, Tag, Filter } from 'lucide-react'
+import { useReveal } from '../hooks/useReveal'
+import { Search, Plus, Zap, Code, BarChart2, FileText, Pen, Layout, Server, Tag } from 'lucide-react'
 
-const CATEGORIES = ['All','smart-contract','data-analysis','content','design','frontend','backend','research','other']
+const CATS = ['All','smart-contract','data-analysis','content','design','frontend','backend','research','other']
 const CAT_ICONS = { 'All':<Zap size={11}/>,'smart-contract':<Code size={11}/>,'data-analysis':<BarChart2 size={11}/>,'content':<FileText size={11}/>,'design':<Pen size={11}/>,'frontend':<Layout size={11}/>,'backend':<Server size={11}/>,'research':<Search size={11}/>,'other':<Tag size={11}/> }
 
 const SEED = [
@@ -18,18 +19,11 @@ const SEED = [
 
 function SkeletonCard() {
   return (
-    <div className="glass-card" style={{ padding: 22 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 14 }}>
-        <div className="skeleton" style={{ width: 70, height: 22, borderRadius: 20 }} />
-        <div className="skeleton" style={{ width: 80, height: 20, borderRadius: 4 }} />
-      </div>
-      <div className="skeleton" style={{ width: '80%', height: 20, marginBottom: 8 }} />
-      <div className="skeleton" style={{ width: '60%', height: 20, marginBottom: 18 }} />
-      <div className="skeleton" style={{ width: '100%', height: 1, marginBottom: 16 }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div className="skeleton" style={{ width: 80, height: 24 }} />
-        <div className="skeleton" style={{ width: 100, height: 20, borderRadius: 6 }} />
-      </div>
+    <div className="card-dark" style={{padding:24}}>
+      <div style={{display:'flex',justifyContent:'space-between',marginBottom:14}}><div className="skeleton" style={{width:70,height:22,borderRadius:20}}/><div className="skeleton" style={{width:80,height:20,borderRadius:20}}/></div>
+      <div className="skeleton" style={{width:'80%',height:20,marginBottom:8}}/><div className="skeleton" style={{width:'60%',height:20,marginBottom:18}}/>
+      <div style={{height:1,background:'var(--dark-border)',marginBottom:16}}/>
+      <div style={{display:'flex',justifyContent:'space-between'}}><div className="skeleton" style={{width:80,height:24}}/><div className="skeleton" style={{width:100,height:20,borderRadius:6}}/></div>
     </div>
   )
 }
@@ -42,6 +36,7 @@ export default function Board() {
   const [totalJobs, setTotalJobs] = useState(0)
   const [isDemo, setIsDemo] = useState(false)
   const navigate = useNavigate()
+  useReveal()
 
   useEffect(() => { loadJobs() }, [])
 
@@ -71,7 +66,7 @@ export default function Board() {
 
   const filtered = jobs.filter(j => {
     const matchCat = filter === 'All' || j.meta.category === filter
-    const matchSearch = !search || j.meta.title.toLowerCase().includes(search.toLowerCase()) || j.meta.description.toLowerCase().includes(search.toLowerCase())
+    const matchSearch = !search || j.meta.title.toLowerCase().includes(search.toLowerCase())
     return matchCat && matchSearch
   })
 
@@ -79,82 +74,83 @@ export default function Board() {
   const escrowed = jobs.filter(j => !isDemo).reduce((s,j) => s + (Number(j.core.status) < 3 ? Number(j.core.budget) : 0), 0)
 
   return (
-    <div className="page-enter">
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 24, flexWrap: 'wrap' }}>
-          <div>
-            <h1 style={{ fontWeight: 800, fontSize: 'clamp(26px,4vw,38px)', letterSpacing: '-0.03em', marginBottom: 6 }}>
-              <span className="grad-text">Agent Job Board</span>
-            </h1>
-            <p style={{ color: 'var(--text-2)', fontSize: 14 }}>Post jobs, hire agents, escrow USDC — all onchain on Arc</p>
-          </div>
-          <button className="btn btn-primary" onClick={() => navigate('/post')} style={{ flexShrink: 0 }}>
-            <Plus size={14} /> Post a Job
-          </button>
-        </div>
+    <div className="section-dark" style={{ minHeight: '100vh', padding: '60px 24px 80px', position: 'relative' }}>
+      <div className="glow-orb" style={{ width: 500, height: 500, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.08) 0%, transparent 65%)' }} />
+      <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
 
-        {/* Stats */}
-        <div className="grid-4" style={{ marginBottom: 20 }}>
-          {[
-            { label: 'Total Jobs', value: isDemo ? '—' : totalJobs.toString() },
-            { label: 'Open', value: isDemo ? '—' : openCount.toString() },
-            { label: 'Escrowed', value: isDemo ? '—' : `$${formatUSDC(escrowed)}` },
-            { label: 'Network', value: 'Arc' },
-          ].map(({ label, value }) => (
-            <div key={label} className="glass-card" style={{ padding: '14px 18px' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 }}>{label}</div>
-              <div style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.02em', fontFamily: 'var(--font-mono)' }}>{value}</div>
+        {/* Header */}
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, marginBottom: 32, flexWrap: 'wrap' }}>
+            <div className="reveal">
+              <h1 className="display-md" style={{ marginBottom: 8 }}>
+                <span className="text-gradient">Agent Job Board</span>
+              </h1>
+              <p style={{ color: 'var(--dark-text-2)', fontSize: 15 }}>Post jobs, hire agents, escrow USDC — all onchain on Arc</p>
             </div>
-          ))}
-        </div>
-
-        {isDemo && (
-          <div className="glass-card" style={{ padding: '12px 16px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10, background: 'rgba(245,158,11,0.05)', borderColor: 'rgba(245,158,11,0.15)' }}>
-            <Zap size={14} color="var(--amber)" />
-            <span style={{ fontSize: 13, color: 'var(--amber)', flex: 1 }}>Showing sample jobs — be the first to post a real job on Arc Testnet</span>
-            <button className="btn btn-sm" onClick={() => navigate('/post')} style={{ background: 'var(--amber)', color: '#000', fontWeight: 700, flexShrink: 0 }}>Post Job</button>
+            <button className="btn btn-primary reveal" onClick={() => navigate('/post')}><Plus size={15}/> Post a Job</button>
           </div>
-        )}
 
-        {/* Search + filters */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <div style={{ position: 'relative' }}>
-            <Search size={15} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-3)' }} />
-            <input className="input" placeholder="Search jobs…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 42 }} />
-          </div>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
-            <Filter size={12} color="var(--text-3)" />
-            {CATEGORIES.map(c => (
-              <button key={c} onClick={() => setFilter(c)}
-                className={`btn btn-sm ${filter === c ? 'btn-primary' : 'btn-ghost'}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 4, textTransform: 'capitalize', fontSize: 12 }}>
-                {CAT_ICONS[c]}{c}
-              </button>
+          {/* Stats */}
+          <div className="grid-4 reveal" style={{ marginBottom: 24 }}>
+            {[
+              { label: 'Total Jobs', value: isDemo ? '—' : totalJobs.toString() },
+              { label: 'Open', value: isDemo ? '—' : openCount.toString() },
+              { label: 'Escrowed', value: isDemo ? '—' : `$${formatUSDC(escrowed)}` },
+              { label: 'Network', value: 'Arc' },
+            ].map(({ label, value }) => (
+              <div key={label} className="card-dark" style={{ padding: '16px 20px' }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--dark-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{label}</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 24, letterSpacing: '-0.03em' }}>{value}</div>
+              </div>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Grid */}
-      {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-          <div style={{ width: 60, height: 60, borderRadius: 16, background: 'var(--indigo-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <Search size={24} color="var(--indigo)" />
+          {isDemo && (
+            <div className="card-dark reveal" style={{ padding: '14px 20px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12, borderColor: 'rgba(251,191,36,0.2)', background: 'rgba(251,191,36,0.04)' }}>
+              <Zap size={15} color="var(--amber)"/>
+              <span style={{ fontSize: 13, color: 'var(--amber)', flex: 1 }}>Showing sample jobs — be the first to post a real job on Arc Testnet</span>
+              <button className="btn btn-sm" onClick={() => navigate('/post')} style={{ background: 'var(--amber)', color: '#000', fontWeight: 700, borderRadius: 'var(--r-pill)' }}>Post Job</button>
+            </div>
+          )}
+
+          {/* Search + filters */}
+          <div className="reveal" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ position: 'relative' }}>
+              <Search size={15} style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--dark-text-3)' }} />
+              <input className="input" placeholder="Search jobs…" value={search} onChange={e => setSearch(e.target.value)} style={{ paddingLeft: 46 }} />
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {CATS.map(c => (
+                <button key={c} onClick={() => setFilter(c)}
+                  className={`btn btn-sm ${filter === c ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 5, textTransform: 'capitalize', fontSize: 12 }}>
+                  {CAT_ICONS[c]}{c}
+                </button>
+              ))}
+            </div>
           </div>
-          <p style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, letterSpacing: '-0.02em' }}>No jobs found</p>
-          <p style={{ color: 'var(--text-2)', marginBottom: 24 }}>Try a different search or be the first to post</p>
-          <button className="btn btn-primary" onClick={() => navigate('/post')}><Plus size={13} />Post a Job</button>
         </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
-          {filtered.map(({ id, core, meta }) => <JobCard key={id} jobId={id} core={core} meta={meta} />)}
-        </div>
-      )}
+
+        {/* Grid */}
+        {loading ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+            {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'var(--purple-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <Search size={26} color="var(--purple-light)" />
+            </div>
+            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 8, letterSpacing: '-0.02em' }}>No jobs found</p>
+            <p style={{ color: 'var(--dark-text-2)', marginBottom: 28 }}>Try a different search or be the first to post</p>
+            <button className="btn btn-primary" onClick={() => navigate('/post')}><Plus size={14}/>Post a Job</button>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20 }}>
+            {filtered.map(({ id, core, meta }) => <JobCard key={id} jobId={id} core={core} meta={meta} />)}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
