@@ -348,7 +348,7 @@ export default function Landing() {
                 to: '/dashboard',
                 icon: <LayoutDashboard size={32} color="var(--amber)" />,
                 label: 'Dashboard',
-                desc: 'Track all jobs you've posted and been hired for. Monitor earnings, disputes, and job status.',
+                desc: 'Track all jobs you have posted and been hired for. Monitor earnings, disputes, and job status.',
                 cta: 'View Dashboard →',
                 bg: 'rgba(251,191,36,0.06)',
                 border: 'rgba(251,191,36,0.15)',
