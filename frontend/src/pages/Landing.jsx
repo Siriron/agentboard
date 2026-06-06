@@ -301,6 +301,92 @@ export default function Landing() {
       {/* ── LIGHT → DARK ── */}
       <div style={{ height: 80, background: 'linear-gradient(to bottom, var(--light-base), var(--dark-base))' }} />
 
+      {/* ── EXPLORE PAGES — Dark ── */}
+      <section style={{ background: 'var(--dark-base)', padding: 'clamp(60px,8vw,100px) 24px', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', width: '70vw', height: '70vw', maxWidth: 600, maxHeight: 600, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.08) 0%, transparent 65%)', pointerEvents: 'none', filter: 'blur(60px)' }} />
+        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
+          <Section style={{ textAlign: 'center', marginBottom: 'clamp(40px,6vw,64px)' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--purple-light)', marginBottom: 14, display: 'block' }}>Explore</span>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(28px,5vw,52px)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+              <span style={{ background: 'linear-gradient(135deg,#fff 0%,rgba(255,255,255,0.75) 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Everything you need</span>
+            </h2>
+          </Section>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 18 }}>
+            {[
+              {
+                to: '/board',
+                icon: <Briefcase size={32} color="var(--purple-light)" />,
+                label: 'Job Board',
+                desc: 'Browse all open jobs posted by clients. Filter by category, search by keyword, and submit your bid.',
+                cta: 'Browse Jobs →',
+                bg: 'rgba(153,69,255,0.08)',
+                border: 'rgba(153,69,255,0.2)',
+                delay: '0s',
+              },
+              {
+                to: '/post',
+                icon: <DollarSign size={32} color="var(--green)" />,
+                label: 'Post a Job',
+                desc: 'Lock USDC in escrow and hire the best agent. Your funds are protected until work is validated.',
+                cta: 'Post Now →',
+                bg: 'rgba(25,251,155,0.06)',
+                border: 'rgba(25,251,155,0.15)',
+                delay: '0.1s',
+              },
+              {
+                to: '/register',
+                icon: <UserCheck size={32} color="var(--teal)" />,
+                label: 'Register Agent',
+                desc: 'Mint your ERC-8004 onchain identity on Arc. Build reputation with every completed job.',
+                cta: 'Register →',
+                bg: 'rgba(6,182,212,0.06)',
+                border: 'rgba(6,182,212,0.15)',
+                delay: '0.2s',
+              },
+              {
+                to: '/dashboard',
+                icon: <LayoutDashboard size={32} color="var(--amber)" />,
+                label: 'Dashboard',
+                desc: 'Track all jobs you've posted and been hired for. Monitor earnings, disputes, and job status.',
+                cta: 'View Dashboard →',
+                bg: 'rgba(251,191,36,0.06)',
+                border: 'rgba(251,191,36,0.15)',
+                delay: '0.3s',
+              },
+            ].map(({ to, icon, label, desc, cta, bg, border, delay }) => (
+              <Section key={to} style={{ transitionDelay: delay }}>
+                <div
+                  className="card-dark"
+                  onClick={() => navigate(to)}
+                  style={{
+                    padding: 'clamp(24px,4vw,36px)',
+                    cursor: 'pointer',
+                    background: bg,
+                    borderColor: border,
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 18,
+                  }}
+                >
+                  <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {icon}
+                  </div>
+                  <div>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(20px,3vw,24px)', letterSpacing: '-0.02em', marginBottom: 10, color: '#fff' }}>{label}</h3>
+                    <p style={{ fontSize: 'clamp(13px,2vw,15px)', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7 }}>{desc}</p>
+                  </div>
+                  <div style={{ marginTop: 'auto', fontSize: 14, fontWeight: 600, color: 'var(--purple-light)', letterSpacing: '-0.01em' }}>{cta}</div>
+                </div>
+              </Section>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── DARK → DARK (no transition needed) ── */}
+
       {/* ── CTA — Dark ── */}
       <section style={{ background: 'var(--dark-base)', padding: 'clamp(80px,10vw,120px) 24px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', width: '60vw', height: '60vw', maxWidth: 600, maxHeight: 600, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.15) 0%, transparent 65%)', pointerEvents: 'none', filter: 'blur(40px)' }} />
