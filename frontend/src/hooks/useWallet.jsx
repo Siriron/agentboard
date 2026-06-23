@@ -19,7 +19,6 @@ async function ensureArcChain() {
       params: [{ chainId: ARC_CHAIN_ID }],
     })
   } catch (e) {
-    // Chain not added yet — add it silently
     if (e.code === 4902 || e.code === -32603) {
       try {
         await window.ethereum.request({
@@ -34,14 +33,13 @@ async function ensureArcChain() {
 export function WalletProvider({ children }) {
   const [account, setAccount] = useState(null)
   const [connecting, setConnecting] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!window.ethereum) return
-    // Restore session
     window.ethereum.request({ method: 'eth_accounts' })
       .then(accounts => { if (accounts?.[0]) setAccount(accounts[0]) })
       .catch(() => {})
-    // Listen for changes
     const onAccounts = (accounts) => setAccount(accounts?.[0] || null)
     const onChain = () => window.location.reload()
     window.ethereum.on('accountsChanged', onAccounts)
@@ -54,30 +52,34 @@ export function WalletProvider({ children }) {
 
   const connect = useCallback(async () => {
     if (!window.ethereum) {
-      alert('Please install MetaMask to use AgentBoard.')
+      setError('No wallet detected. Install MetaMask or Rabby to connect.')
       return
     }
     setConnecting(true)
+    setError(null)
     try {
-      // Step 1 — request accounts (triggers MetaMask popup)
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
       if (accounts?.[0]) {
         setAccount(accounts[0])
-        // Step 2 — switch/add Arc chain silently in background, no error shown to user
         await ensureArcChain()
       }
     } catch (e) {
-      // User rejected — do nothing, no error message shown
-      if (e.code !== 4001) console.error('Wallet connect error:', e)
+      if (e.code !== 4001) {
+        console.error('Wallet connect error:', e)
+        setError('Connection failed. Please try again.')
+      }
     } finally {
       setConnecting(false)
     }
   }, [])
 
-  const disconnect = useCallback(() => setAccount(null), [])
+  const disconnect = useCallback(() => {
+    setAccount(null)
+    setError(null)
+  }, [])
 
   return (
-    <WalletContext.Provider value={{ account, connecting, connect, disconnect }}>
+    <WalletContext.Provider value={{ account, connecting, connect, disconnect, error }}>
       {children}
     </WalletContext.Provider>
   )
