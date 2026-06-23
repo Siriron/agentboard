@@ -1,19 +1,36 @@
 import { useState } from 'react'
 import { useWallet } from '../hooks/useWallet'
-import { getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, USDC_ADDRESS, USDC_ABI } from '../lib/arc'
+import { getWalletClient, getPublicClient, sendBatchTransaction, CONTRACT_ADDRESS, CONTRACT_ABI, USDC_ADDRESS, USDC_ABI } from '../lib/arc'
 import { useNavigate } from 'react-router-dom'
-import TxButton from '../components/TxButton'
 import { useToast } from '../components/Toast'
-import { AlertCircle, Info, CheckCircle, Zap } from 'lucide-react'
+import { BlurFade } from '../components/magicui/BlurFade'
+import { BorderBeam } from '../components/magicui/BorderBeam'
+import { cn } from '../lib/utils'
+import { AlertCircle, Info, CheckCircle, Zap, Layers, Wallet, DollarSign, Calendar, Tag, FileText, Type } from 'lucide-react'
 
-const CATEGORIES = ['smart-contract','data-analysis','content','design','frontend','backend','research','other']
+const CATEGORIES = ['SmartContract','Frontend','Backend','Audit','Research','Design','Data','DevOps','Other']
+
+function Field({ label, icon, children }) {
+  return (
+    <div>
+      <label className="flex items-center gap-1.5 text-white/40 text-xs font-bold uppercase tracking-wider mb-2">
+        {icon}{label}
+      </label>
+      {children}
+    </div>
+  )
+}
+
+const inputClass = "w-full px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
 
 export default function PostJob() {
   const { account, connect } = useWallet()
   const navigate = useNavigate()
   const toast = useToast()
-  const [form, setForm] = useState({ title: '', description: '', category: 'smart-contract', budget: '', deadlineDays: '14' })
+  const [form, setForm] = useState({ title: '', description: '', category: 'SmartContract', budget: '', deadlineDays: '14' })
   const [step, setStep] = useState(0)
+  const [batchMode, setBatchMode] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
   async function handlePost() {
@@ -22,100 +39,193 @@ export default function PostJob() {
     if (isNaN(budgetVal) || budgetVal <= 0) { toast('Enter a valid budget', 'error'); return }
     const budgetRaw = BigInt(Math.round(budgetVal * 1e6))
     const deadline = BigInt(Math.floor(Date.now() / 1000) + parseInt(form.deadlineDays) * 86400)
-    const wc = await getWalletClient()
-    const pc = getPublicClient()
-    const [addr] = await wc.getAddresses()
-    setStep(1)
-    toast('Approving USDC…', 'info')
-    const approveTx = await wc.writeContract({ address: USDC_ADDRESS, abi: USDC_ABI, functionName: 'approve', args: [CONTRACT_ADDRESS, budgetRaw], account: addr })
-    await pc.waitForTransactionReceipt({ hash: approveTx })
-    toast('USDC approved ✓', 'success')
-    setStep(2)
-    toast('Posting job…', 'info')
-    const postTx = await wc.writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'postJob', args: [form.title.trim(), form.description.trim(), form.category, budgetRaw, deadline], account: addr })
-    await pc.waitForTransactionReceipt({ hash: postTx })
-    setStep(3)
-    toast('Job posted!', 'success')
-    setTimeout(() => navigate('/board'), 1500)
-    return { txHash: postTx }
+    setSubmitting(true)
+
+    if (batchMode) {
+      setStep(1)
+      toast('Signing Arc batch transaction…', 'info')
+      try {
+        const txHash = await sendBatchTransaction([
+          { to: USDC_ADDRESS, abi: USDC_ABI, functionName: 'approve', args: [CONTRACT_ADDRESS, budgetRaw] },
+          { to: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'postJob', args: [form.title.trim(), form.description.trim(), form.category, budgetRaw, deadline] },
+        ])
+        setStep(2)
+        toast('Job posted! USDC escrowed in one transaction.', 'success')
+        setTimeout(() => navigate('/board'), 1800)
+        setSubmitting(false)
+        return { txHash }
+      } catch {
+        toast('Batch not available, using sequential…', 'info')
+        setBatchMode(false)
+        setStep(0)
+      }
+    }
+
+    // Sequential fallback
+    try {
+      const wc = await getWalletClient()
+      const pc = getPublicClient()
+      const [addr] = await wc.getAddresses()
+      setStep(1)
+      toast('Approving USDC…', 'info')
+      const approveTx = await wc.writeContract({ address: USDC_ADDRESS, abi: USDC_ABI, functionName: 'approve', args: [CONTRACT_ADDRESS, budgetRaw], account: addr })
+      await pc.waitForTransactionReceipt({ hash: approveTx })
+      toast('Approved ✓', 'success')
+      setStep(2)
+      toast('Posting job…', 'info')
+      const postTx = await wc.writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'postJob', args: [form.title.trim(), form.description.trim(), form.category, budgetRaw, deadline], account: addr })
+      await pc.waitForTransactionReceipt({ hash: postTx })
+      setStep(3)
+      toast('Job posted!', 'success')
+      setTimeout(() => navigate('/board'), 1500)
+      setSubmitting(false)
+      return { txHash: postTx }
+    } catch (e) {
+      toast(e.message || 'Transaction failed', 'error')
+      setSubmitting(false)
+      setStep(0)
+    }
   }
 
+  const steps = batchMode
+    ? [{ label: 'Batch TX', icon: <Layers size={11}/> }, { label: 'Confirmed', icon: <CheckCircle size={11}/> }]
+    : [{ label: 'Approve USDC', icon: <DollarSign size={11}/> }, { label: 'Post Job', icon: <Zap size={11}/> }, { label: 'Done', icon: <CheckCircle size={11}/> }]
+
   return (
-    <div className="section-dark" style={{ minHeight: '100vh', padding: '60px 24px 80px', position: 'relative' }}>
-      <div className="glow-orb" style={{ width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, rgba(153,69,255,0.08) 0%, transparent 70%)' }} />
-      <div style={{ maxWidth: 640, margin: '0 auto', position: 'relative' }}>
-        <div style={{ marginBottom: 36 }}>
-          <h1 className="display-md" style={{ marginBottom: 10 }}><span className="text-gradient">Post a Job</span></h1>
-          <p style={{ color: 'var(--dark-text-2)', fontSize: 15 }}>Lock USDC in escrow until work is validated and approved on Arc.</p>
-        </div>
+    <div className="min-h-screen bg-[#0a0814] text-white px-6 py-12">
+      <div className="absolute inset-0 pointer-events-none">
+        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, rgba(153,69,255,0.07) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+      </div>
+      <div className="max-w-xl mx-auto relative">
+
+        <BlurFade delay={0} inView className="mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/08 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
+            Post a Job
+          </div>
+          <h1 className="font-black text-white tracking-tighter mb-2"
+            style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,5vw,40px)', letterSpacing: '-0.04em' }}>
+            Lock USDC in Escrow
+          </h1>
+          <p className="text-white/45 text-sm leading-relaxed">
+            Post a job with trustless USDC escrow on Arc. Agents bid, you hire, payment releases automatically on validation.
+          </p>
+        </BlurFade>
 
         {!account ? (
-          <div className="card-dark" style={{ padding: 56, textAlign: 'center' }}>
-            <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--purple-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-              <AlertCircle size={32} color="var(--purple-light)" />
+          <BlurFade delay={0.1} inView>
+            <div className="relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-12 text-center overflow-hidden">
+              <BorderBeam size={200} duration={15} colorFrom="#9945ff" colorTo="#19fb9b" />
+              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
+                <Wallet size={28} className="text-purple-400" />
+              </div>
+              <h3 className="font-bold text-white mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 20, letterSpacing: '-0.02em' }}>Wallet Required</h3>
+              <p className="text-white/40 text-sm leading-relaxed mb-7 max-w-xs mx-auto">Connect your wallet to post a job and lock USDC in escrow on Arc Testnet.</p>
+              <button onClick={connect}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 24px rgba(153,69,255,0.3)' }}>
+                Connect Wallet
+              </button>
             </div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, marginBottom: 10, letterSpacing: '-0.02em' }}>Wallet Required</h3>
-            <p style={{ color: 'var(--dark-text-2)', marginBottom: 28, fontSize: 14, lineHeight: 1.6 }}>Connect your wallet to post a job and lock USDC in escrow.</p>
-            <button className="btn btn-primary btn-lg" onClick={connect}>Connect Wallet</button>
-          </div>
+          </BlurFade>
         ) : (
           <>
-            {/* Step indicator */}
-            {step > 0 && (
-              <div className="card-dark" style={{ padding: '16px 24px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 0 }}>
-                {[{ label: 'Approve USDC' }, { label: 'Post Job' }, { label: 'Done' }].map((s, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: step > i ? 'var(--purple)' : step === i + 1 ? 'var(--purple-dim)' : 'rgba(255,255,255,0.05)', border: step === i + 1 ? '1px solid var(--purple)' : 'none', transition: 'all 0.3s', flexShrink: 0 }}>
-                        {step > i + 1 ? <CheckCircle size={14} color="#fff" /> : <span style={{ fontSize: 11, fontWeight: 700, color: step >= i + 1 ? '#fff' : 'var(--dark-text-3)' }}>{i + 1}</span>}
-                      </div>
-                      <span style={{ fontSize: 12, fontWeight: 500, color: step >= i + 1 ? 'var(--dark-text-1)' : 'var(--dark-text-3)', whiteSpace: 'nowrap' }}>{s.label}</span>
-                    </div>
-                    {i < 2 && <div style={{ flex: 1, height: 1, background: step > i + 1 ? 'var(--purple)' : 'var(--dark-border)', margin: '0 12px', transition: 'all 0.3s' }} />}
-                  </div>
-                ))}
+            {/* Batch mode toggle */}
+            <BlurFade delay={0.08} inView className="mb-4">
+              <div className={cn('flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all', batchMode ? 'border-teal-500/20 bg-teal-500/[0.04]' : 'border-white/[0.06] bg-white/[0.02]')}>
+                <Layers size={14} className={batchMode ? 'text-teal-400' : 'text-white/30'} />
+                <div className="flex-1">
+                  <span className={cn('text-sm font-semibold', batchMode ? 'text-teal-400' : 'text-white/50')}>
+                    Arc Batch Transaction
+                  </span>
+                  <span className="text-white/25 text-xs ml-2">approve + post in one TX · v0.7.2</span>
+                </div>
+                <button onClick={() => setBatchMode(b => !b)}
+                  className={cn('w-9 h-5 rounded-full relative border-none cursor-pointer transition-all duration-200 shrink-0', batchMode ? 'bg-teal-400' : 'bg-white/10')}>
+                  <div className={cn('absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200', batchMode ? 'left-4' : 'left-0.5')} />
+                </button>
               </div>
+            </BlurFade>
+
+            {/* Step progress */}
+            {step > 0 && (
+              <BlurFade delay={0} inView className="mb-4">
+                <div className="flex items-center gap-0 p-4 rounded-xl border border-white/[0.06] bg-white/[0.02]">
+                  {steps.map((s, i) => (
+                    <div key={i} className="flex items-center flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className={cn('w-7 h-7 rounded-full flex items-center justify-center transition-all text-xs font-bold border', step > i ? 'bg-purple-500 border-purple-500 text-white' : step === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-white/[0.03] border-white/10 text-white/20')}>
+                          {step > i + (batchMode ? 0 : 0) ? <CheckCircle size={13} /> : s.icon}
+                        </div>
+                        <span className={cn('text-xs font-medium whitespace-nowrap', step >= i + 1 ? 'text-white/70' : 'text-white/20')}>{s.label}</span>
+                      </div>
+                      {i < steps.length - 1 && (
+                        <div className={cn('flex-1 h-px mx-3 transition-all duration-300', step > i + 1 ? 'bg-purple-500' : 'bg-white/[0.06]')} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </BlurFade>
             )}
 
-            <div className="card-dark" style={{ padding: 32 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-                <div className="input-group">
-                  <label className="input-label input-label-dark">Job Title</label>
-                  <input className="input" placeholder="e.g. Audit ERC-20 smart contract" value={form.title} onChange={e => set('title', e.target.value)} />
-                </div>
-                <div className="input-group">
-                  <label className="input-label input-label-dark">Description</label>
-                  <textarea className="input" rows={5} placeholder="Describe the task, requirements, and expected deliverables…" value={form.description} onChange={e => set('description', e.target.value)} />
-                </div>
-                <div className="grid-2">
-                  <div className="input-group">
-                    <label className="input-label input-label-dark">Category</label>
-                    <select className="input" value={form.category} onChange={e => set('category', e.target.value)}>
-                      {CATEGORIES.map(c => <option key={c} value={c}>{c.replace('-', ' ')}</option>)}
-                    </select>
+            {/* Form */}
+            <BlurFade delay={0.1} inView>
+              <div className="relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7 overflow-hidden">
+                <BorderBeam size={220} duration={18} colorFrom="#9945ff" colorTo="#19fb9b" />
+                <div className="flex flex-col gap-5">
+
+                  <Field label="Job Title" icon={<Type size={11}/>}>
+                    <input className={inputClass} placeholder="e.g. Audit ERC-20 smart contract" value={form.title} onChange={e => set('title', e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
+                  </Field>
+
+                  <Field label="Description" icon={<FileText size={11}/>}>
+                    <textarea className={cn(inputClass, 'resize-none')} rows={5} placeholder="Describe the task, requirements, and expected deliverables…" value={form.description} onChange={e => set('description', e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
+                  </Field>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <Field label="Category" icon={<Tag size={11}/>}>
+                      <select className={inputClass} value={form.category} onChange={e => set('category', e.target.value)} style={{ fontFamily: 'var(--font-body)' }}>
+                        {CATEGORIES.map(c => <option key={c} value={c} style={{ background: '#0a0814' }}>{c}</option>)}
+                      </select>
+                    </Field>
+                    <Field label="Budget (USDC)" icon={<DollarSign size={11}/>}>
+                      <input className={inputClass} type="number" min="0" step="1" placeholder="e.g. 150" value={form.budget} onChange={e => set('budget', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+                    </Field>
                   </div>
-                  <div className="input-group">
-                    <label className="input-label input-label-dark">Budget (USDC)</label>
-                    <input className="input" type="number" min="0" step="0.01" placeholder="e.g. 50" value={form.budget} onChange={e => set('budget', e.target.value)} />
+
+                  <Field label="Deadline (days from today)" icon={<Calendar size={11}/>}>
+                    <input className={inputClass} type="number" min="1" max="365" value={form.deadlineDays} onChange={e => set('deadlineDays', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />
+                  </Field>
+
+                  {/* Summary */}
+                  <div className="p-4 rounded-xl bg-purple-500/[0.06] border border-purple-500/12">
+                    <div className="flex items-start gap-2.5">
+                      <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-purple-300 text-xs font-bold mb-1">
+                          {batchMode ? 'One-click Arc Batch TX (v0.7.2)' : 'Two-step transaction'}
+                        </p>
+                        <p className="text-white/40 text-xs leading-relaxed">
+                          {batchMode
+                            ? `USDC approve + job post combined into a single Arc transaction. ${form.budget ? `$${form.budget} USDC` : 'Your budget'} locked in escrow. 1% fee on validated payout.`
+                            : `Step 1: Approve USDC. Step 2: Post job with ${form.budget ? `$${form.budget} USDC` : 'budget'} locked in escrow. 1% fee on validated payout.`
+                          }
+                        </p>
+                      </div>
+                    </div>
                   </div>
+
+                  <button onClick={handlePost} disabled={submitting || step > 0}
+                    className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-white transition-all', (submitting || step > 0) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                    style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 24px rgba(153,69,255,0.3)' }}>
+                    {submitting ? (
+                      <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />Processing…</>
+                    ) : (
+                      <><Zap size={15} />{batchMode ? 'Batch Escrow & Post' : 'Escrow & Post Job'}</>
+                    )}
+                  </button>
                 </div>
-                <div className="input-group">
-                  <label className="input-label input-label-dark">Deadline (days from today)</label>
-                  <input className="input" type="number" min="1" max="365" value={form.deadlineDays} onChange={e => set('deadlineDays', e.target.value)} />
-                </div>
-                <div style={{ height: 1, background: 'var(--dark-border)' }} />
-                <div style={{ display: 'flex', gap: 14, padding: 18, background: 'rgba(153,69,255,0.06)', borderRadius: 12, border: '1px solid rgba(153,69,255,0.12)' }}>
-                  <Info size={17} color="var(--purple-light)" style={{ flexShrink: 0, marginTop: 1 }} />
-                  <div>
-                    <p style={{ fontWeight: 600, fontSize: 13, color: 'var(--purple-light)', marginBottom: 5 }}>Two-step transaction</p>
-                    <p style={{ fontSize: 13, color: 'var(--dark-text-2)', lineHeight: 1.55 }}>Approve USDC spending, then post the job with{form.budget ? ` $${form.budget}` : ' your budget'} locked in escrow. 1% platform fee on release.</p>
-                  </div>
-                </div>
-                <TxButton onClick={handlePost} className="btn btn-primary btn-lg w-full">
-                  <Zap size={16} /> Escrow &amp; Post Job
-                </TxButton>
               </div>
-            </div>
+            </BlurFade>
           </>
         )}
       </div>

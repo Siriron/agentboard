@@ -1,12 +1,68 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useWallet } from '../hooks/useWallet'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatDate } from '../lib/arc'
+import { getAgentStats } from '../lib/goldsky'
 import { useNavigate } from 'react-router-dom'
-import { useReveal } from '../hooks/useReveal'
-import { ArrowRight, Wallet, Briefcase } from 'lucide-react'
+import { BlurFade } from '../components/magicui/BlurFade'
+import { BorderBeam } from '../components/magicui/BorderBeam'
+import { NumberTicker } from '../components/magicui/NumberTicker'
+import { cn } from '../lib/utils'
+import {
+  ArrowRight, Wallet, Briefcase, TrendingUp, CheckCircle,
+  DollarSign, Clock, Activity, Bot, Plus, ExternalLink,
+  Zap, RefreshCw, Trophy
+} from 'lucide-react'
 
 const STATUS_LABEL = ['OPEN','HIRED','SUBMITTED','VALIDATED','DISPUTED','CANCELLED','EXPIRED']
-const STATUS_CLASS = ['open','hired','submitted','validated','disputed','cancelled','expired']
+const STATUS_COLORS = {
+  0: { text: 'text-teal-400', bar: 'bg-teal-400', badge: 'text-teal-400 bg-teal-500/10 border-teal-500/25' },
+  1: { text: 'text-amber-400', bar: 'bg-amber-400', badge: 'text-amber-400 bg-amber-500/10 border-amber-500/25' },
+  2: { text: 'text-blue-400', bar: 'bg-blue-400', badge: 'text-blue-400 bg-blue-500/10 border-blue-500/25' },
+  3: { text: 'text-teal-400', bar: 'bg-teal-400', badge: 'text-teal-400 bg-teal-500/10 border-teal-500/25' },
+  4: { text: 'text-red-400', bar: 'bg-red-400', badge: 'text-red-400 bg-red-500/10 border-red-500/25' },
+  5: { text: 'text-gray-400', bar: 'bg-gray-600', badge: 'text-gray-400 bg-gray-500/10 border-gray-500/25' },
+  6: { text: 'text-gray-400', bar: 'bg-gray-600', badge: 'text-gray-400 bg-gray-500/10 border-gray-500/25' },
+}
+
+function StatCard({ label, value, sub, icon, color, trend, ticker }) {
+  return (
+    <div className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 overflow-hidden">
+      <BorderBeam size={120} duration={20} colorFrom="#9945ff" colorTo="#19fb9b" />
+      <div className="flex items-start justify-between mb-3">
+        <div className="text-white/30 text-[10px] font-bold uppercase tracking-widest">{label}</div>
+        <div className="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center shrink-0">{icon}</div>
+      </div>
+      <div className={cn('font-black leading-none mb-1', color)}
+        style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.04em' }}>
+        {ticker && typeof value === 'number' ? <NumberTicker value={value} /> : value}
+      </div>
+      {sub && <div className="text-white/30 text-xs">{sub}</div>}
+      {trend && (
+        <div className="flex items-center gap-1 mt-2">
+          <TrendingUp size={10} className="text-teal-400" />
+          <span className="text-teal-400 text-[10px] font-semibold">{trend}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function EmptyState({ icon, title, desc, action, actionLabel }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
+        {icon}
+      </div>
+      <p className="font-bold text-white mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 18, letterSpacing: '-0.02em' }}>{title}</p>
+      <p className="text-white/35 text-sm max-w-xs leading-relaxed mb-6">{desc}</p>
+      <button onClick={action}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:scale-[1.01]"
+        style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)' }}>
+        <Plus size={13}/>{actionLabel}
+      </button>
+    </div>
+  )
+}
 
 export default function Dashboard() {
   const { account, connect } = useWallet()
@@ -14,13 +70,14 @@ export default function Dashboard() {
   const [clientJobs, setClientJobs] = useState([])
   const [agentJobs, setAgentJobs] = useState([])
   const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const [tab, setTab] = useState('client')
-  useReveal()
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [goldskyStats, setGoldskyStats] = useState(null)
 
-  useEffect(() => { if (account) load() }, [account])
-
-  async function load() {
-    setLoading(true)
+  const load = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true)
+    else setLoading(true)
     try {
       const client = getPublicClient()
       const [cIds, aIds] = await Promise.all([
@@ -29,7 +86,7 @@ export default function Dashboard() {
       ])
       async function loadList(ids) {
         const jobs = []
-        for (const id of ids) {
+        for (const id of [...ids].reverse().slice(0, 50)) {
           try {
             const [core, meta] = await Promise.all([
               client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobCore', args: [id] }),
@@ -38,101 +95,179 @@ export default function Dashboard() {
             jobs.push({ id: Number(id), core, meta })
           } catch {}
         }
-        return jobs.reverse()
+        return jobs
       }
       const [cj, aj] = await Promise.all([loadList(cIds), loadList(aIds)])
-      setClientJobs(cj); setAgentJobs(aj)
-    } catch (e) { console.error(e) }
-    finally { setLoading(false) }
-  }
+      setClientJobs(cj)
+      setAgentJobs(aj)
+      // Try Goldsky for enriched agent stats (non-blocking)
+      getAgentStats(account).then(gs => {
+        if (gs?.agent) setGoldskyStats(gs.agent)
+      }).catch(() => {})
+    } catch(e) { console.error(e) }
+    finally { setLoading(false); setRefreshing(false) }
+  }, [account])
+
+  useEffect(() => { if (account) load() }, [account, load])
 
   if (!account) return (
-    <div className="section-dark" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, textAlign: 'center', padding: 40 }}>
-      <div className="glow-orb" style={{ width: 400, height: 400, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.1) 0%, transparent 70%)' }} />
-      <div style={{ position: 'relative', width: 80, height: 80, borderRadius: 22, background: 'var(--purple-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Wallet size={36} color="var(--purple-light)" />
+    <div className="min-h-screen bg-[#0a0814] flex flex-col items-center justify-center gap-6 text-center px-6 relative">
+      <div className="absolute inset-0 pointer-events-none">
+        <div style={{ position: 'absolute', width: 500, height: 500, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.1) 0%, transparent 65%)', filter: 'blur(60px)' }} />
       </div>
-      <div style={{ position: 'relative' }}>
-        <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, letterSpacing: '-0.03em', marginBottom: 10 }}>Connect your wallet</h2>
-        <p style={{ color: 'var(--dark-text-2)', maxWidth: 360, fontSize: 15, lineHeight: 1.65 }}>See all jobs you've posted and agent jobs you've been hired for.</p>
+      <div className="relative w-20 h-20 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+        <Wallet size={36} className="text-purple-400" />
       </div>
-      <button className="btn btn-primary btn-lg" onClick={connect} style={{ position: 'relative' }}>Connect Wallet</button>
+      <div className="relative">
+        <h2 className="font-black text-white mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.03em' }}>
+          Connect your wallet
+        </h2>
+        <p className="text-white/40 max-w-sm leading-relaxed text-sm">
+          See all jobs posted, bids submitted, and USDC earned on Arc.
+        </p>
+      </div>
+      <button onClick={connect}
+        className="relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:scale-[1.02]"
+        style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 24px rgba(153,69,255,0.3)' }}>
+        Connect Wallet
+      </button>
     </div>
   )
 
   const completed = agentJobs.filter(j => Number(j.core.status) === 3)
-  const earned = completed.reduce((s, j) => s + Number(j.core.budget), 0)
+  const earned = goldskyStats ? Number(goldskyStats.totalEarned) : completed.reduce((s, j) => s + Number(j.core.budget) * 0.99, 0)
+  const pending = agentJobs.filter(j => [1,2].includes(Number(j.core.status)))
   const spent = clientJobs.filter(j => Number(j.core.status) === 3).reduce((s, j) => s + Number(j.core.budget), 0)
-  const displayJobs = tab === 'client' ? clientJobs : agentJobs
+  const successRate = agentJobs.length > 0 ? Math.round((completed.length / agentJobs.length) * 100) : 0
+
+  const displayJobs = (tab === 'client' ? clientJobs : agentJobs).filter(j =>
+    statusFilter === 'all' || Number(j.core.status) === parseInt(statusFilter)
+  )
 
   return (
-    <div className="section-dark" style={{ minHeight: '100vh', padding: '60px 24px 80px', position: 'relative' }}>
-      <div className="glow-orb" style={{ width: 400, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.07) 0%, transparent 70%)' }} />
-      <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative' }}>
-        <div style={{ marginBottom: 36 }}>
-          <h1 className="display-md reveal" style={{ marginBottom: 8 }}><span className="text-gradient">Dashboard</span></h1>
-          <p className="reveal" style={{ color: 'var(--dark-text-2)', fontSize: 15 }}>Your activity on AgentBoard</p>
-        </div>
+    <div className="min-h-screen bg-[#0a0814] text-white px-6 py-12">
+      <div className="absolute inset-0 pointer-events-none">
+        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+      </div>
+      <div className="max-w-6xl mx-auto relative">
 
-        <div className="grid-4 reveal" style={{ marginBottom: 32 }}>
-          {[
-            { label: 'Jobs Posted', value: clientJobs.length, color: '#fff' },
-            { label: 'Completed', value: completed.length, color: 'var(--green)' },
-            { label: 'USDC Earned', value: `$${formatUSDC(earned)}`, color: 'var(--purple-light)' },
-            { label: 'USDC Spent', value: `$${formatUSDC(spent)}`, color: 'var(--teal)' },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="card-dark" style={{ padding: '20px 22px' }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--dark-text-3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>{label}</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, letterSpacing: '-0.03em', color }}>{value.toString()}</div>
+        {/* Header */}
+        <BlurFade delay={0} inView className="mb-8">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="font-black text-white tracking-tighter mb-2"
+                style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(24px,4vw,36px)', letterSpacing: '-0.04em' }}>
+                Dashboard
+              </h1>
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
+                <a href={`https://testnet.arcscan.app/address/${account}`} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-1.5 text-white/30 text-xs hover:text-purple-400 transition-colors"
+                  style={{ fontFamily: 'var(--font-mono)' }}>
+                  {account?.slice(0,10)}…{account?.slice(-6)} <ExternalLink size={10}/>
+                </a>
+              </div>
             </div>
-          ))}
-        </div>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => load(true)} disabled={refreshing}
+                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.08] bg-white/[0.02] text-white/50 text-xs font-medium hover:text-white transition-all', refreshing && 'opacity-50 pointer-events-none')}>
+                <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
+              </button>
+              <button onClick={() => navigate('/leaderboard')}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] text-amber-400 text-xs font-semibold hover:bg-amber-500/10 transition-all">
+                <Trophy size={12}/> Leaderboard
+              </button>
+              <button onClick={() => navigate('/register')}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/[0.08] bg-white/[0.02] text-white/60 text-xs font-medium hover:text-white transition-all">
+                <Bot size={12}/> Register Agent
+              </button>
+              <button onClick={() => navigate('/post')}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-white transition-all hover:scale-[1.01]"
+                style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)' }}>
+                <Plus size={12}/> Post Job
+              </button>
+            </div>
+          </div>
+        </BlurFade>
 
-        <div className="reveal" style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-          {[['client', `Client (${clientJobs.length})`], ['agent', `Agent (${agentJobs.length})`]].map(([key, label]) => (
-            <button key={key} onClick={() => setTab(key)} className={`btn ${tab === key ? 'btn-primary' : 'btn-secondary'}`}>{label}</button>
-          ))}
-        </div>
+        {/* Stats */}
+        <BlurFade delay={0.05} inView className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <StatCard label="Jobs Posted" value={clientJobs.length} sub="as client" ticker icon={<Briefcase size={15} className="text-purple-400"/>} color="text-purple-400" />
+          <StatCard label="USDC Earned" value={`$${formatUSDC(earned)}`} sub="as agent (99%)" icon={<DollarSign size={15} className="text-teal-400"/>} color="text-teal-400" trend={completed.length > 0 ? `${completed.length} jobs completed` : null} />
+          <StatCard label="Pending Work" value={pending.length} sub="in progress" ticker icon={<Clock size={15} className="text-amber-400"/>} color="text-amber-400" />
+          <StatCard label="Success Rate" value={`${successRate}%`} sub="jobs validated" icon={<CheckCircle size={15} className="text-blue-400"/>} color={successRate >= 80 ? 'text-teal-400' : successRate >= 50 ? 'text-amber-400' : 'text-red-400'} />
+          <StatCard label="Total Spent" value={`$${formatUSDC(spent)}`} sub="as client" icon={<Activity size={15} className="text-white/40"/>} color="text-white/70" />
+          <StatCard label="Agent Jobs" value={agentJobs.length} sub="bids won" ticker icon={<Zap size={15} className="text-purple-400"/>} color="text-purple-400" />
+        </BlurFade>
 
+        {/* Tabs + filter */}
+        <BlurFade delay={0.08} inView className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <div className="flex gap-2 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            {[['client', `Client (${clientJobs.length})`], ['agent', `Agent (${agentJobs.length})`]].map(([key, label]) => (
+              <button key={key} onClick={() => { setTab(key); setStatusFilter('all') }}
+                className={cn('px-4 py-2 rounded-lg text-xs font-semibold transition-all', tab === key ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-white/40 hover:text-white')}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            className="px-3 py-2 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white text-xs outline-none focus:border-purple-500/40 cursor-pointer"
+            style={{ fontFamily: 'var(--font-body)' }}>
+            <option value="all" style={{ background: '#0a0814' }}>All Status</option>
+            {STATUS_LABEL.map((l, i) => <option key={i} value={i} style={{ background: '#0a0814' }}>{l}</option>)}
+          </select>
+        </BlurFade>
+
+        {/* Job list */}
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, padding: 60 }}>
-            <span className="spinner" style={{ width: 22, height: 22 }} />
-            <span style={{ color: 'var(--dark-text-2)', fontSize: 15 }}>Loading from Arc…</span>
+          <div className="flex items-center justify-center gap-4 py-24">
+            <div className="w-5 h-5 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
+            <span className="text-white/40 text-sm">Loading from Arc…</span>
           </div>
         ) : displayJobs.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ width: 64, height: 64, borderRadius: 18, background: 'var(--purple-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <Briefcase size={28} color="var(--purple-light)" />
-            </div>
-            <p style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, marginBottom: 8, letterSpacing: '-0.02em' }}>
-              {tab === 'client' ? 'No jobs posted yet' : 'No agent jobs yet'}
-            </p>
-            <p style={{ color: 'var(--dark-text-2)', marginBottom: 28, fontSize: 14 }}>
-              {tab === 'client' ? 'Post your first job to get started' : 'Browse the board and submit bids'}
-            </p>
-            <button className="btn btn-primary" onClick={() => navigate(tab === 'client' ? '/post' : '/board')}>
-              {tab === 'client' ? 'Post a Job' : 'Browse Board'}
-            </button>
-          </div>
+          <EmptyState
+            icon={tab === 'client' ? <Briefcase size={24} className="text-purple-400"/> : <Bot size={24} className="text-purple-400"/>}
+            title={tab === 'client' ? 'No jobs posted yet' : 'No agent jobs yet'}
+            desc={tab === 'client' ? 'Post your first job with USDC escrow on Arc.' : 'Browse open jobs and submit bids with your ERC-8004 identity.'}
+            action={() => navigate(tab === 'client' ? '/post' : '/board')}
+            actionLabel={tab === 'client' ? 'Post a Job' : 'Browse Board'}
+          />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div className="flex flex-col gap-2">
             {displayJobs.map(({ id, core, meta }) => {
               const sn = Number(core.status)
+              const sc = STATUS_COLORS[sn] || STATUS_COLORS[5]
               return (
-                <div key={id} className="card-dark" style={{ padding: '18px 22px', cursor: 'pointer' }} onClick={() => navigate(`/job/${id}`)}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                      <span className={`badge badge-${STATUS_CLASS[sn] || 'cancelled'}`}><span className="badge-dot" />{STATUS_LABEL[sn] || 'UNKNOWN'}</span>
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: 15, letterSpacing: '-0.01em' }}>{meta.title}</span>
-                      <span className="cat-tag" style={{ fontSize: 10 }}>{meta.category}</span>
+                <BlurFade key={id} delay={0.02} inView>
+                  <div onClick={() => navigate(`/job/${id}`)}
+                    className="group flex items-center gap-4 px-5 py-4 rounded-2xl border border-white/[0.05] bg-white/[0.02] cursor-pointer hover:border-purple-500/20 hover:bg-white/[0.04] transition-all flex-wrap">
+                    <div className={cn('w-1 h-10 rounded-full shrink-0', sc.bar)} />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <span className={cn('text-[9px] font-black px-2 py-0.5 rounded border', sc.badge)}>
+                          {STATUS_LABEL[sn]}
+                        </span>
+                        <span className="text-white/20 text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>#{id}</span>
+                        <span className="text-white/20 text-[10px]">{meta.category}</span>
+                      </div>
+                      <p className="font-semibold text-white text-sm truncate group-hover:text-purple-200 transition-colors"
+                        style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{meta.title}</p>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-                      <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, letterSpacing: '-0.02em' }}>${formatUSDC(core.budget)}</span>
-                      <span style={{ fontSize: 12, color: 'var(--dark-text-3)', fontFamily: 'var(--font-mono)' }}>{formatDate(core.deadline)}</span>
-                      <ArrowRight size={15} color="var(--dark-text-3)" />
+                    <div className="flex items-center gap-6 shrink-0">
+                      <div className="text-right hidden sm:block">
+                        <div className={cn('font-black text-lg leading-none', sc.text)} style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.03em' }}>
+                          ${formatUSDC(core.budget)}
+                        </div>
+                        <div className="text-white/20 text-[10px]">USDC</div>
+                      </div>
+                      <div className="text-right hidden md:block">
+                        <div className="text-white/40 text-xs">{formatDate(core.deadline)}</div>
+                        <div className="text-white/20 text-[10px]">{Number(core.bidCount)} bids</div>
+                      </div>
+                      <ArrowRight size={14} className="text-white/15 group-hover:text-purple-400 transition-colors" />
                     </div>
                   </div>
-                </div>
+                </BlurFade>
               )
             })}
           </div>
