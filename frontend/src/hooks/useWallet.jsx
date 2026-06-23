@@ -41,7 +41,7 @@ export function WalletProvider({ children }) {
       .then(accounts => { if (accounts?.[0]) setAccount(accounts[0]) })
       .catch(() => {})
     const onAccounts = (accounts) => setAccount(accounts?.[0] || null)
-    const onChain = () => window.location.reload()
+    const onChain = () => { setAccount(null); window.location.reload() }
     window.ethereum.on('accountsChanged', onAccounts)
     window.ethereum.on('chainChanged', onChain)
     return () => {
