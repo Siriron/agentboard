@@ -1,0 +1,29 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: AgentEscrow
+    network: arc-testnet
+    source:
+      address: "0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4"
+      abi: AgentEscrow
+      startBlock: 0
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities: [Job, Bid, Agent, Payment, Protocol]
+      abis:
+        - name: AgentEscrow
+          file: ./abis/AgentEscrow.json
+      eventHandlers:
+        - event: JobPosted(indexed uint256,indexed address,string,uint256)
+          handler: handleJobPosted
+        - event: BidSubmitted(indexed uint256,indexed address,uint256,uint256)
+          handler: handleBidSubmitted
+        - event: AgentHired(indexed uint256,indexed address,uint256)
+          handler: handleAgentHired
+        - event: JobValidated(indexed uint256,indexed address,uint256)
+          handler: handleJobValidated
+      file: ./src/mapping.ts

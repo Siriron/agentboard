@@ -1,0 +1,51 @@
+type Job @entity {
+  id: ID!
+  jobId: BigInt!
+  client: Bytes!
+  title: String!
+  budget: BigInt!
+  status: Int!
+  bidCount: BigInt!
+  postedAt: BigInt!
+  hiredAgent: Bytes
+  payout: BigInt
+  validatedAt: BigInt
+  bids: [Bid!]! @derivedFrom(field: "job")
+  payments: [Payment!]! @derivedFrom(field: "job")
+}
+
+type Bid @entity {
+  id: ID!
+  job: Job!
+  agent: Bytes!
+  agentId: BigInt!
+  proposedAmount: BigInt!
+  submittedAt: BigInt!
+  hired: Boolean!
+}
+
+type Agent @entity {
+  id: ID!
+  address: Bytes!
+  agentId: BigInt!
+  jobsCompleted: BigInt!
+  totalEarned: BigInt!
+  registeredAt: BigInt!
+}
+
+type Payment @entity {
+  id: ID!
+  job: Job!
+  agent: Bytes!
+  amount: BigInt!
+  timestamp: BigInt!
+  txHash: Bytes!
+}
+
+type Protocol @entity {
+  id: ID!
+  totalJobs: BigInt!
+  totalBids: BigInt!
+  totalPaid: BigInt!
+  lastUpdated: BigInt!
+}
