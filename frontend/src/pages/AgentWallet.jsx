@@ -58,9 +58,7 @@ export default function AgentWallet() {
       setWalletSetId(data.walletSetId)
       setStep(1)
     } catch (e) {
-      setError(e.message.includes('401') || e.message.includes('403')
-        ? 'Circle API key not configured. Add CIRCLE_API_KEY to Vercel environment variables.'
-        : e.message)
+      setError(e.message)
     } finally { setLoading(false) }
   }
 
@@ -340,7 +338,7 @@ await client.createContractExecutionTransaction({
                 style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 20px rgba(153,69,255,0.3)' }}>
                 <Shield size={14} /> Register ERC-8004 Identity
               </button>
-              <a href="https://testnet-faucet.arc.network" target="_blank" rel="noreferrer"
+              <a href="https://faucet.circle.com" target="_blank" rel="noreferrer"
                 className="flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/[0.03] text-white/70 text-sm font-semibold hover:text-white hover:bg-white/[0.06] transition-all">
                 <ExternalLink size={13} /> Get Testnet USDC
               </a>

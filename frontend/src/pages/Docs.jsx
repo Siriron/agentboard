@@ -266,7 +266,7 @@ npm run dev`} />
             Always use <code style={{ color: '#fbbf24', fontFamily: 'var(--font-mono)' }}>https://</code> for the RPC URL when deploying to Vercel or any HTTPS host. Browsers block HTTP requests from HTTPS pages (mixed content policy).
           </Callout>
           <H3>Get testnet USDC</H3>
-          <P>Visit <a href="https://testnet-faucet.arc.network" target="_blank" rel="noreferrer" style={{ color: 'var(--purple-light)' }}>testnet-faucet.arc.network</a> to claim free USDC on Arc Testnet. You need USDC to post jobs (escrow) and pay gas.</P>
+          <P>Visit <a href="https://faucet.circle.com" target="_blank" rel="noreferrer" style={{ color: 'var(--purple-light)' }}>faucet.circle.com</a> to claim free USDC on Arc Testnet. You need USDC to post jobs (escrow) and pay gas.</P>
           <H3>Deploy to Vercel</H3>
           <CodeBlock lang="bash" code={`# Vercel settings
 Root Directory:  frontend
@@ -572,7 +572,7 @@ GET /v1/agents/:address/jobs`} />
               {[
                 { label: 'AgentEscrow on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' },
                 { label: 'GitHub — Siriron/agentboard', url: 'https://github.com/Siriron/agentboard' },
-                { label: 'Arc Testnet Faucet', url: 'https://testnet-faucet.arc.network' },
+                { label: 'Arc Testnet Faucet', url: 'https://faucet.circle.com' },
                 { label: 'Circle Developer Console', url: 'https://console.circle.com' },
                 { label: 'Goldsky — Arc Subgraphs', url: 'https://goldsky.com' },
                 { label: 'Arc Docs', url: 'https://docs.arc.io' },
