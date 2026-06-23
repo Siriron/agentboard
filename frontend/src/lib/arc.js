@@ -1,6 +1,5 @@
-import { createPublicClient, createWalletClient, custom, http } from 'viem'
+import { createPublicClient, createWalletClient, custom, http, encodeFunctionData } from 'viem'
 
-// BUG FIX 1: chainId hex 0x4CE352 = 5042002 ✓ confirmed correct
 export const arcTestnet = {
   id: 5042002,
   name: 'Arc Testnet',
@@ -35,20 +34,24 @@ export const CONTRACT_ABI = [
   { name: 'isValidator', type: 'function', stateMutability: 'view', inputs: [{ name: 'addr', type: 'address' }], outputs: [{ name: '', type: 'bool' }] },
   { name: 'jobCount', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'uint256' }] },
   { name: 'agentIdRegistered', type: 'function', stateMutability: 'view', inputs: [{ name: '', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] },
+  { name: 'agentIdByAddress', type: 'function', stateMutability: 'view', inputs: [{ name: 'agent', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
   { name: 'owner', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'address' }] },
   { name: 'JobPosted', type: 'event', inputs: [{ name: 'jobId', type: 'uint256', indexed: true }, { name: 'client', type: 'address', indexed: true }, { name: 'title', type: 'string' }, { name: 'budget', type: 'uint256' }] },
   { name: 'AgentHired', type: 'event', inputs: [{ name: 'jobId', type: 'uint256', indexed: true }, { name: 'agent', type: 'address', indexed: true }, { name: 'amount', type: 'uint256' }] },
   { name: 'JobValidated', type: 'event', inputs: [{ name: 'jobId', type: 'uint256', indexed: true }, { name: 'agent', type: 'address', indexed: true }, { name: 'payout', type: 'uint256' }] },
+  { name: 'BidSubmitted', type: 'event', inputs: [{ name: 'jobId', type: 'uint256', indexed: true }, { name: 'agent', type: 'address', indexed: true }, { name: 'agentId', type: 'uint256' }, { name: 'proposedAmount', type: 'uint256' }] },
 ]
 
 export const USDC_ABI = [
   { name: 'approve', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] },
   { name: 'allowance', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
   { name: 'balanceOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
+  // EIP-3009 transferWithAuthorization
+  { name: 'transferWithAuthorization', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'from', type: 'address' }, { name: 'to', type: 'address' }, { name: 'value', type: 'uint256' }, { name: 'validAfter', type: 'uint256' }, { name: 'validBefore', type: 'uint256' }, { name: 'nonce', type: 'bytes32' }, { name: 'v', type: 'uint8' }, { name: 'r', type: 'bytes32' }, { name: 's', type: 'bytes32' }], outputs: [] },
+  { name: 'nonces', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
+  { name: 'DOMAIN_SEPARATOR', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'bytes32' }] },
 ]
 
-// BUG FIX 2: publicClient was being recreated on every call causing memory leaks
-// Cache the public client as a singleton
 let _publicClient = null
 export function getPublicClient() {
   if (!_publicClient) {
@@ -62,55 +65,94 @@ export async function getWalletClient() {
   return createWalletClient({ chain: arcTestnet, transport: custom(window.ethereum) })
 }
 
+// Arc Batch Transaction helper - combines multiple calls into one TX using Arc v0.7.2 batch support
+export async function sendBatchTransaction(calls) {
+  const wc = await getWalletClient()
+  const [addr] = await wc.getAddresses()
+  const pc = getPublicClient()
+  // Arc supports EIP-5792 wallet_sendCalls for batching
+  try {
+    const batchResult = await window.ethereum.request({
+      method: 'wallet_sendCalls',
+      params: [{
+        version: '1.0',
+        chainId: '0x4CE352',
+        from: addr,
+        calls: calls.map(c => ({
+          to: c.to,
+          data: encodeFunctionData({ abi: c.abi, functionName: c.functionName, args: c.args }),
+          value: '0x0',
+        }))
+      }]
+    })
+    // wallet_sendCalls returns a batch ID; poll for completion
+    let receipts = null
+    while (!receipts) {
+      await new Promise(r => setTimeout(r, 1200))
+      try {
+        const status = await window.ethereum.request({
+          method: 'wallet_getCallsStatus',
+          params: [batchResult]
+        })
+        if (status?.status === 'CONFIRMED' || status?.receipts?.length > 0) {
+          receipts = status.receipts || []
+        }
+      } catch {}
+    }
+    return receipts[receipts.length - 1]?.transactionHash || batchResult
+  } catch (e) {
+    // Fallback: wallet doesn't support batching — execute sequentially
+    let lastHash = null
+    for (const c of calls) {
+      const hash = await wc.writeContract({
+        address: c.to,
+        abi: c.abi,
+        functionName: c.functionName,
+        args: c.args,
+        account: addr,
+      })
+      await pc.waitForTransactionReceipt({ hash })
+      lastHash = hash
+    }
+    return lastHash
+  }
+}
+
+// Transaction memo helper — Arc v0.7.2 supports arbitrary data field as memo
+export function buildMemo(type, jobId, extra = '') {
+  return `agentboard:${type}:${jobId}${extra ? ':' + extra : ''}`
+}
+
 export async function switchToArc() {
   if (!window.ethereum) throw new Error('No wallet detected')
   try {
-    await window.ethereum.request({
-      method: 'wallet_switchEthereumChain',
-      params: [{ chainId: '0x4CE352' }],
-    })
+    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x4CE352' }] })
   } catch (e) {
-    // BUG FIX 3: some wallets use code 4902, others use -32603 for unrecognized chain
     if (e.code === 4902 || e.code === -32603) {
       await window.ethereum.request({
         method: 'wallet_addEthereumChain',
-        params: [{
-          chainId: '0x4CE352',
-          chainName: 'Arc Testnet',
-          nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
-          rpcUrls: ['https://rpc.testnet.arc.network'],
-          blockExplorerUrls: ['https://testnet.arcscan.app'],
-        }],
+        params: [{ chainId: '0x4CE352', chainName: 'Arc Testnet', nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 }, rpcUrls: ['https://rpc.testnet.arc.network'], blockExplorerUrls: ['https://testnet.arcscan.app'] }],
       })
-    } else {
-      throw e
-    }
+    } else throw e
   }
 }
 
 export const STATUS_LABEL = ['OPEN', 'HIRED', 'SUBMITTED', 'VALIDATED', 'DISPUTED', 'CANCELLED', 'EXPIRED']
-export const STATUS_COLOR = ['#00ff88', '#f59e0b', '#60a5fa', '#00ff88', '#ef4444', '#6b7280', '#6b7280']
+export const STATUS_COLOR = ['#19fb9b', '#fbbf24', '#60a5fa', '#19fb9b', '#f87171', '#6b7280', '#6b7280']
 
-// BUG FIX 4: formatUSDC crashed on undefined/null — add guard
 export function formatUSDC(raw) {
   if (raw === undefined || raw === null) return '0.00'
   return (Number(raw) / 1e6).toFixed(2)
 }
-
-// BUG FIX 5: formatAddress crashed when addr was undefined/null/short
 export function formatAddress(addr) {
   if (!addr || addr.length < 10) return '—'
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
 }
-
-// BUG FIX 6: formatDate crashed on BigInt 0 (uninitialised timestamps)
 export function formatDate(ts) {
   const n = Number(ts)
   if (!n || n === 0) return '—'
   return new Date(n * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
-
-// BUG FIX 7: isZeroAddress helper — used in JobDetail to check hiredAgent
 export function isZeroAddress(addr) {
   return !addr || addr === ZERO_ADDRESS || addr === '0x'
 }
