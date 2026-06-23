@@ -30,7 +30,11 @@ export async function createAgentWallet(walletSetId, agentName) {
 }
 
 export async function getWalletBalance(walletId) {
-  return apiCall(`balance&walletId=${walletId}`)
+  const url = `${API_BASE}?action=balance&walletId=${encodeURIComponent(walletId)}`
+  const res = await fetch(url)
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || `API error ${res.status}`)
+  return data
 }
 
 // ── CONTRACT EXECUTION ──
@@ -43,8 +47,12 @@ export async function executeContractCall({ walletId, contractAddress, abi, func
 
 export async function pollTransaction(txId, maxAttempts = 60) {
   for (let i = 0; i < maxAttempts; i++) {
-    const status = await apiCall(`tx-status&txId=${txId}`)
-    if (status.state === 'CONFIRMED') return status
+    const url = `${API_BASE}?action=tx-status&txId=${encodeURIComponent(txId)}`
+    const res = await fetch(url)
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || `API error ${res.status}`)
+    const status = data
+    if (status.state === 'COMPLETE' || status.state === 'CONFIRMED') return status
     if (['FAILED', 'DENIED', 'CANCELLED'].includes(status.state)) {
       throw new Error(`Transaction ${status.state}: ${status.errorReason || 'unknown error'}`)
     }
