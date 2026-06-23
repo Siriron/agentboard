@@ -61,7 +61,7 @@ export default async function handler(req, res) {
         walletSetId,
         count: 1,
         blockchains: ['ARC-TESTNET'],
-        accountType: 'SCA', // Smart Contract Account — enables Gas Station
+        accountType: "EOA", // Smart Contract Account — enables Gas Station
         metadata: [{ name: agentName || 'AgentBoard Agent', refId: `ab-${Date.now()}` }],
       })
       const wallet = response.data?.wallets?.[0]
