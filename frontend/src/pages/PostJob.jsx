@@ -58,6 +58,8 @@ export default function PostJob() {
         toast('Batch not available, using sequential…', 'info')
         setBatchMode(false)
         setStep(0)
+        setSubmitting(false)
+        return
       }
     }
 

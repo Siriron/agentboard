@@ -103,6 +103,9 @@ export default function JobDetail() {
       setLastTx(tx)
       load()
       return { txHash: tx }
+    } catch (e) {
+      toast(e.message || 'Transaction failed', 'error')
+      throw e
     } finally { setSubmitting(null) }
   }
 
