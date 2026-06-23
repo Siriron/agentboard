@@ -1,22 +1,24 @@
 // Vercel Serverless Function — Circle Developer-Controlled Wallets
 // Endpoints: POST /api/agent-wallet?action=create-wallet-set|create-wallet|execute
 //            GET  /api/agent-wallet?action=balance|tx-status
+//
+// Uses Circle's official SDK so the entity secret is correctly RSA-encrypted
+// into a fresh, one-time entitySecretCiphertext on every request. Circle's
+// raw REST API requires that ciphertext to be generated per-call from your
+// entity secret + Circle's current public key — sending the raw entity
+// secret directly (as a previous version of this file did) is rejected by
+// Circle with "API parameter invalid".
 
-const CIRCLE_API = 'https://api.circle.com/v1/w3s'
+import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets'
 
-async function circleRequest(path, method = 'GET', body = null) {
-  if (!process.env.CIRCLE_API_KEY) throw new Error('CIRCLE_API_KEY not configured in Vercel environment variables')
-  const res = await fetch(`${CIRCLE_API}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.CIRCLE_API_KEY}`,
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
+const CIRCLE_ENABLED = !!(process.env.CIRCLE_API_KEY && process.env.CIRCLE_ENTITY_SECRET)
+
+function getCircleClient() {
+  if (!CIRCLE_ENABLED) throw new Error('Circle API credentials not configured')
+  return initiateDeveloperControlledWalletsClient({
+    apiKey: process.env.CIRCLE_API_KEY,
+    entitySecret: process.env.CIRCLE_ENTITY_SECRET,
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.message || `Circle API error ${res.status}`)
-  return data
 }
 
 export default async function handler(req, res) {
@@ -27,31 +29,38 @@ export default async function handler(req, res) {
 
   const { action } = req.query
 
+  if (!CIRCLE_ENABLED) {
+    return res.status(503).json({
+      error: 'Circle Dev-Controlled Wallets not configured',
+      setup: 'Add CIRCLE_API_KEY and CIRCLE_ENTITY_SECRET to Vercel environment variables',
+    })
+  }
+
   try {
+    const client = getCircleClient()
+
     // CREATE WALLET SET
     if (action === 'create-wallet-set' && req.method === 'POST') {
-      const data = await circleRequest('/developer/walletSets', 'POST', {
-        idempotencyKey: `ab-ws-${Date.now()}`,
+      const response = await client.createWalletSet({
         name: req.body?.name || 'AgentBoard Agents',
-        entitySecretCiphertext: process.env.CIRCLE_ENTITY_SECRET,
       })
-      return res.status(200).json({ walletSetId: data.data?.walletSet?.id })
+      const walletSet = response.data?.walletSet
+      if (!walletSet) throw new Error('Wallet set creation failed')
+      return res.status(200).json({ walletSetId: walletSet.id })
     }
 
     // CREATE AGENT WALLET
     if (action === 'create-wallet' && req.method === 'POST') {
       const { walletSetId, agentName } = req.body || {}
       if (!walletSetId) return res.status(400).json({ error: 'walletSetId required' })
-      const data = await circleRequest('/developer/wallets', 'POST', {
-        idempotencyKey: `ab-w-${Date.now()}`,
-        accountType: 'SCA',
-        blockchains: ['ARC-TESTNET'],
-        count: 1,
+      const response = await client.createWallets({
         walletSetId,
-        entitySecretCiphertext: process.env.CIRCLE_ENTITY_SECRET,
+        count: 1,
+        blockchains: ['ARC-TESTNET'],
+        accountType: 'SCA', // Smart Contract Account — enables Gas Station
         metadata: [{ name: agentName || 'AgentBoard Agent', refId: `ab-${Date.now()}` }],
       })
-      const wallet = data.data?.wallets?.[0]
+      const wallet = response.data?.wallets?.[0]
       if (!wallet) throw new Error('Wallet creation failed')
       return res.status(200).json({
         walletId: wallet.id,
@@ -65,8 +74,8 @@ export default async function handler(req, res) {
     if (action === 'balance' && req.method === 'GET') {
       const { walletId } = req.query
       if (!walletId) return res.status(400).json({ error: 'walletId required' })
-      const data = await circleRequest(`/wallets/${walletId}/balances`)
-      return res.status(200).json({ balances: data.data?.tokenBalances || [] })
+      const response = await client.getWalletTokenBalance({ id: walletId })
+      return res.status(200).json({ balances: response.data?.tokenBalances || [] })
     }
 
     // EXECUTE CONTRACT CALL
@@ -74,16 +83,14 @@ export default async function handler(req, res) {
       const { walletId, contractAddress, calldata, memo } = req.body || {}
       if (!walletId || !contractAddress || !calldata)
         return res.status(400).json({ error: 'walletId, contractAddress, calldata required' })
-      const data = await circleRequest('/developer/transactions/contractExecution', 'POST', {
-        idempotencyKey: `ab-tx-${Date.now()}`,
+      const response = await client.createContractExecutionTransaction({
         walletId,
         contractAddress,
         calldata,
         fee: { type: 'level', config: { feeLevel: 'MEDIUM' } },
-        entitySecretCiphertext: process.env.CIRCLE_ENTITY_SECRET,
-        ...(memo ? { note: memo } : {}),
+        ...(memo ? { refId: memo } : {}),
       })
-      const txId = data.data?.id
+      const txId = response.data?.id
       if (!txId) throw new Error('Transaction submission failed')
       return res.status(200).json({ txId, status: 'PENDING' })
     }
@@ -92,8 +99,8 @@ export default async function handler(req, res) {
     if (action === 'tx-status' && req.method === 'GET') {
       const { txId } = req.query
       if (!txId) return res.status(400).json({ error: 'txId required' })
-      const data = await circleRequest(`/transactions/${txId}`)
-      const tx = data.data?.transaction
+      const response = await client.getTransaction({ id: txId })
+      const tx = response.data?.transaction
       return res.status(200).json({
         state: tx?.state,
         txHash: tx?.txHash,
