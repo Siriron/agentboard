@@ -215,7 +215,7 @@ export default function Layout() {
                   { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' },
                   { label: 'Arc Docs', url: 'https://docs.arc.io' },
                   { label: 'Circle Developers', url: 'https://developers.circle.com' },
-                  { label: 'Arc Testnet Faucet', url: 'https://testnet-faucet.arc.network' },
+                  { label: 'Arc Testnet Faucet', url: 'https://faucet.circle.com' },
                 ],
               },
             ].map(({ title, links, external }) => (
