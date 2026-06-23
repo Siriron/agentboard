@@ -118,6 +118,39 @@ textarea.input { resize: vertical; min-height: 90px; }
 .job-detail-layout { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 20px; align-items: start; }
 @media (max-width: 900px) { .job-detail-layout { grid-template-columns: 1fr !important; } }
 
+/* ── BORDER BEAM (animated gradient border) ──
+   Only paints when the browser actually supports the mask-composite
+   trick used to cut the gradient down to a thin ring. Browsers without
+   support for this property (older/limited mobile WebViews) just get
+   nothing rendered here — NOT a full opaque gradient block — so the
+   real card content underneath is never hidden. */
+.border-beam-fx { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
+@supports ((-webkit-mask-composite: source-in) or (mask-composite: intersect)) {
+  .border-beam-fx {
+    border: calc(var(--bb-border-width) * 1px) solid transparent;
+    background: linear-gradient(transparent, transparent), linear-gradient(to right, var(--bb-color-from), var(--bb-color-to));
+    background-clip: padding-box, border-box;
+    background-origin: padding-box, border-box;
+    -webkit-mask-clip: padding-box, border-box;
+    mask-clip: padding-box, border-box;
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+    -webkit-mask-image: linear-gradient(transparent, transparent), linear-gradient(white, white);
+    mask-image: linear-gradient(transparent, transparent), linear-gradient(white, white);
+  }
+  .border-beam-fx::after {
+    content: '';
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    width: calc(var(--bb-size) * 1px);
+    animation: border-beam calc(var(--bb-duration) * 1s) infinite linear;
+    animation-delay: var(--bb-delay);
+    background: linear-gradient(to left, var(--bb-color-from), var(--bb-color-to), transparent);
+    offset-anchor: calc(var(--bb-anchor) * 1%) 50%;
+    offset-path: rect(0 auto auto 0 round calc(var(--bb-size) * 1px));
+  }
+}
+
 /* ── MOBILE ── */
 @media (max-width: 640px) {
   .hide-mobile { display: none !important; }
