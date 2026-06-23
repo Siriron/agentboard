@@ -135,7 +135,7 @@ export default function Dashboard() {
   )
 
   const completed = agentJobs.filter(j => Number(j.core.status) === 3)
-  const earned = goldskyStats ? Number(goldskyStats.totalEarned) : completed.reduce((s, j) => s + Number(j.core.budget) * 0.99, 0)
+  const earned = goldskyStats ? Number(goldskyStats.totalEarned) : completed.reduce((s, j) => s + Math.floor(Number(j.core.budget) * 0.99), 0)
   const pending = agentJobs.filter(j => [1,2].includes(Number(j.core.status)))
   const spent = clientJobs.filter(j => Number(j.core.status) === 3).reduce((s, j) => s + Number(j.core.budget), 0)
   const successRate = agentJobs.length > 0 ? Math.round((completed.length / agentJobs.length) * 100) : 0
