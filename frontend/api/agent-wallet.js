@@ -32,6 +32,10 @@ export default async function handler(req, res) {
   if (!CIRCLE_ENABLED) {
     return res.status(503).json({
       error: 'Circle Dev-Controlled Wallets not configured',
+      debug: {
+        hasApiKey: !!process.env.CIRCLE_API_KEY,
+        hasEntitySecret: !!process.env.CIRCLE_ENTITY_SECRET,
+      },
       setup: 'Add CIRCLE_API_KEY and CIRCLE_ENTITY_SECRET to Vercel environment variables',
     })
   }
