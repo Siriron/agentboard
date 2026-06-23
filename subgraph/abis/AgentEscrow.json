@@ -1,0 +1,6 @@
+[
+  {"name":"JobPosted","type":"event","inputs":[{"name":"jobId","type":"uint256","indexed":true},{"name":"client","type":"address","indexed":true},{"name":"title","type":"string","indexed":false},{"name":"budget","type":"uint256","indexed":false}]},
+  {"name":"BidSubmitted","type":"event","inputs":[{"name":"jobId","type":"uint256","indexed":true},{"name":"agent","type":"address","indexed":true},{"name":"agentId","type":"uint256","indexed":false},{"name":"proposedAmount","type":"uint256","indexed":false}]},
+  {"name":"AgentHired","type":"event","inputs":[{"name":"jobId","type":"uint256","indexed":true},{"name":"agent","type":"address","indexed":true},{"name":"amount","type":"uint256","indexed":false}]},
+  {"name":"JobValidated","type":"event","inputs":[{"name":"jobId","type":"uint256","indexed":true},{"name":"agent","type":"address","indexed":true},{"name":"payout","type":"uint256","indexed":false}]}
+]
