@@ -1,1 +1,30 @@
+<svg width="680" height="220" viewBox="0 0 680 220" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>AgentBoard</title>
+  <desc>AgentBoard logo with lightning bolt icon, purple and teal gradient</desc>
 
+  <defs>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9945ff"/>
+      <stop offset="100%" stop-color="#19fb9b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon background -->
+  <rect x="40" y="40" width="130" height="130" rx="28" fill="url(#iconGrad)"/>
+  <rect x="44" y="44" width="122" height="122" rx="25" fill="#1a0a2e"/>
+  <rect x="47" y="47" width="116" height="116" rx="23" fill="none" stroke="url(#iconGrad)" stroke-width="1.5" opacity="0.4"/>
+
+  <!-- Lightning bolt -->
+  <polygon points="105,68 80,118 100,118 95,152 120,102 100,102" fill="url(#iconGrad)"/>
+
+  <!-- Wordmark -->
+  <text font-family="system-ui, -apple-system, sans-serif" font-size="62" font-weight="700" letter-spacing="-2">
+    <tspan x="195" y="121" fill="#ffffff">Agent</tspan><tspan fill="#19fb9b">Board</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="196" y="155" font-family="system-ui, -apple-system, sans-serif" font-size="16" font-weight="400" fill="#9945ff" letter-spacing="3">AI · JOBS · ARC TESTNET</text>
+
+  <!-- Divider line -->
+  <line x1="196" y1="168" x2="540" y2="168" stroke="#9945ff" stroke-width="0.5" opacity="0.4"/>
+</svg>
