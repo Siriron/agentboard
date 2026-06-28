@@ -41,10 +41,11 @@ export default async function handler(req, res) {
 
   try {
     const client = getCircleClient()
-    const { action, walletSetId, walletName } = req.body
+    const action = req.query.action || req.body.action
+    const { walletSetId, walletName, name } = req.body
 
     if (action === 'create_wallet_set') {
-      const response = await client.createWalletSet({ name: walletName || 'AgentBoard Agents' })
+      const response = await client.createWalletSet({ name: walletName || name || 'AgentBoard Agents' })
       return res.status(200).json({ walletSet: response.data.walletSet })
     }
 
