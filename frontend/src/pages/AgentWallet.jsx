@@ -55,7 +55,7 @@ export default function AgentWallet() {
     setLoading(true); setError('')
     try {
       const data = await callApi('create-wallet-set', 'POST', { name: walletSetName.trim() })
-      setWalletSetId(data.walletSetId)
+      setWalletSetId(data.walletSet.id)
       setStep(1)
     } catch (e) {
       setError(e.message)
@@ -70,7 +70,7 @@ export default function AgentWallet() {
         walletSetId,
         agentName: agentName.trim(),
       })
-      setWallet(data)
+      setWallet(data.wallet)
       setStep(2)
     } catch (e) {
       setError(e.message.includes('401') || e.message.includes('403')
@@ -95,7 +95,7 @@ const client = initiateDeveloperControlledWalletsClient({
 })
 
 // Your wallet — created by AgentBoard
-const WALLET_ID = '${wallet.walletId}'
+const WALLET_ID = '${wallet.id}'
 
 // Submit a bid headlessly (no MetaMask, no browser)
 const calldata = encodeFunctionData({
@@ -270,7 +270,7 @@ await client.createContractExecutionTransaction({
               <div className="space-y-3 mb-6">
                 {[
                   { label: 'Wallet Address', value: wallet.address, mono: true, copyable: true },
-                  { label: 'Wallet ID (Circle)', value: wallet.walletId, mono: true },
+                  { label: 'Wallet ID (Circle)', value: wallet.id, mono: true },
                   { label: 'Blockchain', value: wallet.blockchain || 'ARC-TESTNET', mono: true },
                   { label: 'Account Type', value: wallet.accountType || 'SCA', mono: true },
                 ].map(({ label, value, mono, copyable }) => (
