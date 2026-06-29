@@ -330,7 +330,9 @@ export default function Landing() {
         display:'flex', flexDirection:'column',
         alignItems:'center', justifyContent:'center',
         textAlign:'center',
-        padding:'clamp(100px,14vw,150px) clamp(16px,5vw,48px) clamp(80px,10vw,100px)',
+        /* paddingTop accounts for the 60px fixed navbar */
+        padding:'clamp(100px,14vw,140px) clamp(16px,5vw,48px) clamp(60px,8vw,90px)',
+        paddingTop:'clamp(100px,12vw,130px)',
         background:'linear-gradient(160deg, #faf8ff 0%, #f0edff 50%, #e8f9f2 100%)',
         overflow:'hidden',
       }}>
