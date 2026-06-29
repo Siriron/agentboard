@@ -12,6 +12,8 @@ export default function Layout() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [jobCount, setJobCount] = useState(null)
 
+  const isLanding = location.pathname === '/'
+
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   useEffect(() => {
@@ -44,6 +46,24 @@ export default function Layout() {
     { to: '/docs', label: 'Docs', icon: <BookOpen size={11}/> },
   ]
 
+  // On landing: transparent navbar always; on other pages: solid when not scrolled
+  const navBg = isLanding
+    ? (scrolled ? 'rgba(250,250,248,0.96)' : 'transparent')
+    : 'rgba(250,250,248,0.98)'
+
+  const navBorder = isLanding
+    ? (scrolled ? '1px solid #e8e6f0' : '1px solid transparent')
+    : '1px solid #e8e6f0'
+
+  const logoTextColor = isLanding
+    ? (scrolled ? '#0d0b1e' : '#0d0b1e')
+    : '#0d0b1e'
+
+  const navLinkColor = (isActive) => {
+    if (isActive) return '#0d0b1e'
+    return '#4a4567'
+  }
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
 
@@ -52,10 +72,10 @@ export default function Layout() {
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 60,
         padding: '0 20px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-        background: scrolled ? 'rgba(250,250,248,0.96)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid #e8e6f0' : '1px solid transparent',
+        background: navBg,
+        backdropFilter: scrolled || !isLanding ? 'blur(20px)' : 'none',
+        WebkitBackdropFilter: scrolled || !isLanding ? 'blur(20px)' : 'none',
+        borderBottom: navBorder,
         transition: 'all 0.3s ease',
       }}>
 
@@ -64,19 +84,19 @@ export default function Layout() {
           <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #9945ff, #7c35dd)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(153,69,255,0.4)' }}>
             <Zap size={14} color="#fff" strokeWidth={2.5} />
           </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, letterSpacing: '-0.03em', color: '#0d0b1e' }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, letterSpacing: '-0.03em', color: logoTextColor }}>
             Agent<span style={{ color: '#b97aff' }}>Board</span>
           </span>
         </button>
 
-        {/* Desktop nav — scrollable if needed */}
+        {/* Desktop nav */}
         <nav className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'center', overflow: 'hidden' }}>
           {navLinks.map(({ to, label, badge, icon }) => (
             <NavLink key={to} to={to} style={({ isActive }) => ({
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '6px 11px', borderRadius: 8, fontSize: 13, fontWeight: 500,
               textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
-              color: isActive ? '#0d0b1e' : '#4a4567',
+              color: navLinkColor(isActive),
               background: isActive ? 'rgba(153,69,255,0.08)' : 'transparent',
             })}>
               {icon}{label}
@@ -95,7 +115,7 @@ export default function Layout() {
                 className="address-pill hide-mobile">
                 <ExternalLink size={9} />{formatAddress(account)}
               </a>
-              <button className="btn btn-secondary btn-sm" onClick={disconnect} style={{ fontSize: 12, padding: '6px 14px' }}>
+              <button className="btn btn-secondary btn-sm" onClick={disconnect} style={{ fontSize: 12, padding: '6px 14px', color: '#0d0b1e', background: 'rgba(0,0,0,0.06)', border: '1px solid #d0cde0' }}>
                 Disconnect
               </button>
             </>
@@ -115,7 +135,7 @@ export default function Layout() {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(o => !o)}
-            style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: '#fff', padding: '4px 6px', lineHeight: 1, borderRadius: 6 }}
+            style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: '#0d0b1e', padding: '4px 6px', lineHeight: 1, borderRadius: 6 }}
             className="mobile-menu-btn"
             aria-label="Toggle menu">
             {mobileOpen ? <X size={20} /> : <Menu size={20} />}
@@ -127,9 +147,9 @@ export default function Layout() {
       {mobileOpen && (
         <div style={{
           position: 'fixed', top: 60, left: 0, right: 0, zIndex: 99,
-          background: 'rgba(10,8,20,0.98)', backdropFilter: 'blur(20px)',
+          background: 'rgba(250,250,248,0.98)', backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          borderBottom: '1px solid #e8e6f0',
           padding: '10px 14px 18px',
           display: 'flex', flexDirection: 'column', gap: 2,
           maxHeight: 'calc(100vh - 60px)', overflowY: 'auto',
@@ -139,19 +159,19 @@ export default function Layout() {
               display: 'flex', alignItems: 'center', gap: 10,
               padding: '12px 14px', borderRadius: 10,
               fontSize: 15, fontWeight: 600, textDecoration: 'none',
-              color: isActive ? '#fff' : 'rgba(255,255,255,0.55)',
-              background: isActive ? 'rgba(153,69,255,0.1)' : 'transparent',
+              color: isActive ? '#0d0b1e' : '#4a4567',
+              background: isActive ? 'rgba(153,69,255,0.08)' : 'transparent',
             })}>
               {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}{label}
             </NavLink>
           ))}
           {account ? (
-            <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid #e8e6f0' }}>
               <a href={`https://testnet.arcscan.app/address/${account}`} target="_blank" rel="noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'rgba(255,255,255,0.35)', fontSize: 12, textDecoration: 'none', fontFamily: 'var(--font-mono)', padding: '8px 14px' }}>
+                style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#8b87a0', fontSize: 12, textDecoration: 'none', fontFamily: 'var(--font-mono)', padding: '8px 14px' }}>
                 <ExternalLink size={12} />{account.slice(0, 12)}…{account.slice(-6)}
               </a>
-              <button onClick={disconnect} style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginTop: 4, textAlign: 'left', fontFamily: 'var(--font-body)' }}>
+              <button onClick={disconnect} style={{ width: '100%', background: 'rgba(0,0,0,0.04)', border: '1px solid #e8e6f0', borderRadius: 10, padding: '10px 14px', color: '#4a4567', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginTop: 4, textAlign: 'left', fontFamily: 'var(--font-body)' }}>
                 Disconnect wallet
               </button>
             </div>
@@ -165,7 +185,9 @@ export default function Layout() {
       )}
 
       {/* ── CONTENT ── */}
-      <main style={{ flex: 1, paddingTop: 60 }}>
+      {/* Landing page: no paddingTop — hero manages its own top padding to account for fixed navbar */}
+      {/* Other pages: paddingTop 60px for the fixed navbar */}
+      <main style={{ flex: 1, paddingTop: isLanding ? 0 : 60 }}>
         <Outlet />
       </main>
 
@@ -253,12 +275,6 @@ export default function Layout() {
           </div>
         </div>
       </footer>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .mobile-menu-btn { display: flex !important; align-items: center; }
-        }
-      `}</style>
     </div>
   )
 }
