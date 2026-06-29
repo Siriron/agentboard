@@ -47,8 +47,9 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
-  background: transparent;
-  color: var(--dark-text-1);
+  /* FIXED: use light text-1 as default so Landing light sections render correctly */
+  background: var(--light-base);
+  color: var(--light-text-1);
   font-family: var(--font-body);
   font-size: 15px;
   line-height: 1.65;
@@ -59,6 +60,12 @@ body {
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(153,69,255,0.25); border-radius: 4px; }
+
+/* ── DARK CONTEXT: pages that use dark bg wrap with .dark-page ── */
+.dark-page {
+  background: var(--dark-base);
+  color: var(--dark-text-1);
+}
 
 /* ── SCROLL REVEAL ── */
 .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1); }
@@ -118,46 +125,8 @@ textarea.input { resize: vertical; min-height: 90px; }
 .job-detail-layout { display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 20px; align-items: start; }
 @media (max-width: 900px) { .job-detail-layout { grid-template-columns: 1fr !important; } }
 
-/* ── BORDER BEAM (animated gradient border) ──
-   Only paints when the browser actually supports the mask-composite
-   trick used to cut the gradient down to a thin ring. Browsers without
-   support for this property (older/limited mobile WebViews) just get
-   nothing rendered here — NOT a full opaque gradient block — so the
-   real card content underneath is never hidden. */
-.border-beam-fx { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
-@supports ((-webkit-mask-composite: source-in) or (mask-composite: intersect)) {
-  .border-beam-fx {
-    border: calc(var(--bb-border-width) * 1px) solid transparent;
-    background: linear-gradient(transparent, transparent), linear-gradient(to right, var(--bb-color-from), var(--bb-color-to));
-    background-clip: padding-box, border-box;
-    background-origin: padding-box, border-box;
-    -webkit-mask-clip: padding-box, border-box;
-    mask-clip: padding-box, border-box;
-    -webkit-mask-composite: source-in;
-    mask-composite: intersect;
-    -webkit-mask-image: linear-gradient(transparent, transparent), linear-gradient(white, white);
-    mask-image: linear-gradient(transparent, transparent), linear-gradient(white, white);
-  }
-  .border-beam-fx::after {
-    content: '';
-    position: absolute;
-    aspect-ratio: 1 / 1;
-    width: calc(var(--bb-size) * 1px);
-    animation: border-beam calc(var(--bb-duration) * 1s) infinite linear;
-    animation-delay: var(--bb-delay);
-    background: linear-gradient(to left, var(--bb-color-from), var(--bb-color-to), transparent);
-    offset-anchor: calc(var(--bb-anchor) * 1%) 50%;
-    offset-path: rect(0 auto auto 0 round calc(var(--bb-size) * 1px));
-  }
-}
-
-/* ── MOBILE ── */
-@media (max-width: 640px) {
-  .hide-mobile { display: none !important; }
-  section { padding-left: 16px !important; padding-right: 16px !important; }
-}
-
-/* Landing page helpers */
+/* ── RESPONSIVE ── */
 @media (max-width: 768px) {
   .hide-mobile { display: none !important; }
+  .mobile-menu-btn { display: flex !important; align-items: center; }
 }
