@@ -45,17 +45,17 @@ export default function Layout() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--dark-base)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
 
       {/* ── NAVBAR ── */}
       <header style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 60,
         padding: '0 20px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-        background: scrolled ? 'rgba(10,8,20,0.95)' : 'transparent',
+        background: scrolled ? 'rgba(250,250,248,0.95)' : 'transparent',
         backdropFilter: scrolled ? 'blur(20px)' : 'none',
         WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.05)' : '1px solid transparent',
+        borderBottom: scrolled ? '1px solid rgba(0,0,0,0.08)' : '1px solid transparent',
         transition: 'all 0.3s ease',
       }}>
 
@@ -64,7 +64,7 @@ export default function Layout() {
           <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #9945ff, #7c35dd)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(153,69,255,0.4)' }}>
             <Zap size={14} color="#fff" strokeWidth={2.5} />
           </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, letterSpacing: '-0.03em', color: '#fff' }}>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, letterSpacing: '-0.03em', color: 'var(--light-text-1)' }}>
             Agent<span style={{ color: '#b97aff' }}>Board</span>
           </span>
         </button>
@@ -76,8 +76,8 @@ export default function Layout() {
               display: 'flex', alignItems: 'center', gap: 4,
               padding: '6px 11px', borderRadius: 8, fontSize: 13, fontWeight: 500,
               textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
-              color: isActive ? '#fff' : 'rgba(255,255,255,0.45)',
-              background: isActive ? 'rgba(255,255,255,0.07)' : 'transparent',
+              color: isActive ? 'var(--light-text-1)' : 'var(--light-text-2)',
+              background: isActive ? 'rgba(153,69,255,0.08)' : 'transparent',
             })}>
               {icon}{label}
               {badge && (
