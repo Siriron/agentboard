@@ -57,7 +57,7 @@ body {
   overflow-x: hidden;
 }
 ::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--dark-base); }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(153,69,255,0.25); border-radius: 4px; }
 
 /* ── SCROLL REVEAL ── */
@@ -155,4 +155,9 @@ textarea.input { resize: vertical; min-height: 90px; }
 @media (max-width: 640px) {
   .hide-mobile { display: none !important; }
   section { padding-left: 16px !important; padding-right: 16px !important; }
+}
+
+/* Landing page helpers */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
 }
