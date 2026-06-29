@@ -55,7 +55,7 @@ export default async function handler(req, res) {
         walletSetId,
         count: 1,
         blockchains: ['ARC-TESTNET'],
-        accountType: 'EOA', // EOA works without Gas Station approval; SCA requires Circle approval
+        accountType: 'EOA', // Smart Contract Account — enables Gas Station
       })
       const wallet = response.data.wallets[0]
       return res.status(200).json({
