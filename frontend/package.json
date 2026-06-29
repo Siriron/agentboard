@@ -10,6 +10,8 @@
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^1.0.0",
     "clsx": "^2.1.1",
+    "lenis": "^1.1.14",
+    "gsap": "^3.12.5",
     "framer-motion": "^11.3.0",
     "lucide-react": "^0.383.0",
     "react": "^18.2.0",
