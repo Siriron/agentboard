@@ -2,7 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 
-export function AnimatedBeam({ className, containerRef, fromRef, toRef, curvature = 0, reverse = false, pathColor = 'rgba(153,69,255,0.2)', pathWidth = 2, pathOpacity = 0.2, gradientStartColor = '#9945ff', gradientStopColor = '#19fb9b', delay = 0, duration = Math.random() * 3 + 4, startXOffset = 0, startYOffset = 0, endXOffset = 0, endYOffset = 0 }) {
+export function AnimatedBeam({ className, containerRef, fromRef, toRef, curvature = 0, reverse = false, pathColor = 'rgba(124,92,252,0.2)', pathWidth = 2, pathOpacity = 0.2, gradientStartColor = '#7C5CFC', gradientStopColor = '#10b981', delay = 0, duration = Math.random() * 3 + 4, startXOffset = 0, startYOffset = 0, endXOffset = 0, endYOffset = 0 }) {
   const id = useId()
   const [pathD, setPathD] = useState('')
   const [svgDimensions, setSvgDimensions] = useState({ width: 0, height: 0 })

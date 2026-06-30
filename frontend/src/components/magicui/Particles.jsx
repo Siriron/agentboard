@@ -6,7 +6,7 @@ function hexToRgb(hex) {
   return r ? { r: parseInt(r[1], 16), g: parseInt(r[2], 16), b: parseInt(r[3], 16) } : { r: 153, g: 69, b: 255 }
 }
 
-export function Particles({ className, quantity = 80, staticity = 50, ease = 50, size = 0.4, color = '#9945ff', vx = 0, vy = 0 }) {
+export function Particles({ className, quantity = 80, staticity = 50, ease = 50, size = 0.4, color = '#7C5CFC', vx = 0, vy = 0 }) {
   const canvasRef = useRef(null)
   const containerRef = useRef(null)
   const circles = useRef([])
