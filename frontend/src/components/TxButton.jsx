@@ -22,7 +22,7 @@ export default function TxButton({ onClick, children, className = 'btn btn-prima
       </button>
       {showTx && txHash && (
         <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
-          style={{display:'inline-flex',alignItems:'center',gap:6,fontFamily:'var(--font-mono)',fontSize:11,color:'var(--green)',textDecoration:'none',padding:'6px 12px',background:'var(--green-dim)',border:'1px solid rgba(25,251,155,0.2)',borderRadius:8}}>
+          style={{display:'inline-flex',alignItems:'center',gap:6,fontFamily:'var(--font-mono)',fontSize:11,color:'var(--green)',textDecoration:'none',padding:'6px 12px',background:'var(--green-dim)',border:'1px solid rgba(16,185,129,0.2)',borderRadius:8}}>
           <CheckCircle size={11}/>Confirmed · {txHash.slice(0,10)}…{txHash.slice(-6)}<ExternalLink size={10}/>
         </a>
       )}

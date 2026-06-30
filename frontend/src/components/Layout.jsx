@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import Lenis from 'lenis'
 import { useWallet } from '../hooks/useWallet'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
 import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot } from 'lucide-react'
@@ -11,13 +12,42 @@ export default function Layout() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [jobCount, setJobCount] = useState(null)
+  const lenisRef = useRef(null)
 
   const isLanding = location.pathname === '/'
 
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
+  // ── Lenis smooth scroll (mounted once at app root) ──
   useEffect(() => {
-    const fn = () => setScrolled(window.scrollY > 20)
+    const lenis = new Lenis({
+      duration: 1.1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.5,
+    })
+    lenisRef.current = lenis
+
+    function raf(time) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+    const rafId = requestAnimationFrame(raf)
+
+    return () => {
+      cancelAnimationFrame(rafId)
+      lenis.destroy()
+    }
+  }, [])
+
+  // Reset scroll position on route change (Lenis-aware)
+  useEffect(() => {
+    lenisRef.current?.scrollTo(0, { immediate: true })
+  }, [location.pathname])
+
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 10)
     window.addEventListener('scroll', fn, { passive: true })
     return () => window.removeEventListener('scroll', fn)
   }, [])
@@ -39,106 +69,118 @@ export default function Layout() {
   const navLinks = [
     { to: '/board', label: 'Board', badge: jobCount > 0 ? jobCount : null },
     { to: '/post', label: 'Post Job' },
-    { to: '/agent-wallet', label: 'Agent Wallet', icon: <Bot size={11}/> },
-    { to: '/leaderboard', label: 'Leaderboard', icon: <Trophy size={11}/> },
+    { to: '/agent-wallet', label: 'Agent Wallet' },
+    { to: '/leaderboard', label: 'Leaderboard' },
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/register', label: 'Register' },
-    { to: '/docs', label: 'Docs', icon: <BookOpen size={11}/> },
+    { to: '/docs', label: 'Docs' },
   ]
 
-  // On landing: transparent navbar always; on other pages: solid when not scrolled
-  const navBg = isLanding
-    ? (scrolled ? 'rgba(250,250,248,0.96)' : 'transparent')
-    : 'rgba(250,250,248,0.98)'
-
-  const navBorder = isLanding
-    ? (scrolled ? '1px solid #e8e6f0' : '1px solid transparent')
-    : '1px solid #e8e6f0'
-
-  const logoTextColor = isLanding
-    ? (scrolled ? '#0d0b1e' : '#0d0b1e')
-    : '#0d0b1e'
-
-  const navLinkColor = (isActive) => {
-    if (isActive) return '#0d0b1e'
-    return '#4a4567'
-  }
-
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── NAVBAR ── */}
       <header style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 60,
-        padding: '0 20px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8,
-        background: navBg,
-        backdropFilter: scrolled || !isLanding ? 'blur(20px)' : 'none',
-        WebkitBackdropFilter: scrolled || !isLanding ? 'blur(20px)' : 'none',
-        borderBottom: navBorder,
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64,
+        padding: '0 24px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        background: scrolled ? 'rgba(248,247,255,0.95)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(20px)' : 'none',
+        WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
+        borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
         transition: 'all 0.3s ease',
       }}>
 
         {/* Logo */}
-        <button onClick={() => navigate('/')} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', background: 'none', border: 'none', flexShrink: 0, padding: 0 }}>
-          <div style={{ width: 30, height: 30, borderRadius: 8, background: 'linear-gradient(135deg, #9945ff, #7c35dd)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 14px rgba(153,69,255,0.4)' }}>
-            <Zap size={14} color="#fff" strokeWidth={2.5} />
+        <button onClick={() => navigate('/')} style={{
+          display: 'flex', alignItems: 'center', gap: 9,
+          cursor: 'pointer', background: 'none', border: 'none', flexShrink: 0, padding: 0,
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 10,
+            background: 'var(--accent-grad)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: 'var(--shadow-glow)',
+          }}>
+            <Zap size={15} color="#fff" strokeWidth={2.5} />
           </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, letterSpacing: '-0.03em', color: logoTextColor }}>
-            Agent<span style={{ color: '#b97aff' }}>Board</span>
+          <span style={{
+            fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16,
+            letterSpacing: '-0.03em', color: 'var(--text-1)',
+          }}>
+            Agent<span style={{ color: 'var(--accent)' }}>Board</span>
           </span>
         </button>
 
         {/* Desktop nav */}
-        <nav className="hide-mobile" style={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, justifyContent: 'center', overflow: 'hidden' }}>
-          {navLinks.map(({ to, label, badge, icon }) => (
+        <nav className="hide-mobile" style={{
+          display: 'flex', alignItems: 'center', gap: 2,
+          flex: 1, justifyContent: 'center',
+        }}>
+          {navLinks.map(({ to, label, badge }) => (
             <NavLink key={to} to={to} style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: 4,
-              padding: '6px 11px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-              textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
-              color: navLinkColor(isActive),
-              background: isActive ? 'rgba(153,69,255,0.08)' : 'transparent',
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 12px', borderRadius: 8,
+              fontSize: 13.5, fontWeight: 500,
+              textDecoration: 'none', whiteSpace: 'nowrap',
+              transition: 'all 0.15s',
+              color: isActive ? 'var(--accent)' : 'var(--text-2)',
+              background: isActive ? 'var(--accent-dim)' : 'transparent',
             })}>
-              {icon}{label}
+              {label}
               {badge && (
-                <span style={{ background: '#9945ff', color: '#fff', fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 8, lineHeight: 1.6 }}>{badge}</span>
+                <span style={{
+                  background: 'var(--accent)', color: '#fff',
+                  fontSize: 9, fontWeight: 700, padding: '1px 5px',
+                  borderRadius: 6, lineHeight: 1.6,
+                }}>{badge}</span>
               )}
             </NavLink>
           ))}
         </nav>
 
-        {/* Right side */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        {/* Right */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {account ? (
             <>
-              <a href={`https://testnet.arcscan.app/address/${account}`} target="_blank" rel="noreferrer"
-                className="address-pill hide-mobile">
+              <a href={`https://testnet.arcscan.app/address/${account}`}
+                target="_blank" rel="noreferrer" className="address-pill hide-mobile">
                 <ExternalLink size={9} />{formatAddress(account)}
               </a>
-              <button className="btn btn-secondary btn-sm" onClick={disconnect} style={{ fontSize: 12, padding: '6px 14px', color: '#0d0b1e', background: 'rgba(0,0,0,0.06)', border: '1px solid #d0cde0' }}>
+              <button className="btn btn-secondary btn-sm" onClick={disconnect}>
                 Disconnect
               </button>
             </>
           ) : (
             <div style={{ position: 'relative' }}>
-              <button className="btn btn-primary btn-sm" onClick={connect} disabled={connecting} style={{ fontSize: 12, padding: '7px 16px' }}>
-                {connecting ? <><span className="spinner" style={{ width: 11, height: 11 }} />Connecting…</> : 'Connect Wallet'}
+              <button className="btn btn-primary btn-sm" onClick={connect} disabled={connecting}>
+                {connecting
+                  ? <><span className="spinner" style={{ width: 11, height: 11 }} />Connecting…</>
+                  : 'Connect Wallet'}
               </button>
               {walletError && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#1a0a2e', border: '1px solid rgba(248,113,113,0.3)', borderRadius: 8, padding: '7px 12px', fontSize: 11, color: '#f87171', whiteSpace: 'nowrap', zIndex: 200, boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
-                  {walletError}
-                </div>
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0,
+                  background: '#fff', border: '1.5px solid var(--border)',
+                  borderRadius: 10, padding: '8px 13px', fontSize: 12,
+                  color: 'var(--red)', whiteSpace: 'nowrap', zIndex: 200,
+                  boxShadow: 'var(--shadow)',
+                }}>{walletError}</div>
               )}
             </div>
           )}
 
-          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(o => !o)}
-            style={{ display: 'none', background: 'none', border: 'none', cursor: 'pointer', color: '#0d0b1e', padding: '4px 6px', lineHeight: 1, borderRadius: 6 }}
+            style={{
+              display: 'none', background: 'var(--bg-subtle)',
+              border: '1.5px solid var(--border)', cursor: 'pointer',
+              color: 'var(--text-1)', padding: '6px', lineHeight: 1,
+              borderRadius: 8,
+            }}
             className="mobile-menu-btn"
             aria-label="Toggle menu">
-            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </header>
@@ -146,130 +188,100 @@ export default function Layout() {
       {/* ── MOBILE NAV ── */}
       {mobileOpen && (
         <div style={{
-          position: 'fixed', top: 60, left: 0, right: 0, zIndex: 99,
-          background: 'rgba(250,250,248,0.98)', backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid #e8e6f0',
-          padding: '10px 14px 18px',
-          display: 'flex', flexDirection: 'column', gap: 2,
-          maxHeight: 'calc(100vh - 60px)', overflowY: 'auto',
+          position: 'fixed', top: 64, left: 0, right: 0, zIndex: 99,
+          background: 'rgba(248,247,255,0.98)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: '1px solid var(--border)',
+          padding: '12px 16px 20px',
+          display: 'flex', flexDirection: 'column', gap: 3,
         }}>
-          {navLinks.map(({ to, label, icon }) => (
+          {navLinks.map(({ to, label }) => (
             <NavLink key={to} to={to} style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '12px 14px', borderRadius: 10,
+              display: 'flex', alignItems: 'center',
+              padding: '11px 14px', borderRadius: 10,
               fontSize: 15, fontWeight: 600, textDecoration: 'none',
-              color: isActive ? '#0d0b1e' : '#4a4567',
-              background: isActive ? 'rgba(153,69,255,0.08)' : 'transparent',
+              color: isActive ? 'var(--accent)' : 'var(--text-2)',
+              background: isActive ? 'var(--accent-dim)' : 'transparent',
             })}>
-              {icon && <span style={{ opacity: 0.7 }}>{icon}</span>}{label}
+              {label}
             </NavLink>
           ))}
-          {account ? (
-            <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid #e8e6f0' }}>
-              <a href={`https://testnet.arcscan.app/address/${account}`} target="_blank" rel="noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#8b87a0', fontSize: 12, textDecoration: 'none', fontFamily: 'var(--font-mono)', padding: '8px 14px' }}>
-                <ExternalLink size={12} />{account.slice(0, 12)}…{account.slice(-6)}
-              </a>
-              <button onClick={disconnect} style={{ width: '100%', background: 'rgba(0,0,0,0.04)', border: '1px solid #e8e6f0', borderRadius: 10, padding: '10px 14px', color: '#4a4567', fontSize: 14, fontWeight: 600, cursor: 'pointer', marginTop: 4, textAlign: 'left', fontFamily: 'var(--font-body)' }}>
-                Disconnect wallet
+          <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+            {account ? (
+              <button onClick={disconnect} style={{
+                width: '100%', background: 'var(--bg-subtle)',
+                border: '1.5px solid var(--border)', borderRadius: 10,
+                padding: '11px 14px', color: 'var(--text-2)',
+                fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                fontFamily: 'var(--font-body)', textAlign: 'left',
+              }}>Disconnect wallet</button>
+            ) : (
+              <button onClick={() => { connect(); setMobileOpen(false) }}
+                className="btn btn-primary" style={{ width: '100%' }}>
+                Connect Wallet
               </button>
-            </div>
-          ) : (
-            <button onClick={() => { connect(); setMobileOpen(false) }}
-              style={{ margin: '8px 0 0', background: 'linear-gradient(135deg, #9945ff, #7c35dd)', border: 'none', borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
-              Connect Wallet
-            </button>
-          )}
+            )}
+          </div>
         </div>
       )}
 
-      {/* ── CONTENT ── */}
-      {/* Landing page: no paddingTop — hero manages its own top padding to account for fixed navbar */}
-      {/* Other pages: paddingTop 60px for the fixed navbar */}
-      <main style={{ flex: 1, paddingTop: isLanding ? 0 : 60 }}>
+      {/* ── MAIN ── */}
+      <main style={{ flex: 1, paddingTop: isLanding ? 0 : 64 }}>
         <Outlet />
       </main>
 
       {/* ── FOOTER ── */}
-      <footer style={{ background: '#070512', borderTop: '1px solid rgba(255,255,255,0.05)', padding: 'clamp(40px,5vw,56px) 24px 28px' }}>
+      <footer style={{
+        background: '#1a1040',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        padding: 'clamp(48px,6vw,72px) 24px 32px',
+      }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px,1fr))', gap: 36, marginBottom: 40 }}>
-
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 40, marginBottom: 48 }}>
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-                <div style={{ width: 26, height: 26, borderRadius: 7, background: 'linear-gradient(135deg, #9945ff, #7c35dd)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Zap size={12} color="#fff" strokeWidth={2.5} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--accent-grad)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Zap size={13} color="#fff" strokeWidth={2.5} />
                 </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 14, color: '#fff', letterSpacing: '-0.02em' }}>AgentBoard</span>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: '#fff' }}>AgentBoard</span>
               </div>
-              <p style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.3)', lineHeight: 1.6, maxWidth: 180 }}>
-                Decentralized agentic commerce on Arc.
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.65, maxWidth: 190 }}>
+                Decentralized AI agent commerce on Arc Testnet.
               </p>
             </div>
-
             {[
-              {
-                title: 'App',
-                links: [
-                  { label: 'Job Board', to: '/board' },
-                  { label: 'Post a Job', to: '/post' },
-                  { label: 'Agent Wallet', to: '/agent-wallet' },
-                  { label: 'Leaderboard', to: '/leaderboard' },
-                  { label: 'Dashboard', to: '/dashboard' },
-                  { label: 'Register', to: '/register' },
-                ],
-              },
-              {
-                title: 'Docs',
-                links: [
-                  { label: 'Overview', to: '/docs#overview' },
-                  { label: 'Quickstart', to: '/docs#quickstart' },
-                  { label: 'Headless Agents', to: '/docs#headless' },
-                  { label: 'Circle Integration', to: '/docs#circle' },
-                  { label: 'Contract Reference', to: '/docs#contract' },
-                ],
-              },
-              {
-                title: 'Resources',
-                external: [
-                  { label: 'GitHub', url: 'https://github.com/Siriron/agentboard' },
-                  { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' },
-                  { label: 'Arc Docs', url: 'https://docs.arc.io' },
-                  { label: 'Circle Developers', url: 'https://developers.circle.com' },
-                  { label: 'Arc Testnet Faucet', url: 'https://faucet.circle.com' },
-                ],
-              },
+              { title: 'App', links: [{ label: 'Job Board', to: '/board' }, { label: 'Post a Job', to: '/post' }, { label: 'Agent Wallet', to: '/agent-wallet' }, { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register', to: '/register' }] },
+              { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Architecture', to: '/docs#architecture' }, { label: 'Contract Reference', to: '/docs#contract' }, { label: 'REST API', to: '/docs#api' }] },
+              { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }, { label: 'Arc Docs', url: 'https://docs.arc.io' }, { label: 'Circle Developers', url: 'https://developers.circle.com' }] },
             ].map(({ title, links, external }) => (
               <div key={title}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', marginBottom: 12 }}>{title}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 14 }}>{title}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                   {(links || []).map(({ label, to }) => (
                     <button key={to} onClick={() => navigate(to)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13, color: 'rgba(255,255,255,0.4)', padding: 0, fontFamily: 'var(--font-body)', transition: 'color 0.15s' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13.5, color: 'rgba(255,255,255,0.45)', padding: 0, fontFamily: 'var(--font-body)', transition: 'color 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
+                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}>
                       {label}
                     </button>
                   ))}
                   {(external || []).map(({ label, url }) => (
                     <a key={url} href={url} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, transition: 'color 0.15s' }}
+                      style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.45)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, transition: 'color 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.4)'}>
-                      <ExternalLink size={10} />{label}
+                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}>
+                      <ExternalLink size={11} />{label}
                     </a>
                   ))}
                 </div>
               </div>
             ))}
           </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>© 2026 AgentBoard · Built on Arc · Powered by Circle</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.25)' }}>© 2026 AgentBoard · Built on Arc · Powered by Circle MPC</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[['Arc Testnet','#19fb9b'],['ERC-8183','#9945ff'],['ERC-8004','#60a5fa']].map(([label, color]) => (
-                <span key={label} style={{ fontSize: 10, fontWeight: 700, color, background: `${color}12`, border: `1px solid ${color}25`, padding: '2px 7px', borderRadius: 4, fontFamily: 'var(--font-mono)' }}>{label}</span>
+              {[['Arc Testnet', '#10b981'], ['ERC-8183', '#7C5CFC'], ['ERC-8004', '#f472b6']].map(([label, color]) => (
+                <span key={label} style={{ fontSize: 10, fontWeight: 700, color, background: `${color}14`, border: `1px solid ${color}28`, padding: '2px 8px', borderRadius: 5, fontFamily: 'var(--font-mono)' }}>{label}</span>
               ))}
             </div>
           </div>
