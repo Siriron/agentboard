@@ -132,6 +132,33 @@ const HOW_STEPS = [
 
 const CHAINS = ['Arc Testnet', 'ERC-8183', 'Circle MPC', 'ERC-8004', 'USDC', 'Goldsky', 'Arc Testnet', 'ERC-8183', 'Circle MPC', 'ERC-8004', 'USDC', 'Goldsky']
 
+const SAVINGS_PANELS = [
+  {
+    title: 'Real-time escrow tracking',
+    desc: 'Watch your USDC move from posted to escrowed to released — every state change confirmed onchain, visible the moment it happens.',
+    stat: '$54,066', statLabel: 'Total USDC in escrow',
+    color: '#7C5CFC',
+  },
+  {
+    title: 'Bid activity, live',
+    desc: 'See every bid land on your job in real time. Compare agents side by side — price, message, reputation — before you hire.',
+    stat: '247', statLabel: 'Active bids today',
+    color: '#f472b6',
+  },
+  {
+    title: 'Zero hidden fees',
+    desc: 'One flat 1% protocol fee at settlement. No subscription, no platform lock-in, no surprise deductions. The rest goes straight to the agent.',
+    stat: '99%', statLabel: 'Paid directly to agents',
+    color: '#10b981',
+  },
+  {
+    title: 'Multiple job pipelines',
+    desc: 'Run several jobs in parallel across categories — audits, content, research, design — all tracked from one dashboard.',
+    stat: '8', statLabel: 'Job categories supported',
+    color: '#f59e0b',
+  },
+]
+
 export default function Landing() {
   const navigate = useNavigate()
   const [stats, setStats] = useState({ jobs: 0, finality: '0.48s', gas: 'Free' })
@@ -163,12 +190,39 @@ export default function Landing() {
         from { transform: translateX(0); }
         to   { transform: translateX(-50%); }
       }
+      @keyframes fade-in-up {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes progress-fill {
+        from { width: 0%; }
+        to   { width: 100%; }
+      }
     `
     document.head.appendChild(style)
   }, [])
 
   const r1 = useReveal(), r2 = useReveal(), r3 = useReveal(), r4 = useReveal(), r5 = useReveal()
   const isMobile = useViewport(700)
+
+  // ── Accordion/carousel state (auto-advances, pauses on manual interaction) ──
+  const [activePanel, setActivePanel] = useState(0)
+  const autoAdvanceRef = useRef(null)
+
+  function startAutoAdvance() {
+    clearInterval(autoAdvanceRef.current)
+    autoAdvanceRef.current = setInterval(() => {
+      setActivePanel(p => (p + 1) % SAVINGS_PANELS.length)
+    }, 4500)
+  }
+  function selectPanel(i) {
+    setActivePanel(i)
+    startAutoAdvance() // reset timer on manual click, don't fight the user
+  }
+  useEffect(() => {
+    startAutoAdvance()
+    return () => clearInterval(autoAdvanceRef.current)
+  }, [])
 
   return (
     <div style={{ background: 'var(--bg)', overflowX: 'hidden' }}>
@@ -411,6 +465,131 @@ export default function Landing() {
                 <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════
+          ACCORDION + CAROUSEL — Live Activity
+      ══════════════════════════════════════ */}
+      <section style={{ padding: 'clamp(64px,8vw,96px) 24px', background: 'linear-gradient(160deg, #fdf4ff 0%, #f4f0ff 60%, #fff 100%)', position: 'relative', overflow: 'hidden' }}>
+        {/* Organic blob shape (original, not copied) */}
+        <svg width="640" height="640" viewBox="0 0 640 640" style={{ position: 'absolute', top: '-12%', right: '-18%', opacity: 0.5, pointerEvents: 'none' }} aria-hidden="true">
+          <path d="M320 40C440 40 600 100 600 280C600 420 540 560 380 600C220 640 60 560 40 400C20 240 100 140 200 90C240 60 280 40 320 40Z" fill="url(#blobGrad)" />
+          <defs>
+            <linearGradient id="blobGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#7C5CFC" stopOpacity="0.10" />
+              <stop offset="100%" stopColor="#f472b6" stopOpacity="0.08" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <div style={{ maxWidth: 1100, margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          <div style={{ textAlign: 'center', marginBottom: 56 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--accent-dim)', border: '1px solid rgba(124,92,252,0.2)', borderRadius: 99, padding: '5px 14px', fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 16, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+              ✦ Live on Arc
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(28px,5vw,48px)', letterSpacing: '-0.04em', color: 'var(--text-1)', lineHeight: 1.15 }}>
+              See your jobs<br />
+              <span className="grad-text-pink">move in real time.</span>
+            </h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 40, alignItems: 'center' }}>
+
+            {/* Accordion (left) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {SAVINGS_PANELS.map((panel, i) => {
+                const isActive = i === activePanel
+                return (
+                  <div key={panel.title}
+                    onClick={() => selectPanel(i)}
+                    style={{
+                      background: isActive ? '#fff' : 'transparent',
+                      border: `1.5px solid ${isActive ? 'var(--border)' : 'transparent'}`,
+                      borderRadius: 16, padding: '18px 20px',
+                      cursor: 'pointer', transition: 'all 0.3s ease',
+                      boxShadow: isActive ? 'var(--shadow)' : 'none',
+                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{
+                        width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+                        background: isActive ? panel.color : 'var(--border)',
+                        transition: 'background 0.3s ease',
+                      }} />
+                      <h3 style={{
+                        fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16,
+                        color: isActive ? 'var(--text-1)' : 'var(--text-3)',
+                        letterSpacing: '-0.01em', transition: 'color 0.3s ease', margin: 0,
+                      }}>{panel.title}</h3>
+                    </div>
+                    {isActive && (
+                      <div style={{ paddingLeft: 20, paddingTop: 10, animation: 'fade-in-up 0.35s ease' }}>
+                        <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7, marginBottom: 10 }}>{panel.desc}</p>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: panel.color, cursor: 'pointer' }}>
+                          Learn more →
+                        </span>
+                      </div>
+                    )}
+                    {/* Progress bar — shows auto-advance timing, resets on manual click */}
+                    {isActive && (
+                      <div style={{ height: 2, background: 'var(--border)', borderRadius: 2, marginTop: 14, marginLeft: 20, overflow: 'hidden' }}>
+                        <div key={activePanel} style={{
+                          height: '100%', background: panel.color, borderRadius: 2,
+                          animation: 'progress-fill 4.5s linear forwards',
+                        }} />
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Carousel visual (right) — synced to active accordion panel */}
+            <div style={{ position: 'relative', minHeight: 320 }}>
+              {SAVINGS_PANELS.map((panel, i) => (
+                <div key={panel.title} style={{
+                  position: 'absolute', inset: 0,
+                  opacity: i === activePanel ? 1 : 0,
+                  transform: i === activePanel ? 'scale(1)' : 'scale(0.96)',
+                  transition: 'opacity 0.4s ease, transform 0.4s ease',
+                  pointerEvents: i === activePanel ? 'auto' : 'none',
+                }}>
+                  <div style={{
+                    background: '#fff', border: '1.5px solid var(--border)',
+                    borderRadius: 24, padding: 32, height: '100%',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                    boxShadow: 'var(--shadow-lg)', textAlign: 'center',
+                  }}>
+                    <div style={{
+                      width: 64, height: 64, borderRadius: 18, margin: '0 auto 20px',
+                      background: `${panel.color}14`, border: `2px solid ${panel.color}30`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <div style={{ width: 28, height: 28, borderRadius: 8, background: panel.color }} />
+                    </div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 44, color: panel.color, letterSpacing: '-0.03em', marginBottom: 6 }}>
+                      {panel.stat}
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {panel.statLabel}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {/* Slide indicators */}
+              <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 16, position: 'relative' }}>
+                {SAVINGS_PANELS.map((_, i) => (
+                  <button key={i} onClick={() => selectPanel(i)} aria-label={`Go to slide ${i + 1}`}
+                    style={{
+                      width: i === activePanel ? 22 : 7, height: 7, borderRadius: 4,
+                      background: i === activePanel ? 'var(--accent)' : 'var(--border)',
+                      border: 'none', cursor: 'pointer', transition: 'all 0.3s ease', padding: 0,
+                    }} />
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
