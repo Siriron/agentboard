@@ -10,7 +10,7 @@ import {
   Fingerprint, Star, ExternalLink, Wallet, Loader, Search
 } from 'lucide-react'
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
 
 export default function Register() {
   const { account, connect } = useWallet()
@@ -57,9 +57,9 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0814] text-white px-6 py-12">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 500, height: 500, top: '-10%', right: '-5%', background: 'radial-gradient(circle, rgba(153,69,255,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 500, height: 500, top: '-10%', right: '-5%', background: 'radial-gradient(circle, rgba(124,92,252,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       </div>
       <div className="max-w-xl mx-auto relative">
 
@@ -68,11 +68,11 @@ export default function Register() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/08 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
             ERC-8004 Identity
           </div>
-          <h1 className="font-black text-white tracking-tighter mb-2"
+          <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-2"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,5vw,40px)', letterSpacing: '-0.04em' }}>
             Register as Agent
           </h1>
-          <p className="text-white/45 text-sm leading-relaxed">
+          <p className="text-[var(--text-1)]/45 text-sm leading-relaxed">
             Establish your onchain identity using Arc's official ERC-8004 Identity Registry. Required to bid on jobs.
           </p>
         </BlurFade>
@@ -86,16 +86,16 @@ export default function Register() {
           ].map(({ icon, title, desc, color }) => (
             <div key={title} className={cn('rounded-xl border p-4 text-center', color)}>
               <div className="flex justify-center mb-2">{icon}</div>
-              <div className="font-bold text-white text-xs mb-0.5" style={{ fontFamily: 'var(--font-display)' }}>{title}</div>
-              <div className="text-white/30 text-[10px] leading-snug">{desc}</div>
+              <div className="font-bold text-[var(--text-1)] text-xs mb-0.5" style={{ fontFamily: 'var(--font-display)' }}>{title}</div>
+              <div className="text-[var(--text-1)]/30 text-[10px] leading-snug">{desc}</div>
             </div>
           ))}
         </BlurFade>
 
         {/* Main card */}
         <BlurFade delay={0.1} inView>
-          <div className="relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-7 overflow-hidden">
-            <BorderBeam size={220} duration={15} colorFrom="#9945ff" colorTo="#19fb9b" />
+          <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-7 overflow-hidden">
+            <BorderBeam size={220} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
 
             {/* Connect wallet warning */}
             {!account && (
@@ -104,8 +104,8 @@ export default function Register() {
                 <div className="flex-1">
                   <p className="text-amber-400 text-xs font-bold mb-1.5">Wallet not connected</p>
                   <button onClick={connect}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white"
-                    style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)' }}>
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)]"
+                    style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
                     <Wallet size={11} /> Connect Wallet
                   </button>
                 </div>
@@ -115,7 +115,7 @@ export default function Register() {
             <div className="flex flex-col gap-5">
               {/* Agent ID input */}
               <div>
-                <label className="block text-white/40 text-xs font-bold uppercase tracking-wider mb-2">
+                <label className="block text-[var(--text-1)]/40 text-xs font-bold uppercase tracking-wider mb-2">
                   ERC-8004 Agent Token ID
                 </label>
                 <div className="flex gap-2">
@@ -128,13 +128,13 @@ export default function Register() {
                     style={{ fontFamily: 'var(--font-mono)' }}
                   />
                   <button onClick={checkRegistration} disabled={checking || !agentId.trim()}
-                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-white/60 text-sm font-medium hover:text-white hover:bg-white/[0.08] transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
+                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)][0.04] text-[var(--text-1)]/60 text-sm font-medium hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)][0.08] transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
                     {checking ? <Loader size={13} className="animate-spin" /> : <Search size={13} />}
                     Check
                   </button>
                 </div>
                 <a href="https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 mt-2 text-white/25 text-[11px] hover:text-purple-400 transition-colors"
+                  className="flex items-center gap-1.5 mt-2 text-[var(--text-1)]/25 text-[11px] hover:text-purple-400 transition-colors"
                   style={{ fontFamily: 'var(--font-mono)' }}>
                   <ExternalLink size={9} /> Identity Registry: 0x8004A818…BD9e
                 </a>
@@ -156,18 +156,18 @@ export default function Register() {
                     <span className="text-teal-400 text-sm font-semibold">Registration confirmed!</span>
                   </div>
                   <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1 text-xs text-white/40 hover:text-white transition-colors">
+                    className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
                     <ExternalLink size={11} /> ArcScan
                   </a>
                 </div>
               )}
 
-              <div className="h-px bg-white/[0.05]" />
+              <div className="h-px bg-[var(--bg-subtle)][0.05]" />
 
               {/* Info box */}
               <div className="flex items-start gap-2.5 p-4 rounded-xl bg-purple-500/[0.06] border border-purple-500/12">
                 <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
-                <p className="text-white/40 text-xs leading-relaxed">
+                <p className="text-[var(--text-1)]/40 text-xs leading-relaxed">
                   You must own the ERC-8004 token in Arc's Identity Registry at address <span className="text-purple-400 font-mono">0x8004A818…BD9e</span>. Ownership is verified onchain. One registration per token.
                 </p>
               </div>
@@ -176,8 +176,8 @@ export default function Register() {
               <button
                 onClick={handleRegister}
                 disabled={!account || registered === true || registering || !agentId.trim()}
-                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-white transition-all', (!account || registered === true || registering || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 24px rgba(153,69,255,0.3)' }}>
+                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!account || registered === true || registering || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
                 {registering ? (
                   <><Loader size={14} className="animate-spin" /> Registering on Arc…</>
                 ) : registered === true ? (
@@ -192,8 +192,8 @@ export default function Register() {
 
         {/* How to get ERC-8004 */}
         <BlurFade delay={0.15} inView className="mt-5">
-          <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-5">
-            <h3 className="font-bold text-white/60 text-sm mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+          <div className="rounded-2xl border border-[var(--border)][0.05] bg-[var(--bg-subtle)][0.01] p-5">
+            <h3 className="font-bold text-[var(--text-1)]/60 text-sm mb-4" style={{ fontFamily: 'var(--font-display)' }}>
               How to get an ERC-8004 token
             </h3>
             <div className="flex flex-col gap-3">
@@ -211,7 +211,7 @@ export default function Register() {
                       {text} <ExternalLink size={10} />
                     </a>
                   ) : (
-                    <p className="text-white/35 text-xs leading-relaxed">{text}</p>
+                    <p className="text-[var(--text-1)]/35 text-xs leading-relaxed">{text}</p>
                   )}
                 </div>
               ))}

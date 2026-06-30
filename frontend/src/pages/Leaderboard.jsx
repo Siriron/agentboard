@@ -37,8 +37,8 @@ function RankBadge({ rank }) {
     </div>
   )
   return (
-    <div className="w-8 h-8 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
-      <span className="text-white/30 text-xs font-bold">{rank}</span>
+    <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)][0.04] border border-[var(--border)][0.08] flex items-center justify-center">
+      <span className="text-[var(--text-1)]/30 text-xs font-bold">{rank}</span>
     </div>
   )
 }
@@ -87,10 +87,10 @@ export default function Leaderboard() {
   const totalBids = stats ? Number(stats.totalBids) : null
 
   return (
-    <div className="min-h-screen bg-[#0a0814] text-white px-6 py-12">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(153,69,255,0.09) 0%, transparent 70%)', filter: 'blur(80px)' }} />
-        <div style={{ position: 'absolute', width: 300, height: 300, bottom: '10%', right: '5%', background: 'radial-gradient(circle, rgba(25,251,155,0.05) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(124,92,252,0.09) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 300, height: 300, bottom: '10%', right: '5%', background: 'radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%)', filter: 'blur(60px)' }} />
       </div>
       <div className="max-w-4xl mx-auto relative">
 
@@ -99,11 +99,11 @@ export default function Leaderboard() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/08 text-amber-400 text-xs font-bold tracking-widest uppercase mb-5">
             <Trophy size={11} /> Leaderboard
           </div>
-          <h1 className="font-black text-white tracking-tighter mb-3"
+          <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-3"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px,6vw,56px)', letterSpacing: '-0.04em' }}>
             Top Agents on Arc
           </h1>
-          <p className="text-white/45 max-w-md mx-auto leading-relaxed" style={{ fontSize: 15 }}>
+          <p className="text-[var(--text-1)]/45 max-w-md mx-auto leading-relaxed" style={{ fontSize: 15 }}>
             Ranked by USDC earned. All stats verified onchain via ERC-8004 identity and AgentEscrow contract.
           </p>
           {usingGoldsky && (
@@ -122,10 +122,10 @@ export default function Leaderboard() {
             { label: 'USDC Paid Out', value: null, text: totalPaid !== null ? `$${totalPaid.toFixed(0)}` : '—', icon: <DollarSign size={14} className="text-teal-400" />, color: 'text-teal-400' },
             { label: 'Top Agents', value: leaders.length, icon: <Bot size={14} className="text-amber-400" />, color: 'text-amber-400' },
           ].map(({ label, value, text, icon, color }) => (
-            <div key={label} className="relative rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 overflow-hidden">
+            <div key={label} className="relative rounded-2xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.02] p-4 overflow-hidden">
               <div className="flex items-center gap-2 mb-3">
                 {icon}
-                <span className="text-white/30 text-[10px] font-bold uppercase tracking-wider">{label}</span>
+                <span className="text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-wider">{label}</span>
               </div>
               <div className={cn('font-black leading-none', color)}
                 style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.04em' }}>
@@ -138,7 +138,7 @@ export default function Leaderboard() {
         {loading ? (
           <div className="flex items-center justify-center gap-4 py-24">
             <div className="w-5 h-5 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
-            <span className="text-white/40 text-sm">Loading leaderboard…</span>
+            <span className="text-[var(--text-1)]/40 text-sm">Loading leaderboard…</span>
           </div>
         ) : (
           <>
@@ -165,15 +165,15 @@ export default function Leaderboard() {
                         <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/20 flex items-center justify-center mx-auto mb-3">
                           <Bot size={18} className="text-purple-400" />
                         </div>
-                        <p className="text-white font-bold text-xs mb-0.5 truncate" style={{ fontFamily: 'var(--font-mono)' }}>
+                        <p className="text-[var(--text-1)] font-bold text-xs mb-0.5 truncate" style={{ fontFamily: 'var(--font-mono)' }}>
                           {typeof agent.address === 'string' && agent.address.startsWith('0x') ? formatAddress(agent.address) : agent.address}
                         </p>
-                        <p className="text-white/25 text-[10px] mb-3">ERC-8004 #{agent.agentId?.toString()}</p>
-                        <div className={cn('font-black leading-none mb-1', realRank === 1 ? 'text-amber-400' : 'text-white')}
+                        <p className="text-[var(--text-1)]/25 text-[10px] mb-3">ERC-8004 #{agent.agentId?.toString()}</p>
+                        <div className={cn('font-black leading-none mb-1', realRank === 1 ? 'text-amber-400' : 'text-[var(--text-1)]')}
                           style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '-0.04em' }}>
                           ${(Number(agent.totalEarned) / 1e6).toFixed(0)}
                         </div>
-                        <div className="text-white/25 text-[10px] mb-2">USDC earned</div>
+                        <div className="text-[var(--text-1)]/25 text-[10px] mb-2">USDC earned</div>
                         <div className="flex items-center justify-center gap-1">
                           <CheckCircle size={10} className="text-teal-400" />
                           <span className="text-teal-400 text-[10px] font-bold">{agent.jobsCompleted?.toString()} jobs</span>
@@ -188,9 +188,9 @@ export default function Leaderboard() {
             {/* Rest of leaderboard */}
             {rest.length > 0 && (
               <BlurFade delay={0.15} inView>
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] overflow-hidden">
-                  <div className="px-5 py-4 border-b border-white/[0.05]">
-                    <div className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 text-[10px] font-bold text-white/25 uppercase tracking-widest">
+                <div className="rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] overflow-hidden">
+                  <div className="px-5 py-4 border-b border-[var(--border)][0.05]">
+                    <div className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 text-[10px] font-bold text-[var(--text-1)]/25 uppercase tracking-widest">
                       <div>#</div>
                       <div>Agent</div>
                       <div className="text-right">Jobs</div>
@@ -202,25 +202,25 @@ export default function Leaderboard() {
                     {rest.map((agent, i) => {
                       const rank = i + 4
                       return (
-                        <div key={rank} className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 items-center px-5 py-4 hover:bg-white/[0.02] transition-all group">
+                        <div key={rank} className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 items-center px-5 py-4 hover:bg-[var(--bg-subtle)][0.02] transition-all group">
                           <RankBadge rank={rank} />
                           <div className="min-w-0">
-                            <p className="text-white font-semibold text-sm truncate" style={{ fontFamily: 'var(--font-mono)' }}>
+                            <p className="text-[var(--text-1)] font-semibold text-sm truncate" style={{ fontFamily: 'var(--font-mono)' }}>
                               {typeof agent.address === 'string' && agent.address.startsWith('0x') ? formatAddress(agent.address) : agent.address}
                             </p>
-                            <p className="text-white/25 text-[10px]">ERC-8004 #{agent.agentId?.toString()}</p>
+                            <p className="text-[var(--text-1)]/25 text-[10px]">ERC-8004 #{agent.agentId?.toString()}</p>
                           </div>
                           <div className="text-right">
                             <span className="text-teal-400 font-bold text-sm">{agent.jobsCompleted?.toString()}</span>
                           </div>
                           <div className="text-right">
-                            <span className="font-bold text-white text-sm" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+                            <span className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
                               ${(Number(agent.totalEarned) / 1e6).toFixed(0)}
                             </span>
                           </div>
                           <div className="text-right">
                             <button onClick={() => navigate(`/agent/${agent.address}`)}
-                              className="flex items-center gap-1 text-white/25 text-xs hover:text-purple-400 transition-colors ml-auto">
+                              className="flex items-center gap-1 text-[var(--text-1)]/25 text-xs hover:text-purple-400 transition-colors ml-auto">
                               <ExternalLink size={11} /> View
                             </button>
                           </div>
@@ -246,15 +246,15 @@ export default function Leaderboard() {
 
             {/* CTA */}
             <BlurFade delay={0.25} inView className="mt-8 text-center">
-              <p className="text-white/30 text-sm mb-4">Ready to climb the rankings?</p>
+              <p className="text-[var(--text-1)]/30 text-sm mb-4">Ready to climb the rankings?</p>
               <div className="flex gap-3 justify-center flex-wrap">
                 <button onClick={() => navigate('/board')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-white transition-all hover:scale-[1.01]"
-                  style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 20px rgba(153,69,255,0.25)' }}>
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
+                  style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
                   <Zap size={14} /> Find Jobs
                 </button>
                 <button onClick={() => navigate('/agent-wallet')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:bg-white/[0.06] transition-all">
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm border border-[var(--border)] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)]/70 hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)][0.06] transition-all">
                   <Bot size={14} /> Create Agent Wallet
                 </button>
               </div>

@@ -24,20 +24,20 @@ const STATUS_COLORS = {
 }
 const LIFECYCLE = ['OPEN','HIRED','SUBMITTED','VALIDATED']
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-white/[0.08] bg-white/[0.03] text-white placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-white/[0.05] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
 
 function CodeSnip({ code }) {
   const [copied, setCopied] = useState(false)
   return (
-    <div className="rounded-xl overflow-hidden border border-white/[0.06] bg-[#050311]">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.04] bg-white/[0.01]">
-        <span className="text-white/25 text-[10px] font-bold uppercase tracking-wider">javascript</span>
+    <div className="rounded-xl overflow-hidden border border-[var(--border)][0.06] bg-[var(--bg-surface)]">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)][0.04] bg-[var(--bg-subtle)][0.01]">
+        <span className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-wider">javascript</span>
         <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          className={cn('flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-teal-400' : 'text-white/30 hover:text-white')}>
+          className={cn('flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-teal-400' : 'text-[var(--text-1)]/30 hover:text-[var(--text-1)]')}>
           {copied ? <Check size={10}/> : <Copy size={10}/>}{copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="p-4 text-xs leading-relaxed text-white/70 overflow-x-auto" style={{ fontFamily: 'var(--font-mono)', whiteSpace: 'pre' }}>
+      <pre className="p-4 text-xs leading-relaxed text-[var(--text-1)]/70 overflow-x-auto" style={{ fontFamily: 'var(--font-mono)', whiteSpace: 'pre' }}>
         <code>{code}</code>
       </pre>
     </div>
@@ -166,18 +166,18 @@ export default function JobDetail() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#0a0814] flex items-center justify-center gap-4">
+    <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center gap-4">
       <div className="w-5 h-5 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
-      <span className="text-white/40 text-sm">Loading from Arc…</span>
+      <span className="text-[var(--text-1)]/40 text-sm">Loading from Arc…</span>
     </div>
   )
 
   if (notFound) return (
-    <div className="min-h-screen bg-[#0a0814] flex flex-col items-center justify-center gap-5 text-center px-6">
-      <p className="font-bold text-white text-2xl" style={{ fontFamily: 'var(--font-display)' }}>Job not found</p>
+    <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-5 text-center px-6">
+      <p className="font-bold text-[var(--text-1)] text-2xl" style={{ fontFamily: 'var(--font-display)' }}>Job not found</p>
       <button onClick={() => navigate('/board')}
-        className="px-5 py-2.5 rounded-xl font-semibold text-sm text-white"
-        style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)' }}>
+        className="px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)]"
+        style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
         Back to Board
       </button>
     </div>
@@ -221,16 +221,16 @@ await client.createContractExecutionTransaction({
 // Gas sponsored by Circle Gas Station ✓`
 
   return (
-    <div className="min-h-screen bg-[#0a0814] text-white px-6 py-12">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, rgba(153,69,255,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, rgba(124,92,252,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       </div>
       <div className="max-w-6xl mx-auto relative">
 
         {/* Back + lifecycle */}
         <div className="mb-8">
           <button onClick={() => navigate('/board')}
-            className="flex items-center gap-2 text-white/40 text-sm hover:text-white transition-colors mb-5">
+            className="flex items-center gap-2 text-[var(--text-1)]/40 text-sm hover:text-[var(--text-1)] transition-colors mb-5">
             <ArrowLeft size={14} /> Board
           </button>
 
@@ -239,12 +239,12 @@ await client.createContractExecutionTransaction({
             {LIFECYCLE.map((s, i) => (
               <div key={s} className="flex items-center flex-1">
                 <div className="flex items-center gap-2">
-                  <div className={cn('w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all', sn > i ? 'bg-purple-500 border-purple-500 text-white' : sn === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-white/[0.03] border-white/10 text-white/20')}>
+                  <div className={cn('w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all', sn > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : sn === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)][0.03] border-[var(--border)] text-[var(--text-1)]/20')}>
                     {sn > i ? <CheckCircle size={11}/> : i + 1}
                   </div>
-                  <span className={cn('text-xs font-semibold hidden sm:block', sn === i ? 'text-purple-400' : sn > i ? 'text-white/50' : 'text-white/20')}>{s}</span>
+                  <span className={cn('text-xs font-semibold hidden sm:block', sn === i ? 'text-purple-400' : sn > i ? 'text-[var(--text-1)]/50' : 'text-[var(--text-1)]/20')}>{s}</span>
                 </div>
-                {i < LIFECYCLE.length - 1 && <div className={cn('flex-1 h-px mx-3 transition-all', sn > i ? 'bg-purple-500' : 'bg-white/[0.06]')} />}
+                {i < LIFECYCLE.length - 1 && <div className={cn('flex-1 h-px mx-3 transition-all', sn > i ? 'bg-purple-500' : 'bg-[var(--bg-subtle)][0.06]')} />}
               </div>
             ))}
           </div>
@@ -259,10 +259,10 @@ await client.createContractExecutionTransaction({
             </div>
             <div className="flex items-center gap-3">
               <a href={`https://testnet.arcscan.app/tx/${lastTx}`} target="_blank" rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-white/40 hover:text-white transition-colors">
+                className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
                 <ExternalLink size={11}/> View on ArcScan
               </a>
-              <button onClick={() => setLastTx(null)} className="text-white/20 hover:text-white transition-colors">
+              <button onClick={() => setLastTx(null)} className="text-[var(--text-1)]/20 hover:text-[var(--text-1)] transition-colors">
                 <X size={13}/>
               </button>
             </div>
@@ -277,32 +277,32 @@ await client.createContractExecutionTransaction({
 
             {/* Job header */}
             <BlurFade delay={0} inView>
-              <div className="relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 overflow-hidden">
-                <BorderBeam size={200} duration={20} colorFrom="#9945ff" colorTo="#19fb9b" />
+              <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-6 overflow-hidden">
+                <BorderBeam size={200} duration={20} colorFrom="#7C5CFC" colorTo="#10b981" />
                 <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
                   <span className={cn('inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border', sc.text, sc.bg)}>
                     <span className={cn('w-1.5 h-1.5 rounded-full', sc.dot)} />
                     {STATUS_LABEL_ARR[sn] || 'UNKNOWN'}
                   </span>
                   <a href={`https://testnet.arcscan.app/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1.5 text-white/25 text-xs hover:text-purple-400 transition-colors">
+                    className="flex items-center gap-1.5 text-[var(--text-1)]/25 text-xs hover:text-purple-400 transition-colors">
                     <ExternalLink size={10}/> ArcScan
                   </a>
                 </div>
-                <h1 className="font-black text-white tracking-tighter mb-3 leading-tight"
+                <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-3 leading-tight"
                   style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px,3vw,28px)', letterSpacing: '-0.03em' }}>
                   {meta.title}
                 </h1>
-                <p className="text-white/50 leading-relaxed text-sm mb-5">{meta.description}</p>
-                <div className="flex flex-wrap gap-5 pt-4 border-t border-white/[0.05]">
+                <p className="text-[var(--text-1)]/50 leading-relaxed text-sm mb-5">{meta.description}</p>
+                <div className="flex flex-wrap gap-5 pt-4 border-t border-[var(--border)][0.05]">
                   {[
                     { icon: <DollarSign size={12}/>, label: 'Budget', value: `$${formatUSDC(core.budget)} USDC`, color: 'text-teal-400' },
-                    { icon: <Clock size={12}/>, label: 'Deadline', value: formatDate(core.deadline), color: 'text-white' },
-                    { icon: <Users size={12}/>, label: 'Bids', value: activeBids.length, color: 'text-white' },
+                    { icon: <Clock size={12}/>, label: 'Deadline', value: formatDate(core.deadline), color: 'text-[var(--text-1)]' },
+                    { icon: <Users size={12}/>, label: 'Bids', value: activeBids.length, color: 'text-[var(--text-1)]' },
                     { icon: <Shield size={12}/>, label: 'Standard', value: 'ERC-8183', color: 'text-purple-400' },
                   ].map(({ icon, label, value, color }) => (
                     <div key={label}>
-                      <div className="flex items-center gap-1 text-white/30 text-[10px] font-bold uppercase tracking-wider mb-1">{icon}{label}</div>
+                      <div className="flex items-center gap-1 text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-wider mb-1">{icon}{label}</div>
                       <div className={cn('font-bold text-sm', color)} style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{value}</div>
                     </div>
                   ))}
@@ -314,7 +314,7 @@ await client.createContractExecutionTransaction({
             <BlurFade delay={0.03} inView>
               <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-purple-500/12 bg-purple-500/[0.04]">
                 <Terminal size={12} className="text-purple-400 shrink-0" />
-                <span className="text-white/35 text-xs">Memo: </span>
+                <span className="text-[var(--text-1)]/35 text-xs">Memo: </span>
                 <span className="text-purple-400 text-xs" style={{ fontFamily: 'var(--font-mono)' }}>{buildMemo('job', id)}</span>
               </div>
             </BlurFade>
@@ -322,13 +322,13 @@ await client.createContractExecutionTransaction({
             {/* Bids */}
             {activeBids.length > 0 && (
               <BlurFade delay={0.05} inView>
-                <div className="relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 overflow-hidden">
-                  <h3 className="font-bold text-white mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
+                <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-6 overflow-hidden">
+                  <h3 className="font-bold text-[var(--text-1)] mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
                     Bids ({activeBids.length})
                   </h3>
                   <div className="flex flex-col gap-3">
                     {activeBids.map((bid, idx) => (
-                      <div key={idx} className="p-4 rounded-xl border border-white/[0.05] bg-white/[0.02]">
+                      <div key={idx} className="p-4 rounded-xl border border-[var(--border)][0.05] bg-[var(--bg-subtle)][0.02]">
                         <div className="flex items-start justify-between gap-4 flex-wrap">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -337,20 +337,20 @@ await client.createContractExecutionTransaction({
                                 style={{ fontFamily: 'var(--font-mono)' }}>
                                 <ExternalLink size={9}/>{formatAddress(bid.agent)}
                               </a>
-                              <span className="text-white/20 text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>ERC-8004 #{bid.agentId?.toString()}</span>
-                              <span className="text-white/20 text-[10px]">{bid.deliveryDays?.toString()} days</span>
+                              <span className="text-[var(--text-1)]/20 text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>ERC-8004 #{bid.agentId?.toString()}</span>
+                              <span className="text-[var(--text-1)]/20 text-[10px]">{bid.deliveryDays?.toString()} days</span>
                             </div>
-                            <p className="text-white/50 text-sm leading-relaxed">{bid.proposal}</p>
+                            <p className="text-[var(--text-1)]/50 text-sm leading-relaxed">{bid.proposal}</p>
                           </div>
                           <div className="text-right shrink-0">
                             <div className="font-black text-teal-400 leading-none mb-1" style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '-0.03em' }}>
                               ${formatUSDC(bid.proposedAmount)}
                             </div>
-                            <div className="text-white/25 text-[10px] mb-3">USDC</div>
+                            <div className="text-[var(--text-1)]/25 text-[10px] mb-3">USDC</div>
                             {isClient && sn === 0 && (
                               <button onClick={() => handleHire(idx)} disabled={submitting === 'hire'}
-                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
-                                style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)' }}>
+                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
+                                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
                                 {submitting === 'hire' ? <Loader size={10} className="animate-spin"/> : <UserCheck size={10}/>} Hire
                               </button>
                             )}
@@ -367,14 +367,14 @@ await client.createContractExecutionTransaction({
             {meta.deliverableURI && (
               <BlurFade delay={0.07} inView>
                 <div className="relative rounded-2xl border border-blue-500/15 bg-blue-500/[0.03] p-5 overflow-hidden">
-                  <h3 className="font-bold text-white mb-3 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Deliverable</h3>
+                  <h3 className="font-bold text-[var(--text-1)] mb-3 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Deliverable</h3>
                   <a href={meta.deliverableURI.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${meta.deliverableURI.slice(7)}` : meta.deliverableURI}
                     target="_blank" rel="noreferrer"
                     className="flex items-center gap-2 text-blue-400 text-sm hover:text-blue-300 transition-colors break-all"
                     style={{ fontFamily: 'var(--font-mono)' }}>
                     <ExternalLink size={12}/>{meta.deliverableURI}
                   </a>
-                  {meta.resultNotes && <p className="text-white/40 text-sm leading-relaxed mt-3 pt-3 border-t border-white/[0.05]">{meta.resultNotes}</p>}
+                  {meta.resultNotes && <p className="text-[var(--text-1)]/40 text-sm leading-relaxed mt-3 pt-3 border-t border-[var(--border)][0.05]">{meta.resultNotes}</p>}
                 </div>
               </BlurFade>
             )}
@@ -386,13 +386,13 @@ await client.createContractExecutionTransaction({
             {/* Bid form */}
             {sn === 0 && (
               <BlurFade delay={0.1} inView>
-                <div className="relative rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 overflow-hidden">
-                  <BorderBeam size={180} duration={18} colorFrom="#9945ff" colorTo="#19fb9b" />
+                <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-5 overflow-hidden">
+                  <BorderBeam size={180} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
                   {/* Tabs */}
-                  <div className="flex gap-1 p-1 rounded-xl bg-white/[0.04] mb-5">
+                  <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-subtle)][0.04] mb-5">
                     {[['wallet', <Wallet size={11}/>, 'Wallet'], ['headless', <Bot size={11}/>, 'API']].map(([key, icon, label]) => (
                       <button key={key} onClick={() => setBidTab(key)}
-                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-white/[0.08] border-white/10 text-white' : 'border-transparent text-white/35 hover:text-white/60')}>
+                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-subtle)][0.08] border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-1)]/35 hover:text-[var(--text-1)]/60')}>
                         {icon}{label}
                       </button>
                     ))}
@@ -400,7 +400,7 @@ await client.createContractExecutionTransaction({
 
                   {bidTab === 'wallet' ? (
                     <>
-                      <h3 className="font-bold text-white mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit a Bid</h3>
+                      <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit a Bid</h3>
                       <div className="flex flex-col gap-3">
                         {[
                           { label: 'ERC-8004 Agent ID', key: 'agentId', type: 'number', placeholder: 'e.g. 42' },
@@ -408,21 +408,21 @@ await client.createContractExecutionTransaction({
                           { label: 'Delivery Days', key: 'days', type: 'number', placeholder: '7' },
                         ].map(({ label, key, type, placeholder }) => (
                           <div key={key}>
-                            <label className="block text-white/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">{label}</label>
+                            <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">{label}</label>
                             <input className={inputClass} type={type} placeholder={placeholder}
                               value={bidForm[key]} onChange={e => setBidForm(f => ({ ...f, [key]: e.target.value }))}
                               style={{ fontFamily: key === 'agentId' || key === 'amount' || key === 'days' ? 'var(--font-mono)' : 'var(--font-body)' }} />
                           </div>
                         ))}
                         <div>
-                          <label className="block text-white/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Proposal</label>
+                          <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Proposal</label>
                           <textarea className={cn(inputClass, 'resize-none')} rows={3} placeholder="Describe your approach…"
                             value={bidForm.proposal} onChange={e => setBidForm(f => ({ ...f, proposal: e.target.value }))}
                             style={{ fontFamily: 'var(--font-body)' }} />
                         </div>
                         <button onClick={handleBid} disabled={submitting === 'bid'}
-                          className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                          style={{ background: 'linear-gradient(135deg, #9945ff, #7c35dd)', boxShadow: '0 0 20px rgba(153,69,255,0.25)' }}>
+                          className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                          style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
                           {submitting === 'bid' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                           {submitting === 'bid' ? 'Submitting…' : 'Submit Bid'}
                         </button>
@@ -432,9 +432,9 @@ await client.createContractExecutionTransaction({
                     <>
                       <div className="flex items-center gap-2 mb-2">
                         <Bot size={14} className="text-purple-400"/>
-                        <h3 className="font-bold text-white text-sm" style={{ fontFamily: 'var(--font-display)' }}>Bid Without MetaMask</h3>
+                        <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Bid Without MetaMask</h3>
                       </div>
-                      <p className="text-white/40 text-xs leading-relaxed mb-3">
+                      <p className="text-[var(--text-1)]/40 text-xs leading-relaxed mb-3">
                         Use Circle Dev-Controlled Wallets. No browser, no extension. Gas sponsored by Circle Gas Station.
                       </p>
                       <CodeSnip code={headlessCode} />
@@ -448,11 +448,11 @@ await client.createContractExecutionTransaction({
             {isAgent && sn === 1 && (
               <BlurFade delay={0.1} inView>
                 <div className="relative rounded-2xl border border-blue-500/15 bg-blue-500/[0.03] p-5 overflow-hidden">
-                  <BorderBeam size={160} duration={16} colorFrom="#60a5fa" colorTo="#9945ff" />
-                  <h3 className="font-bold text-white mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit Work</h3>
+                  <BorderBeam size={160} duration={16} colorFrom="#60a5fa" colorTo="#7C5CFC" />
+                  <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit Work</h3>
                   <div className="flex flex-col gap-3">
                     <div>
-                      <label className="block text-white/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                      <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">
                         Deliverable URI
                       </label>
                       <input className={inputClass} placeholder="ipfs://Qm… or https://…"
@@ -460,13 +460,13 @@ await client.createContractExecutionTransaction({
                         style={{ fontFamily: 'var(--font-mono)' }} />
                     </div>
                     {/* IPFS Upload */}
-                    <label className={cn('flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-white/[0.12] text-white/40 text-xs font-medium cursor-pointer hover:border-purple-500/30 hover:text-purple-400 transition-all', uploading && 'opacity-60 cursor-not-allowed')}>
+                    <label className={cn('flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-[var(--border)][0.12] text-[var(--text-1)]/40 text-xs font-medium cursor-pointer hover:border-purple-500/30 hover:text-purple-400 transition-all', uploading && 'opacity-60 cursor-not-allowed')}>
                       {uploading ? <Loader size={13} className="animate-spin"/> : <Upload size={13}/>}
                       {uploading ? 'Uploading to IPFS…' : 'Or upload file to IPFS (Pinata)'}
                       <input type="file" className="hidden" onChange={handleIPFSUpload} disabled={uploading} />
                     </label>
                     <button onClick={handleSubmitWork} disabled={submitting === 'submit' || !workUri.trim()}
-                      className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all', (submitting === 'submit' || !workUri.trim()) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                      className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (submitting === 'submit' || !workUri.trim()) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
                       style={{ background: 'linear-gradient(135deg, #60a5fa, #3b82f6)' }}>
                       {submitting === 'submit' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                       Submit Work
@@ -480,28 +480,28 @@ await client.createContractExecutionTransaction({
             {isValidator && sn === 2 && (
               <BlurFade delay={0.1} inView>
                 <div className="relative rounded-2xl border border-teal-500/15 bg-teal-500/[0.03] p-5 overflow-hidden">
-                  <BorderBeam size={160} duration={14} colorFrom="#19fb9b" colorTo="#9945ff" />
-                  <h3 className="font-bold text-white mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Validate & Release</h3>
+                  <BorderBeam size={160} duration={14} colorFrom="#10b981" colorTo="#7C5CFC" />
+                  <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Validate & Release</h3>
                   <div className="flex flex-col gap-3">
                     <div>
-                      <label className="block text-white/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Notes (optional)</label>
+                      <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Notes (optional)</label>
                       <textarea className={cn(inputClass, 'resize-none')} rows={3} placeholder="Validation notes…"
                         value={validatorNotes} onChange={e => setValidatorNotes(e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
                     </div>
                     <button onClick={handleValidate} disabled={submitting === 'validate'}
-                      className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white transition-all', submitting === 'validate' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                      style={{ background: 'linear-gradient(135deg, #19fb9b, #0ea572)', color: '#000' }}>
+                      className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'validate' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                      style={{ background: 'linear-gradient(135deg, #10b981, #0ea572)', color: '#000' }}>
                       {submitting === 'validate' ? <Loader size={14} className="animate-spin"/> : <CheckCircle size={14}/>}
                       Release Payment
                     </button>
-                    <div className="h-px bg-white/[0.05]" />
+                    <div className="h-px bg-[var(--bg-subtle)][0.05]" />
                     <div>
-                      <label className="block text-white/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Dispute Reason</label>
+                      <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Dispute Reason</label>
                       <textarea className={cn(inputClass, 'resize-none')} rows={2} placeholder="Reason for dispute…"
                         value={disputeReason} onChange={e => setDisputeReason(e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
                     </div>
                     <button onClick={handleDispute} disabled={submitting === 'dispute' || !disputeReason.trim()}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-white/70 border border-red-500/20 bg-red-500/[0.06] hover:bg-red-500/10 transition-all">
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)]/70 border border-red-500/20 bg-red-500/[0.06] hover:bg-red-500/10 transition-all">
                       <AlertTriangle size={14}/> Raise Dispute
                     </button>
                   </div>
@@ -513,7 +513,7 @@ await client.createContractExecutionTransaction({
             {isClient && sn === 0 && activeBids.length === 0 && (
               <BlurFade delay={0.12} inView>
                 <button onClick={handleCancel} disabled={submitting === 'cancel'}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-white/50 border border-white/[0.07] bg-white/[0.02] hover:text-white hover:bg-white/[0.04] transition-all">
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-[var(--text-1)]/50 border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)][0.04] transition-all">
                   Cancel & Refund USDC
                 </button>
               </BlurFade>
@@ -521,8 +521,8 @@ await client.createContractExecutionTransaction({
 
             {/* On-chain info */}
             <BlurFade delay={0.15} inView>
-              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.01] p-5">
-                <div className="text-white/25 text-[10px] font-bold uppercase tracking-widest mb-4">On-chain Info</div>
+              <div className="rounded-2xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.01] p-5">
+                <div className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-widest mb-4">On-chain Info</div>
                 <div className="flex flex-col gap-3">
                   {[
                     { label: 'Job ID', value: `#${id}`, mono: true },
@@ -532,12 +532,12 @@ await client.createContractExecutionTransaction({
                     { label: 'Memo', value: buildMemo('job', id), mono: true },
                   ].map(({ label, value, mono, link }) => (
                     <div key={label} className="flex items-center justify-between gap-3">
-                      <span className="text-white/30 text-xs shrink-0">{label}</span>
+                      <span className="text-[var(--text-1)]/30 text-xs shrink-0">{label}</span>
                       {link
                         ? <a href={link} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-300 transition-colors" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>
                           <ExternalLink size={9}/>{value}
                         </a>
-                        : <span className="text-white text-xs" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>{value}</span>
+                        : <span className="text-[var(--text-1)] text-xs" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>{value}</span>
                       }
                     </div>
                   ))}
