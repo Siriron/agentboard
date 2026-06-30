@@ -104,11 +104,9 @@ export default function Layout() {
               </linearGradient>
             </defs>
             <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#logoGrad)" />
-            {/* Three connected nodes — agent network motif */}
-            <circle cx="11" cy="22" r="3" fill="#fff" />
-            <circle cx="23" cy="22" r="3" fill="#fff" fillOpacity="0.55" />
-            <circle cx="17" cy="11" r="3.4" fill="#fff" />
-            <path d="M14.3 13L13 19.5M19.7 13L21 19.5M14 22H20" stroke="#fff" strokeOpacity="0.7" strokeWidth="1.4" strokeLinecap="round" />
+            {/* Simple, legible mark: orbiting node — reads clearly at small size */}
+            <circle cx="17" cy="17" r="6.5" fill="none" stroke="#fff" strokeWidth="2" strokeOpacity="0.9" />
+            <circle cx="17" cy="10.5" r="2.6" fill="#fff" />
           </svg>
           <span style={{
             fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17,
