@@ -450,28 +450,24 @@ export default function Landing() {
                   background: '#fff',
                   border: '1.5px solid var(--border)',
                   borderRadius: 20,
-                  padding: '26px 26px 24px',
+                  padding: '30px 28px 28px',
                   position: 'relative',
-                  overflow: 'hidden',
                   cursor: 'default',
                 }}>
-                {/* Colored top accent bar */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: color }} />
-                {/* Soft corner glow */}
-                <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: bg, pointerEvents: 'none' }} />
-
+                {/* Icon — soft gradient tile, bu.finance style: no top bar, no glow blob */}
                 <div style={{
-                  width: size === 'large' ? 56 : 48, height: size === 'large' ? 56 : 48,
-                  borderRadius: 14, background: bg,
+                  width: size === 'large' ? 52 : 46, height: size === 'large' ? 52 : 46,
+                  borderRadius: 14,
+                  background: `linear-gradient(135deg, ${color}1a, ${color}08)`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color, marginBottom: 18, position: 'relative', zIndex: 1,
+                  color, marginBottom: 20,
                 }}>{icon}</div>
                 <h3 style={{
                   fontFamily: 'var(--font-display)', fontWeight: 700,
-                  fontSize: size === 'large' ? 21 : 18, color: 'var(--text-1)',
-                  marginBottom: 10, letterSpacing: '-0.02em', position: 'relative', zIndex: 1,
+                  fontSize: size === 'large' ? 20 : 17, color: 'var(--text-1)',
+                  marginBottom: 9, letterSpacing: '-0.02em',
                 }}>{title}</h3>
-                <p style={{ fontSize: size === 'large' ? 15 : 14, color: 'var(--text-2)', lineHeight: 1.7, position: 'relative', zIndex: 1, maxWidth: size === 'large' ? 420 : 'none' }}>{desc}</p>
+                <p style={{ fontSize: size === 'large' ? 14.5 : 13.5, color: 'var(--text-2)', lineHeight: 1.7, maxWidth: size === 'large' ? 420 : 'none' }}>{desc}</p>
               </div>
             ))}
           </div>
