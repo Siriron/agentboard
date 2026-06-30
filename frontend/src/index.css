@@ -263,6 +263,74 @@ textarea.input { resize: vertical; min-height: 90px; }
   .mobile-menu-btn { display: flex !important; align-items: center; }
 }
 
+/* ── TABLET BREAKPOINT (fixes navbar overlap at 768-1100px) ── */
+.show-tablet-only { display: none; }
+@media (max-width: 1100px) {
+  .hide-tablet { display: none !important; }
+  .show-tablet-only { display: inline !important; }
+}
+
+/* ── LOGO HOVER ── */
+.logo-btn svg { transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+.logo-btn:hover svg { transform: scale(1.08) rotate(-4deg); }
+
+/* ── BENTO GRID (Features section) ── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+.bento-large { grid-column: span 2; grid-row: span 1; }
+.bento-wide  { grid-column: span 2; }
+.bento-normal{ grid-column: span 2; }
+@media (min-width: 900px) {
+  .bento-large { grid-column: span 2; }
+  .bento-wide  { grid-column: span 2; }
+  .bento-normal{ grid-column: span 1; }
+}
+@media (max-width: 640px) {
+  .bento-grid { grid-template-columns: 1fr; }
+  .bento-large, .bento-wide, .bento-normal { grid-column: span 1 !important; }
+}
+.bento-card {
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.bento-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent-light) !important;
+}
+
+/* ── HOW IT WORKS GRID ── */
+.howitworks-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+@media (min-width: 860px) {
+  .howitworks-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.howitworks-card {
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+.howitworks-card:hover {
+  transform: translateY(-6px);
+}
+.howitworks-card:hover > div {
+  box-shadow: var(--shadow) !important;
+  border-color: var(--accent-light) !important;
+}
+.howitworks-connector {
+  display: none;
+}
+@media (min-width: 860px) {
+  .howitworks-connector {
+    display: block;
+    position: absolute; top: 24px; left: calc(100% - 4px);
+    width: 32px; height: 2px; z-index: 1; opacity: 0.5;
+  }
+}
+
 /* ── HERO STATS GRID (Landing) ── */
 .hero-stat-cell { border-right: 1px solid var(--border); }
 .hero-stat-cell:last-child { border-right: none; }
