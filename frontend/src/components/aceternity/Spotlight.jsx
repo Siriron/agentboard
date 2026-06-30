@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { cn } from '../../lib/utils'
 
-export function Spotlight({ className, fill = 'rgba(153,69,255,0.15)' }) {
+export function Spotlight({ className, fill = 'rgba(124,92,252,0.15)' }) {
   const divRef = useRef(null)
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [opacity, setOpacity] = useState(0)

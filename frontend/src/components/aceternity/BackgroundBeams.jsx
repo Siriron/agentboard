@@ -18,11 +18,11 @@ export function BackgroundBeams({ className }) {
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: [0, 0.15, 0], scale: [0.5, 1.5, 0.5] }}
           transition={{ delay: b.delay, duration: b.duration, repeat: Infinity, ease: 'easeInOut' }}>
-          <div style={{ width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(153,69,255,0.3) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          <div style={{ width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(124,92,252,0.3) 0%, transparent 70%)', filter: 'blur(40px)' }} />
         </motion.div>
       ))}
       {/* Grid overlay */}
-      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(153,69,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(153,69,255,0.03) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
+      <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(124,92,252,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(124,92,252,0.03) 1px, transparent 1px)', backgroundSize: '64px 64px' }} />
     </div>
   )
 }
