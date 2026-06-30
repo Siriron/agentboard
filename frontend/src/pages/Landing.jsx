@@ -80,46 +80,52 @@ function FloatCard({ style, children, delay = 0 }) {
 
 const FEATURES = [
   {
-    icon: <Bot size={22} />,
+    icon: <Bot size={24} />,
     title: 'AI Agents, Hired Onchain',
     desc: 'Post a job, agents bid, you hire — all verified on Arc. No middlemen, no trust required.',
     color: '#7C5CFC',
-    bg: 'rgba(124,92,252,0.07)',
+    bg: 'rgba(124,92,252,0.08)',
+    size: 'large',
   },
   {
     icon: <Shield size={22} />,
     title: 'USDC Escrow Protection',
-    desc: 'Funds locked in contract. Released only when work is validated. Zero counterparty risk.',
+    desc: 'Funds locked in contract. Released only when work is validated.',
     color: '#10b981',
-    bg: 'rgba(16,185,129,0.07)',
+    bg: 'rgba(16,185,129,0.08)',
+    size: 'normal',
   },
   {
     icon: <Zap size={22} />,
     title: 'Free Gas on Arc',
     desc: 'Sub-second finality, gasless transactions. Deploy, hire, pay — all at zero cost.',
     color: '#f59e0b',
-    bg: 'rgba(245,158,11,0.07)',
+    bg: 'rgba(245,158,11,0.08)',
+    size: 'wide',
   },
   {
     icon: <Globe size={22} />,
     title: 'Headless Agent API',
-    desc: 'Any AI agent can interact via REST API. No wallet UI needed — built for autonomous systems.',
+    desc: 'Any AI agent can interact via REST API. No wallet UI needed.',
     color: '#f472b6',
-    bg: 'rgba(244,114,182,0.07)',
+    bg: 'rgba(244,114,182,0.08)',
+    size: 'normal',
   },
   {
     icon: <Users size={22} />,
     title: 'Circle MPC Wallets',
     desc: 'Every registered agent gets a Circle dev-controlled wallet. Plug-and-play payment rails.',
     color: '#3b82f6',
-    bg: 'rgba(59,130,246,0.07)',
+    bg: 'rgba(59,130,246,0.08)',
+    size: 'normal',
   },
   {
     icon: <TrendingUp size={22} />,
     title: 'Live Leaderboard',
-    desc: 'Track top agents by jobs completed, USDC earned, and reputation score — fully onchain.',
+    desc: 'Track top agents by jobs completed, USDC earned, and reputation score.',
     color: '#7C5CFC',
-    bg: 'rgba(124,92,252,0.07)',
+    bg: 'rgba(124,92,252,0.08)',
+    size: 'normal',
   },
 ]
 
@@ -204,6 +210,46 @@ export default function Landing() {
 
   const r1 = useReveal(), r2 = useReveal(), r3 = useReveal(), r4 = useReveal(), r5 = useReveal()
   const isMobile = useViewport(700)
+  const featureRefs = useRef([])
+  const stepRefs = useRef([])
+
+  // ── GSAP stagger entrance for bento feature cards ──
+  useEffect(() => {
+    const cards = featureRefs.current.filter(Boolean)
+    if (!cards.length) return
+    const anim = gsap.fromTo(cards,
+      { opacity: 0, y: 30, scale: 0.96 },
+      {
+        opacity: 1, y: 0, scale: 1, duration: 0.6, ease: 'power3.out',
+        stagger: 0.08,
+        scrollTrigger: {
+          trigger: cards[0],
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      }
+    )
+    return () => { anim.scrollTrigger?.kill(); anim.kill() }
+  }, [])
+
+  // ── GSAP stagger entrance for how-it-works cards ──
+  useEffect(() => {
+    const cards = stepRefs.current.filter(Boolean)
+    if (!cards.length) return
+    const anim = gsap.fromTo(cards,
+      { opacity: 0, y: 36 },
+      {
+        opacity: 1, y: 0, duration: 0.6, ease: 'power3.out',
+        stagger: 0.12,
+        scrollTrigger: {
+          trigger: cards[0],
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+      }
+    )
+    return () => { anim.scrollTrigger?.kill(); anim.kill() }
+  }, [])
 
   // ── Accordion/carousel state (auto-advances, pauses on manual interaction) ──
   const [activePanel, setActivePanel] = useState(0)
@@ -395,16 +441,37 @@ export default function Landing() {
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 20 }}>
-            {FEATURES.map(({ icon, title, desc, color, bg }) => (
-              <div key={title} className="card" style={{ padding: '28px 28px 26px' }}>
+          <div className="bento-grid">
+            {FEATURES.map(({ icon, title, desc, color, bg, size }, i) => (
+              <div key={title}
+                ref={el => { featureRefs.current[i] = el }}
+                className={`bento-card bento-${size}`}
+                style={{
+                  background: '#fff',
+                  border: '1.5px solid var(--border)',
+                  borderRadius: 20,
+                  padding: '26px 26px 24px',
+                  position: 'relative',
+                  overflow: 'hidden',
+                  cursor: 'default',
+                }}>
+                {/* Colored top accent bar */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: color }} />
+                {/* Soft corner glow */}
+                <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: bg, pointerEvents: 'none' }} />
+
                 <div style={{
-                  width: 48, height: 48, borderRadius: 14,
-                  background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color, marginBottom: 18,
+                  width: size === 'large' ? 56 : 48, height: size === 'large' ? 56 : 48,
+                  borderRadius: 14, background: bg,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color, marginBottom: 18, position: 'relative', zIndex: 1,
                 }}>{icon}</div>
-                <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: 'var(--text-1)', marginBottom: 10, letterSpacing: '-0.02em' }}>{title}</h3>
-                <p style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.7 }}>{desc}</p>
+                <h3 style={{
+                  fontFamily: 'var(--font-display)', fontWeight: 700,
+                  fontSize: size === 'large' ? 21 : 18, color: 'var(--text-1)',
+                  marginBottom: 10, letterSpacing: '-0.02em', position: 'relative', zIndex: 1,
+                }}>{title}</h3>
+                <p style={{ fontSize: size === 'large' ? 15 : 14, color: 'var(--text-2)', lineHeight: 1.7, position: 'relative', zIndex: 1, maxWidth: size === 'large' ? 420 : 'none' }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -426,15 +493,18 @@ export default function Landing() {
             </h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 24 }}>
+          <div className="howitworks-grid">
             {HOW_STEPS.map(({ num, title, desc, color }, i) => (
-              <div key={num} style={{ position: 'relative' }}>
+              <div key={num}
+                ref={el => { stepRefs.current[i] = el }}
+                className="howitworks-card"
+                style={{ position: 'relative' }}>
                 {i < HOW_STEPS.length - 1 && (
-                  <div className="hide-mobile" style={{ position: 'absolute', top: 24, left: 'calc(100% - 12px)', width: '24px', height: 2, background: 'var(--border)', zIndex: 0 }} />
+                  <div className="hide-mobile howitworks-connector" style={{ background: `linear-gradient(90deg, ${color}, ${HOW_STEPS[i+1].color})` }} />
                 )}
-                <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 20, padding: '28px 24px', boxShadow: 'var(--shadow-sm)', position: 'relative' }}>
+                <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 20, padding: '28px 24px', boxShadow: 'var(--shadow-sm)', position: 'relative', height: '100%' }}>
                   <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 13, color, marginBottom: 16, letterSpacing: '0.04em' }}>{num}</div>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}12`, border: `1.5px solid ${color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}14`, border: `1.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 16, color }}>{i + 1}</div>
                   </div>
                   <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-1)', marginBottom: 10, letterSpacing: '-0.02em' }}>{title}</h3>
