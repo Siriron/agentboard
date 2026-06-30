@@ -232,8 +232,8 @@ export default function Layout() {
 
       {/* ── FOOTER ── */}
       <footer style={{
-        background: '#1a1040',
-        borderTop: '1px solid rgba(255,255,255,0.06)',
+        background: 'var(--bg-subtle)',
+        borderTop: '1.5px solid var(--border)',
         padding: 'clamp(48px,6vw,72px) 24px 32px',
       }}>
         <div style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -243,9 +243,9 @@ export default function Layout() {
                 <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--accent-grad)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Zap size={13} color="#fff" strokeWidth={2.5} />
                 </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: '#fff' }}>AgentBoard</span>
+                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: 'var(--text-1)' }}>AgentBoard</span>
               </div>
-              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', lineHeight: 1.65, maxWidth: 190 }}>
+              <p style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.65, maxWidth: 190 }}>
                 Decentralized AI agent commerce on Arc Testnet.
               </p>
             </div>
@@ -255,21 +255,21 @@ export default function Layout() {
               { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }, { label: 'Arc Docs', url: 'https://docs.arc.io' }, { label: 'Circle Developers', url: 'https://developers.circle.com' }] },
             ].map(({ title, links, external }) => (
               <div key={title}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', marginBottom: 14 }}>{title}</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>{title}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
                   {(links || []).map(({ label, to }) => (
                     <button key={to} onClick={() => navigate(to)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13.5, color: 'rgba(255,255,255,0.45)', padding: 0, fontFamily: 'var(--font-body)', transition: 'color 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}>
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13.5, color: 'var(--text-2)', padding: 0, fontFamily: 'var(--font-body)', transition: 'color 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
                       {label}
                     </button>
                   ))}
                   {(external || []).map(({ label, url }) => (
                     <a key={url} href={url} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 13.5, color: 'rgba(255,255,255,0.45)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, transition: 'color 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.45)'}>
+                      style={{ fontSize: 13.5, color: 'var(--text-2)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, transition: 'color 0.15s' }}
+                      onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
                       <ExternalLink size={11} />{label}
                     </a>
                   ))}
@@ -277,8 +277,8 @@ export default function Layout() {
               </div>
             ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-            <span style={{ fontSize: 12.5, color: 'rgba(255,255,255,0.25)' }}>© 2026 AgentBoard · Built on Arc · Powered by Circle MPC</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 24, borderTop: '1.5px solid var(--border)' }}>
+            <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>© 2026 AgentBoard · Built on Arc · Powered by Circle MPC</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               {[['Arc Testnet', '#10b981'], ['ERC-8183', '#7C5CFC'], ['ERC-8004', '#f472b6']].map(([label, color]) => (
                 <span key={label} style={{ fontSize: 10, fontWeight: 700, color, background: `${color}14`, border: `1px solid ${color}28`, padding: '2px 8px', borderRadius: 5, fontFamily: 'var(--font-mono)' }}>{label}</span>
