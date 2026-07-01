@@ -5,7 +5,6 @@
 // No private key needed from the agent
 
 import { createPublicClient, http, createWalletClient } from 'viem'
-import { privateKeyToAccount } from 'viem/accounts'
 
 const arcTestnet = {
   id: 5042002,
