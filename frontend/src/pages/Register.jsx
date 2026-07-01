@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useWallet } from '../hooks/useWallet'
-import { getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
+import { getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, mintAgentIdentity } from '../lib/arc'
 import { useToast } from '../components/Toast'
 import { BlurFade } from '../components/magicui/BlurFade'
 import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import {
   User, Shield, CheckCircle, AlertCircle, Info,
-  Fingerprint, Star, ExternalLink, Wallet, Loader, Search
+  Fingerprint, Star, ExternalLink, Wallet, Loader, Search, Sparkles
 } from 'lucide-react'
 
 const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
@@ -20,6 +20,22 @@ export default function Register() {
   const [registering, setRegistering] = useState(false)
   const [registered, setRegistered] = useState(null)
   const [txHash, setTxHash] = useState(null)
+  const [minting, setMinting] = useState(false)
+  const [mintTxHash, setMintTxHash] = useState(null)
+
+  async function handleMintIdentity() {
+    if (!account) { toast('Connect wallet first', 'error'); return }
+    setMinting(true)
+    try {
+      const { agentId: newId, txHash: mintTx } = await mintAgentIdentity({})
+      setAgentId(newId)
+      setMintTxHash(mintTx)
+      setRegistered(false) // freshly minted — definitely not registered on AgentBoard yet
+      toast(`Minted ERC-8004 identity #${newId}`, 'success')
+    } catch (e) {
+      toast(e.message || 'Mint failed', 'error')
+    } finally { setMinting(false) }
+  }
 
   async function checkRegistration() {
     const parsed = parseInt(agentId)
@@ -113,6 +129,39 @@ export default function Register() {
             )}
 
             <div className="flex flex-col gap-5">
+              {/* One-click mint — replaces the manual ArcScan trip */}
+              <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-teal-500/20 bg-teal-500/[0.05]">
+                <div className="flex-1">
+                  <p className="text-teal-300 text-xs font-bold mb-0.5">Don't have a token yet?</p>
+                  <p className="text-[var(--text-1)]/40 text-xs leading-snug">Mint one instantly — no ArcScan needed.</p>
+                </div>
+                <button onClick={handleMintIdentity} disabled={!account || minting}
+                  className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-1)] shrink-0 transition-all', (!account || minting) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]')}
+                  style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)', boxShadow: '0 0 20px rgba(16,185,129,0.25)' }}>
+                  {minting ? <Loader size={13} className="animate-spin" /> : <Sparkles size={13} />}
+                  {minting ? 'Minting…' : 'Mint Identity'}
+                </button>
+              </div>
+
+              {mintTxHash && (
+                <div className="flex items-center justify-between gap-3 -mt-2 p-3 rounded-xl border border-teal-500/15 bg-teal-500/[0.04]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={13} className="text-teal-400" />
+                    <span className="text-teal-400 text-xs font-medium">Token #{agentId} minted to your wallet</span>
+                  </div>
+                  <a href={`https://testnet.arcscan.app/tx/${mintTxHash}`} target="_blank" rel="noreferrer"
+                    className="flex items-center gap-1 text-[11px] text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors shrink-0">
+                    <ExternalLink size={10} /> View mint tx
+                  </a>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <div className="h-px bg-[var(--bg-subtle)][0.05] flex-1" />
+                <span className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-wider">or use an existing token</span>
+                <div className="h-px bg-[var(--bg-subtle)][0.05] flex-1" />
+              </div>
+
               {/* Agent ID input */}
               <div>
                 <label className="block text-[var(--text-1)]/40 text-xs font-bold uppercase tracking-wider mb-2">
@@ -124,7 +173,7 @@ export default function Register() {
                     type="number" min="0"
                     placeholder="e.g. 42"
                     value={agentId}
-                    onChange={e => { setAgentId(e.target.value); setRegistered(null); setTxHash(null) }}
+                    onChange={e => { setAgentId(e.target.value); setRegistered(null); setTxHash(null); setMintTxHash(null) }}
                     style={{ fontFamily: 'var(--font-mono)' }}
                   />
                   <button onClick={checkRegistration} disabled={checking || !agentId.trim()}
@@ -198,9 +247,9 @@ export default function Register() {
             </h3>
             <div className="flex flex-col gap-3">
               {[
-                { num: '1', text: "Visit Arc's Identity Registry on ArcScan", link: 'https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e' },
-                { num: '2', text: 'Call mint() to receive your ERC-8004 identity token', link: null },
-                { num: '3', text: 'Return here and register your token ID', link: null },
+                { num: '1', text: 'Connect your wallet above', link: null },
+                { num: '2', text: 'Click "Mint Identity" — this calls register() on Arc\'s Identity Registry directly from AgentBoard', link: null },
+                { num: '3', text: 'Your new token ID is filled in automatically — just click "Register Agent Identity" below', link: null },
               ].map(({ num, text, link }) => (
                 <div key={num} className="flex items-start gap-3">
                   <div className="w-5 h-5 rounded-full bg-purple-500/15 border border-purple-500/25 flex items-center justify-center shrink-0 mt-0.5">
@@ -216,6 +265,9 @@ export default function Register() {
                 </div>
               ))}
             </div>
+            <p className="text-[var(--text-1)]/25 text-[11px] leading-relaxed mt-4 pt-4 border-t border-[var(--bg-subtle)][0.05]">
+              Already own a token minted elsewhere? Skip minting and enter its ID directly in the field above.
+            </p>
           </div>
         </BlurFade>
       </div>

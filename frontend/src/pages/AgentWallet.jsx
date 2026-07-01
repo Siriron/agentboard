@@ -38,6 +38,8 @@ export default function AgentWallet() {
   const [walletSetId, setWalletSetId] = useState('')
   const [wallet, setWallet] = useState(null)
   const [copiedAddr, setCopiedAddr] = useState(false)
+  const [diagnosis, setDiagnosis] = useState(null)
+  const [diagnosing, setDiagnosing] = useState(false)
 
   async function callApi(action, method, body) {
     const res = await fetch(`/api/agent-wallet?action=${action}`, {
@@ -46,36 +48,56 @@ export default function AgentWallet() {
       ...(body ? { body: JSON.stringify(body) } : {}),
     })
     const data = await res.json()
-    if (!res.ok) throw new Error(data.error || `API error ${res.status}`)
+    if (!res.ok) {
+      const e = new Error(data.error || `API error ${res.status}`)
+      e.details = data
+      throw e
+    }
     return data
+  }
+
+  async function runDiagnostics() {
+    setDiagnosing(true); setDiagnosis(null)
+    try {
+      const res = await fetch('/api/agent-wallet?action=diagnose')
+      const data = await res.json()
+      setDiagnosis(data)
+    } catch (e) {
+      setDiagnosis({ ok: false, message: 'Could not reach the diagnostics endpoint — is the app deployed?' })
+    } finally { setDiagnosing(false) }
   }
 
   async function handleCreateWalletSet() {
     if (!walletSetName.trim()) { setError('Enter a wallet set name'); return }
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setDiagnosis(null)
     try {
       const data = await callApi('create-wallet-set', 'POST', { name: walletSetName.trim() })
-      setWalletSetId(data.walletSet.id)
+      setWalletSetId(data.walletSetId)
       setStep(1)
     } catch (e) {
-      setError(e.message)
+      const d = e.details
+      setError(d?.likelyCause ? `${d.likelyCause}${d.fix ? ' — ' + d.fix : ''}` : e.message)
     } finally { setLoading(false) }
   }
 
   async function handleCreateWallet() {
     if (!agentName.trim()) { setError('Enter an agent name'); return }
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setDiagnosis(null)
     try {
       const data = await callApi('create-wallet', 'POST', {
         walletSetId,
         agentName: agentName.trim(),
       })
-      setWallet(data.wallet)
+      setWallet({
+        id: data.walletId,
+        address: data.address,
+        blockchain: data.blockchain,
+        accountType: data.accountType,
+      })
       setStep(2)
     } catch (e) {
-      setError(e.message.includes('401') || e.message.includes('403')
-        ? 'Circle API credentials not configured. Add CIRCLE_API_KEY and CIRCLE_ENTITY_SECRET to Vercel.'
-        : e.message)
+      const d = e.details
+      setError(d?.likelyCause ? `${d.likelyCause}${d.fix ? ' — ' + d.fix : ''}` : e.message)
     } finally { setLoading(false) }
   }
 
@@ -197,9 +219,34 @@ await client.createContractExecutionTransaction({
                 />
               </div>
               {error && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/08 border border-red-500/20 mb-5">
+                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/08 border border-red-500/20 mb-3">
                   <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-red-400 text-sm leading-snug">{error}</p>
+                  <div className="flex-1">
+                    <p className="text-red-400 text-sm leading-snug">{error}</p>
+                    <button
+                      onClick={runDiagnostics}
+                      disabled={diagnosing}
+                      className="mt-2 text-xs font-semibold text-red-300/80 underline underline-offset-2 hover:text-red-200 disabled:opacity-50"
+                    >
+                      {diagnosing ? 'Checking Circle credentials…' : 'Diagnose this error'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {diagnosis && (
+                <div className={cn(
+                  'flex items-start gap-2.5 p-3.5 rounded-xl mb-5 border',
+                  diagnosis.ok ? 'bg-teal-500/08 border-teal-500/20' : 'bg-amber-500/08 border-amber-500/20'
+                )}>
+                  {diagnosis.ok
+                    ? <CheckCircle size={14} className="text-teal-400 mt-0.5 shrink-0" />
+                    : <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />}
+                  <div className="text-sm leading-snug">
+                    <p className={diagnosis.ok ? 'text-teal-300' : 'text-amber-300'}>{diagnosis.message}</p>
+                    {diagnosis.fix && (
+                      <p className="text-amber-200/60 text-xs mt-1.5">{diagnosis.fix}</p>
+                    )}
+                  </div>
                 </div>
               )}
               <button onClick={handleCreateWalletSet} disabled={loading}
@@ -242,9 +289,34 @@ await client.createContractExecutionTransaction({
                 </p>
               </div>
               {error && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/08 border border-red-500/20 mb-5">
+                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/08 border border-red-500/20 mb-3">
                   <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
-                  <p className="text-red-400 text-sm leading-snug">{error}</p>
+                  <div className="flex-1">
+                    <p className="text-red-400 text-sm leading-snug">{error}</p>
+                    <button
+                      onClick={runDiagnostics}
+                      disabled={diagnosing}
+                      className="mt-2 text-xs font-semibold text-red-300/80 underline underline-offset-2 hover:text-red-200 disabled:opacity-50"
+                    >
+                      {diagnosing ? 'Checking Circle credentials…' : 'Diagnose this error'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {diagnosis && (
+                <div className={cn(
+                  'flex items-start gap-2.5 p-3.5 rounded-xl mb-5 border',
+                  diagnosis.ok ? 'bg-teal-500/08 border-teal-500/20' : 'bg-amber-500/08 border-amber-500/20'
+                )}>
+                  {diagnosis.ok
+                    ? <CheckCircle size={14} className="text-teal-400 mt-0.5 shrink-0" />
+                    : <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />}
+                  <div className="text-sm leading-snug">
+                    <p className={diagnosis.ok ? 'text-teal-300' : 'text-amber-300'}>{diagnosis.message}</p>
+                    {diagnosis.fix && (
+                      <p className="text-amber-200/60 text-xs mt-1.5">{diagnosis.fix}</p>
+                    )}
+                  </div>
                 </div>
               )}
               <button onClick={handleCreateWallet} disabled={loading}
