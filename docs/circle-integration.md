@@ -26,6 +26,25 @@ Testnet USDC is available free from the [Arc Faucet](https://testnet-faucet.arc.
 
 Wallets where Circle's MPC infrastructure holds the signing key material. Your server code authenticates via API key and entity secret — the private key never exists in your codebase.
 
+### ⚠️ One-time setup: register your entity secret first
+
+Before **any** Wallets API call works — including `createWalletSet()` — your entity secret must be registered with Circle once. Skipping this step is the most common cause of a bare `403 Forbidden` on every single call, with no other error detail, even when `CIRCLE_API_KEY` and `CIRCLE_ENTITY_SECRET` are both set correctly.
+
+Run this once, locally (never in a deployed serverless function):
+
+```bash
+cd frontend
+CIRCLE_API_KEY="TEST_API_KEY:..." npm run setup:circle
+```
+
+This generates a 32-byte entity secret (or reuses one you already have), registers it with Circle, and prints a **recovery file** — save it somewhere safe outside the repo. Without it, losing the entity secret means permanent loss of access to any wallets you create. Once registered, copy the printed `CIRCLE_API_KEY` / `CIRCLE_ENTITY_SECRET` values into Vercel → Project → Settings → Environment Variables, then redeploy.
+
+To confirm setup worked without creating anything, hit the built-in diagnostics endpoint:
+
+```
+GET https://arc-agentboard.vercel.app/api/agent-wallet?action=diagnose
+```
+
 ### Supported wallet types on Arc
 
 | Type | Gas Station | Use case |
