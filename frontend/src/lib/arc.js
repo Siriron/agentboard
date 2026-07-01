@@ -1,4 +1,4 @@
-import { createPublicClient, createWalletClient, custom, http, encodeFunctionData } from 'viem'
+import { createPublicClient, createWalletClient, custom, http, encodeFunctionData, decodeEventLog } from 'viem'
 
 export const arcTestnet = {
   id: 5042002,
@@ -42,6 +42,17 @@ export const CONTRACT_ABI = [
   { name: 'BidSubmitted', type: 'event', inputs: [{ name: 'jobId', type: 'uint256', indexed: true }, { name: 'agent', type: 'address', indexed: true }, { name: 'agentId', type: 'uint256' }, { name: 'proposedAmount', type: 'uint256' }] },
 ]
 
+// Arc's official ERC-8004 IdentityRegistry (per docs.arc.network/arc/tutorials/register-your-first-ai-agent).
+// register(string) mints a new identity NFT and returns no direct value to the
+// caller (it's a state-changing tx) — the minted tokenId is read back from the
+// Transfer event in the receipt, same pattern Arc's own quickstart uses.
+export const IDENTITY_REGISTRY_ABI = [
+  { name: 'register', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'metadataURI', type: 'string' }], outputs: [] },
+  { name: 'ownerOf', type: 'function', stateMutability: 'view', inputs: [{ name: 'tokenId', type: 'uint256' }], outputs: [{ name: '', type: 'address' }] },
+  { name: 'tokenURI', type: 'function', stateMutability: 'view', inputs: [{ name: 'tokenId', type: 'uint256' }], outputs: [{ name: '', type: 'string' }] },
+  { name: 'Transfer', type: 'event', inputs: [{ name: 'from', type: 'address', indexed: true }, { name: 'to', type: 'address', indexed: true }, { name: 'tokenId', type: 'uint256', indexed: true }] },
+]
+
 export const USDC_ABI = [
   { name: 'approve', type: 'function', stateMutability: 'nonpayable', inputs: [{ name: 'spender', type: 'address' }, { name: 'amount', type: 'uint256' }], outputs: [{ name: '', type: 'bool' }] },
   { name: 'allowance', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }, { name: 'spender', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
@@ -51,6 +62,54 @@ export const USDC_ABI = [
   { name: 'nonces', type: 'function', stateMutability: 'view', inputs: [{ name: 'owner', type: 'address' }], outputs: [{ name: '', type: 'uint256' }] },
   { name: 'DOMAIN_SEPARATOR', type: 'function', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'bytes32' }] },
 ]
+
+// One-click ERC-8004 identity mint. Calls register() on Arc's Identity
+// Registry with a fully on-chain base64 metadata URI (no IPFS pinning
+// needed), then reads the minted tokenId back from the Transfer event in
+// the transaction receipt — exactly how Arc's own quickstart retrieves it,
+// since a state-changing tx doesn't return values directly to the caller.
+export async function mintAgentIdentity({ name, description }) {
+  const wc = await getWalletClient()
+  const [addr] = await wc.getAddresses()
+  const pc = getPublicClient()
+
+  const metadata = {
+    type: 'https://eips.ethereum.org/EIPS/eip-8004#registration-v1',
+    name: name || `AgentBoard Agent ${addr.slice(0, 6)}`,
+    description: description || 'Registered via AgentBoard on Arc Testnet.',
+    active: true,
+  }
+  const agentURI = 'data:application/json;base64,' + btoa(JSON.stringify(metadata))
+
+  const tx = await wc.writeContract({
+    address: IDENTITY_REGISTRY,
+    abi: IDENTITY_REGISTRY_ABI,
+    functionName: 'register',
+    args: [agentURI],
+    account: addr,
+  })
+
+  const receipt = await pc.waitForTransactionReceipt({ hash: tx })
+
+  // The mint emits ERC-721 Transfer(0x0 -> owner, tokenId); decode it from
+  // the receipt's logs rather than a second getLogs round-trip.
+  let agentId = null
+  for (const log of receipt.logs) {
+    if (log.address.toLowerCase() !== IDENTITY_REGISTRY.toLowerCase()) continue
+    try {
+      const decoded = decodeEventLog({ abi: IDENTITY_REGISTRY_ABI, data: log.data, topics: log.topics })
+      if (decoded.eventName === 'Transfer' && decoded.args.to.toLowerCase() === addr.toLowerCase()) {
+        agentId = decoded.args.tokenId
+      }
+    } catch { /* not a Transfer log from this contract's ABI shape — skip */ }
+  }
+
+  if (agentId === null) {
+    throw new Error('Mint transaction confirmed but no Transfer event was found — check the transaction on ArcScan.')
+  }
+
+  return { agentId: agentId.toString(), txHash: tx }
+}
 
 let _publicClient = null
 export function getPublicClient() {
