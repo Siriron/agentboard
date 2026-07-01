@@ -27,10 +27,9 @@
  *   node --env-file=.env scripts/register-entity-secret.mjs
  */
 
-import {
-  generateEntitySecret,
-  registerEntitySecretCiphertext,
-} from '@circle-fin/developer-controlled-wallets'
+import { randomBytes } from 'node:crypto'
+import pkg from '@circle-fin/developer-controlled-wallets'
+const { registerEntitySecretCiphertext } = pkg
 
 const apiKey = process.env.CIRCLE_API_KEY
 if (!apiKey) {
@@ -52,7 +51,7 @@ if (entitySecret) {
   console.log('Using existing CIRCLE_ENTITY_SECRET from your environment...')
 } else {
   console.log('Generating a new entity secret...')
-  entitySecret = generateEntitySecret()
+  entitySecret = randomBytes(32).toString('hex')
 }
 
 if (!/^[0-9a-fA-F]{64}$/.test(entitySecret)) {
