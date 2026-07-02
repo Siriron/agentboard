@@ -30,10 +30,34 @@ async function ensureArcChain() {
   }
 }
 
+const AGENT_WALLET_KEY = 'agentboard.agentWallet'
+
+function loadAgentWallet() {
+  try {
+    const raw = localStorage.getItem(AGENT_WALLET_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
 export function WalletProvider({ children }) {
   const [account, setAccount] = useState(null)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState(null)
+  // Circle-managed agent wallet (MPC), separate from the MetaMask/Rabby
+  // browser wallet above. Persisted so it survives navigation/reloads.
+  const [agentWallet, setAgentWallet] = useState(loadAgentWallet)
+
+  const saveAgentWallet = useCallback((wallet) => {
+    setAgentWallet(wallet)
+    try {
+      if (wallet) localStorage.setItem(AGENT_WALLET_KEY, JSON.stringify(wallet))
+      else localStorage.removeItem(AGENT_WALLET_KEY)
+    } catch {}
+  }, [])
+
+  const clearAgentWallet = useCallback(() => saveAgentWallet(null), [saveAgentWallet])
 
   useEffect(() => {
     if (!window.ethereum) return
@@ -79,7 +103,10 @@ export function WalletProvider({ children }) {
   }, [])
 
   return (
-    <WalletContext.Provider value={{ account, connecting, connect, disconnect, error }}>
+    <WalletContext.Provider value={{
+      account, connecting, connect, disconnect, error,
+      agentWallet, saveAgentWallet, clearAgentWallet,
+    }}>
       {children}
     </WalletContext.Provider>
   )
