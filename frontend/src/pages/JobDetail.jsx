@@ -24,13 +24,13 @@ const STATUS_COLORS = {
 }
 const LIFECYCLE = ['OPEN','HIRED','SUBMITTED','VALIDATED']
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
 
 function CodeSnip({ code }) {
   const [copied, setCopied] = useState(false)
   return (
-    <div className="rounded-xl overflow-hidden border border-[var(--border)][0.06] bg-[var(--bg-surface)]">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)][0.04] bg-[var(--bg-subtle)][0.01]">
+    <div className="rounded-xl overflow-hidden border border-[var(--border)]/6 bg-[var(--bg-surface)]">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)]/4 bg-[var(--bg-subtle)]/1">
         <span className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-wider">javascript</span>
         <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
           className={cn('flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-teal-400' : 'text-[var(--text-1)]/30 hover:text-[var(--text-1)]')}>
@@ -239,12 +239,12 @@ await client.createContractExecutionTransaction({
             {LIFECYCLE.map((s, i) => (
               <div key={s} className="flex items-center flex-1">
                 <div className="flex items-center gap-2">
-                  <div className={cn('w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all', sn > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : sn === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)][0.03] border-[var(--border)] text-[var(--text-1)]/20')}>
+                  <div className={cn('w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all', sn > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : sn === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)]/3 border-[var(--border)] text-[var(--text-1)]/20')}>
                     {sn > i ? <CheckCircle size={11}/> : i + 1}
                   </div>
                   <span className={cn('text-xs font-semibold hidden sm:block', sn === i ? 'text-purple-400' : sn > i ? 'text-[var(--text-1)]/50' : 'text-[var(--text-1)]/20')}>{s}</span>
                 </div>
-                {i < LIFECYCLE.length - 1 && <div className={cn('flex-1 h-px mx-3 transition-all', sn > i ? 'bg-purple-500' : 'bg-[var(--bg-subtle)][0.06]')} />}
+                {i < LIFECYCLE.length - 1 && <div className={cn('flex-1 h-px mx-3 transition-all', sn > i ? 'bg-purple-500' : 'bg-[var(--bg-subtle)]/6')} />}
               </div>
             ))}
           </div>
@@ -277,7 +277,7 @@ await client.createContractExecutionTransaction({
 
             {/* Job header */}
             <BlurFade delay={0} inView>
-              <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-6 overflow-hidden">
+              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
                 <BorderBeam size={200} duration={20} colorFrom="#7C5CFC" colorTo="#10b981" />
                 <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
                   <span className={cn('inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border', sc.text, sc.bg)}>
@@ -294,7 +294,7 @@ await client.createContractExecutionTransaction({
                   {meta.title}
                 </h1>
                 <p className="text-[var(--text-1)]/50 leading-relaxed text-sm mb-5">{meta.description}</p>
-                <div className="flex flex-wrap gap-5 pt-4 border-t border-[var(--border)][0.05]">
+                <div className="flex flex-wrap gap-5 pt-4 border-t border-[var(--border)]/5">
                   {[
                     { icon: <DollarSign size={12}/>, label: 'Budget', value: `$${formatUSDC(core.budget)} USDC`, color: 'text-teal-400' },
                     { icon: <Clock size={12}/>, label: 'Deadline', value: formatDate(core.deadline), color: 'text-[var(--text-1)]' },
@@ -322,13 +322,13 @@ await client.createContractExecutionTransaction({
             {/* Bids */}
             {activeBids.length > 0 && (
               <BlurFade delay={0.05} inView>
-                <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-6 overflow-hidden">
+                <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
                   <h3 className="font-bold text-[var(--text-1)] mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
                     Bids ({activeBids.length})
                   </h3>
                   <div className="flex flex-col gap-3">
                     {activeBids.map((bid, idx) => (
-                      <div key={idx} className="p-4 rounded-xl border border-[var(--border)][0.05] bg-[var(--bg-subtle)][0.02]">
+                      <div key={idx} className="p-4 rounded-xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/2">
                         <div className="flex items-start justify-between gap-4 flex-wrap">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
@@ -374,7 +374,7 @@ await client.createContractExecutionTransaction({
                     style={{ fontFamily: 'var(--font-mono)' }}>
                     <ExternalLink size={12}/>{meta.deliverableURI}
                   </a>
-                  {meta.resultNotes && <p className="text-[var(--text-1)]/40 text-sm leading-relaxed mt-3 pt-3 border-t border-[var(--border)][0.05]">{meta.resultNotes}</p>}
+                  {meta.resultNotes && <p className="text-[var(--text-1)]/40 text-sm leading-relaxed mt-3 pt-3 border-t border-[var(--border)]/5">{meta.resultNotes}</p>}
                 </div>
               </BlurFade>
             )}
@@ -386,13 +386,13 @@ await client.createContractExecutionTransaction({
             {/* Bid form */}
             {sn === 0 && (
               <BlurFade delay={0.1} inView>
-                <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-5 overflow-hidden">
+                <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-5 overflow-hidden">
                   <BorderBeam size={180} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
                   {/* Tabs */}
-                  <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-subtle)][0.04] mb-5">
+                  <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-subtle)]/4 mb-5">
                     {[['wallet', <Wallet size={11}/>, 'Wallet'], ['headless', <Bot size={11}/>, 'API']].map(([key, icon, label]) => (
                       <button key={key} onClick={() => setBidTab(key)}
-                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-subtle)][0.08] border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-1)]/35 hover:text-[var(--text-1)]/60')}>
+                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-subtle)]/8 border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-1)]/35 hover:text-[var(--text-1)]/60')}>
                         {icon}{label}
                       </button>
                     ))}
@@ -460,7 +460,7 @@ await client.createContractExecutionTransaction({
                         style={{ fontFamily: 'var(--font-mono)' }} />
                     </div>
                     {/* IPFS Upload */}
-                    <label className={cn('flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-[var(--border)][0.12] text-[var(--text-1)]/40 text-xs font-medium cursor-pointer hover:border-purple-500/30 hover:text-purple-400 transition-all', uploading && 'opacity-60 cursor-not-allowed')}>
+                    <label className={cn('flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-[var(--border)]/12 text-[var(--text-1)]/40 text-xs font-medium cursor-pointer hover:border-purple-500/30 hover:text-purple-400 transition-all', uploading && 'opacity-60 cursor-not-allowed')}>
                       {uploading ? <Loader size={13} className="animate-spin"/> : <Upload size={13}/>}
                       {uploading ? 'Uploading to IPFS…' : 'Or upload file to IPFS (Pinata)'}
                       <input type="file" className="hidden" onChange={handleIPFSUpload} disabled={uploading} />
@@ -494,7 +494,7 @@ await client.createContractExecutionTransaction({
                       {submitting === 'validate' ? <Loader size={14} className="animate-spin"/> : <CheckCircle size={14}/>}
                       Release Payment
                     </button>
-                    <div className="h-px bg-[var(--bg-subtle)][0.05]" />
+                    <div className="h-px bg-[var(--bg-subtle)]/5" />
                     <div>
                       <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Dispute Reason</label>
                       <textarea className={cn(inputClass, 'resize-none')} rows={2} placeholder="Reason for dispute…"
@@ -513,7 +513,7 @@ await client.createContractExecutionTransaction({
             {isClient && sn === 0 && activeBids.length === 0 && (
               <BlurFade delay={0.12} inView>
                 <button onClick={handleCancel} disabled={submitting === 'cancel'}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-[var(--text-1)]/50 border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)][0.04] transition-all">
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-[var(--text-1)]/50 border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)]/4 transition-all">
                   Cancel & Refund USDC
                 </button>
               </BlurFade>
@@ -521,7 +521,7 @@ await client.createContractExecutionTransaction({
 
             {/* On-chain info */}
             <BlurFade delay={0.15} inView>
-              <div className="rounded-2xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.01] p-5">
+              <div className="rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/1 p-5">
                 <div className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-widest mb-4">On-chain Info</div>
                 <div className="flex flex-col gap-3">
                   {[

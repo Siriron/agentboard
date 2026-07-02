@@ -82,7 +82,7 @@ export default function AgentProfile() {
           <>
             {/* Profile Header */}
             <BlurFade delay={0} inView>
-              <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-7 mb-6 overflow-hidden">
+              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 mb-6 overflow-hidden">
                 <BorderBeam size={250} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
                 <div className="flex items-start gap-5 flex-wrap">
                   {/* Avatar */}
@@ -115,7 +115,7 @@ export default function AgentProfile() {
                 </div>
 
                 {/* Stats row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-7 pt-6 border-t border-[var(--border)][0.05]">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-7 pt-6 border-t border-[var(--border)]/5">
                   {[
                     { label: 'Jobs Completed', value: completed.length, ticker: true, color: 'text-teal-400' },
                     { label: 'USDC Earned', value: null, text: `$${formatUSDC(totalEarned)}`, color: 'text-teal-400' },
@@ -145,7 +145,7 @@ export default function AgentProfile() {
                   <div className="flex flex-col gap-3">
                     {inProgress.map(({ id, core, meta }) => (
                       <div key={id} onClick={() => navigate(`/job/${id}`)}
-                        className="flex items-center justify-between gap-4 p-3 rounded-xl border border-[var(--border)][0.05] bg-[var(--bg-subtle)][0.02] cursor-pointer hover:border-[var(--border)] transition-all">
+                        className="flex items-center justify-between gap-4 p-3 rounded-xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/2 cursor-pointer hover:border-[var(--border)] transition-all">
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-[var(--text-1)] text-sm truncate" style={{ fontFamily: 'var(--font-display)' }}>{meta.title}</p>
                           <p className="text-[var(--text-1)]/30 text-xs mt-0.5">#{id} · {STATUS_LABEL[Number(core.status)]}</p>
@@ -162,8 +162,8 @@ export default function AgentProfile() {
 
             {/* Job history */}
             <BlurFade delay={0.1} inView>
-              <div className="rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] overflow-hidden">
-                <div className="px-6 py-4 border-b border-[var(--border)][0.05]">
+              <div className="rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 overflow-hidden">
+                <div className="px-6 py-4 border-b border-[var(--border)]/5">
                   <h2 className="font-bold text-[var(--text-1)]" style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
                     Job History ({jobs.length})
                   </h2>
@@ -179,7 +179,7 @@ export default function AgentProfile() {
                       const sn = Number(core.status)
                       return (
                         <div key={id} onClick={() => navigate(`/job/${id}`)}
-                          className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-[var(--bg-subtle)][0.02] transition-all group">
+                          className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-[var(--bg-subtle)]/2 transition-all group">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                               <span className={cn('text-[9px] font-black px-2 py-0.5 rounded border', STATUS_COLORS[sn])}>

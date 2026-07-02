@@ -56,7 +56,7 @@ function JobCard({ job, onClick }) {
   const bids = Number(core.bidCount)
 
   return (
-    <div onClick={onClick} className="group relative rounded-2xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.02] p-5 cursor-pointer hover:border-purple-500/25 hover:bg-[var(--bg-subtle)][0.04] transition-all duration-200 overflow-hidden">
+    <div onClick={onClick} className="group relative rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2 p-5 cursor-pointer hover:border-purple-500/25 hover:bg-[var(--bg-subtle)]/4 transition-all duration-200 overflow-hidden">
       <BorderBeam size={150} duration={22} colorFrom="#7C5CFC" colorTo="#10b981"
         className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="flex items-start justify-between gap-3 mb-3">
@@ -64,7 +64,7 @@ function JobCard({ job, onClick }) {
           <span className={cn('inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full border', sm.text, sm.bg)}>
             <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', sm.dot)} />{sm.label}
           </span>
-          <span className="text-[10px] text-[var(--text-1)]/25 bg-[var(--bg-subtle)][0.03] border border-[var(--border)][0.06] px-2 py-0.5 rounded-full font-medium">{meta.category}</span>
+          <span className="text-[10px] text-[var(--text-1)]/25 bg-[var(--bg-subtle)]/3 border border-[var(--border)]/6 px-2 py-0.5 rounded-full font-medium">{meta.category}</span>
         </div>
         <ChevronRight size={14} className="text-[var(--text-1)]/15 group-hover:text-purple-400 transition-colors shrink-0 mt-0.5" />
       </div>
@@ -73,7 +73,7 @@ function JobCard({ job, onClick }) {
         {meta.title}
       </h3>
       <p className="text-[var(--text-1)]/35 text-xs leading-relaxed mb-4 line-clamp-2">{meta.description}</p>
-      <div className="flex items-center justify-between gap-3 pt-3.5 border-t border-[var(--border)][0.05]">
+      <div className="flex items-center justify-between gap-3 pt-3.5 border-t border-[var(--border)]/5">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <DollarSign size={11} className="text-teal-400" />
@@ -96,7 +96,7 @@ function JobCard({ job, onClick }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-[var(--border)][0.04] bg-[var(--bg-subtle)][0.01] p-5">
+    <div className="rounded-2xl border border-[var(--border)]/4 bg-[var(--bg-subtle)]/1 p-5">
       <div className="flex gap-2 mb-3">
         <div className="skeleton h-5 w-14 rounded-full" />
         <div className="skeleton h-5 w-20 rounded-full" />
@@ -104,7 +104,7 @@ function SkeletonCard() {
       <div className="skeleton h-4 w-3/4 mb-2 rounded" />
       <div className="skeleton h-3 w-full mb-1 rounded" />
       <div className="skeleton h-3 w-2/3 mb-4 rounded" />
-      <div className="flex justify-between pt-3.5 border-t border-[var(--border)][0.03]">
+      <div className="flex justify-between pt-3.5 border-t border-[var(--border)]/3">
         <div className="skeleton h-4 w-20 rounded" />
         <div className="skeleton h-4 w-16 rounded" />
       </div>
@@ -199,7 +199,7 @@ export default function Board() {
             </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => loadJobs(true)} disabled={refreshing || loading}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.02] text-[var(--text-1)]/50 text-xs font-medium hover:text-[var(--text-1)] transition-all', (refreshing || loading) && 'opacity-40 pointer-events-none')}>
+                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/2 text-[var(--text-1)]/50 text-xs font-medium hover:text-[var(--text-1)] transition-all', (refreshing || loading) && 'opacity-40 pointer-events-none')}>
                 <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
               <button onClick={() => navigate('/post')}
@@ -218,7 +218,7 @@ export default function Board() {
             <div className="relative flex-1 min-w-[180px]">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-1)]/25 pointer-events-none" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs…"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/25 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/25 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
                 style={{ fontFamily: 'var(--font-body)' }} />
             </div>
             {[
@@ -226,13 +226,13 @@ export default function Board() {
               { value: sort, onChange: setSort, options: SORT_OPTIONS },
             ].map((sel, i) => (
               <select key={i} value={sel.value} onChange={e => sel.onChange(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)]/80 text-xs outline-none focus:border-purple-500/40 cursor-pointer"
+                className="px-3 py-2.5 rounded-xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/3 text-[var(--text-1)]/80 text-xs outline-none focus:border-purple-500/40 cursor-pointer"
                 style={{ fontFamily: 'var(--font-body)' }}>
                 {sel.options.map(o => <option key={o.value} value={o.value} style={{ background: 'var(--bg-surface)' }}>{o.label}</option>)}
               </select>
             ))}
             <button onClick={() => setShowFilters(f => !f)}
-              className={cn('flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all', showFilters ? 'border-purple-500/35 bg-purple-500/10 text-purple-400' : 'border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] text-[var(--text-1)]/45 hover:text-[var(--text-1)]')}>
+              className={cn('flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all', showFilters ? 'border-purple-500/35 bg-purple-500/10 text-purple-400' : 'border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 text-[var(--text-1)]/45 hover:text-[var(--text-1)]')}>
               <SlidersHorizontal size={12} /> Filters
               {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-purple-400 ml-0.5" />}
             </button>
@@ -248,13 +248,13 @@ export default function Board() {
                 <div key={label}>
                   <div className="text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wide mb-1.5">{label}</div>
                   <input value={value} onChange={e => set(e.target.value)} type="number" placeholder={ph}
-                    className="w-28 px-3 py-2 rounded-lg border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] text-xs outline-none focus:border-purple-500/40"
+                    className="w-28 px-3 py-2 rounded-lg border border-[var(--border)]/7 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] text-xs outline-none focus:border-purple-500/40"
                     style={{ fontFamily: 'var(--font-mono)' }} />
                 </div>
               ))}
               {hasActiveFilters && (
                 <button onClick={() => { setBudgetMin(''); setBudgetMax(''); setSearch(''); setCategory('All'); setStatus('all') }}
-                  className="px-3 py-2 rounded-lg text-[var(--text-1)]/35 text-xs hover:text-[var(--text-1)] transition-colors border border-[var(--border)][0.05]">
+                  className="px-3 py-2 rounded-lg text-[var(--text-1)]/35 text-xs hover:text-[var(--text-1)] transition-colors border border-[var(--border)]/5">
                   Clear all
                 </button>
               )}
@@ -267,7 +267,7 @@ export default function Board() {
               <button key={cat} onClick={() => setCategory(cat)}
                 className={cn('px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all', category === cat
                   ? 'bg-purple-500/15 border-purple-500/35 text-purple-300'
-                  : 'bg-[var(--bg-subtle)][0.02] border-[var(--border)][0.06] text-[var(--text-1)]/35 hover:text-[var(--text-1)]/70 hover:border-[var(--border)]')}>
+                  : 'bg-[var(--bg-subtle)]/2 border-[var(--border)]/6 text-[var(--text-1)]/35 hover:text-[var(--text-1)]/70 hover:border-[var(--border)]')}>
                 {cat}
               </button>
             ))}

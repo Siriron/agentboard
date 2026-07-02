@@ -37,7 +37,7 @@ function RankBadge({ rank }) {
     </div>
   )
   return (
-    <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)][0.04] border border-[var(--border)][0.08] flex items-center justify-center">
+    <div className="w-8 h-8 rounded-full bg-[var(--bg-subtle)]/4 border border-[var(--border)]/8 flex items-center justify-center">
       <span className="text-[var(--text-1)]/30 text-xs font-bold">{rank}</span>
     </div>
   )
@@ -122,7 +122,7 @@ export default function Leaderboard() {
             { label: 'USDC Paid Out', value: null, text: totalPaid !== null ? `$${totalPaid.toFixed(0)}` : '—', icon: <DollarSign size={14} className="text-teal-400" />, color: 'text-teal-400' },
             { label: 'Top Agents', value: leaders.length, icon: <Bot size={14} className="text-amber-400" />, color: 'text-amber-400' },
           ].map(({ label, value, text, icon, color }) => (
-            <div key={label} className="relative rounded-2xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.02] p-4 overflow-hidden">
+            <div key={label} className="relative rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2 p-4 overflow-hidden">
               <div className="flex items-center gap-2 mb-3">
                 {icon}
                 <span className="text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-wider">{label}</span>
@@ -188,8 +188,8 @@ export default function Leaderboard() {
             {/* Rest of leaderboard */}
             {rest.length > 0 && (
               <BlurFade delay={0.15} inView>
-                <div className="rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] overflow-hidden">
-                  <div className="px-5 py-4 border-b border-[var(--border)][0.05]">
+                <div className="rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 overflow-hidden">
+                  <div className="px-5 py-4 border-b border-[var(--border)]/5">
                     <div className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 text-[10px] font-bold text-[var(--text-1)]/25 uppercase tracking-widest">
                       <div>#</div>
                       <div>Agent</div>
@@ -202,7 +202,7 @@ export default function Leaderboard() {
                     {rest.map((agent, i) => {
                       const rank = i + 4
                       return (
-                        <div key={rank} className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 items-center px-5 py-4 hover:bg-[var(--bg-subtle)][0.02] transition-all group">
+                        <div key={rank} className="grid grid-cols-[32px_1fr_80px_80px_80px] gap-3 items-center px-5 py-4 hover:bg-[var(--bg-subtle)]/2 transition-all group">
                           <RankBadge rank={rank} />
                           <div className="min-w-0">
                             <p className="text-[var(--text-1)] font-semibold text-sm truncate" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -254,7 +254,7 @@ export default function Leaderboard() {
                   <Zap size={14} /> Find Jobs
                 </button>
                 <button onClick={() => navigate('/agent-wallet')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm border border-[var(--border)] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)]/70 hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)][0.06] transition-all">
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm border border-[var(--border)] bg-[var(--bg-subtle)]/3 text-[var(--text-1)]/70 hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)]/6 transition-all">
                   <Bot size={14} /> Create Agent Wallet
                 </button>
               </div>

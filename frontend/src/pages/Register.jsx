@@ -7,13 +7,13 @@ import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import {
   User, Shield, CheckCircle, AlertCircle, Info,
-  Fingerprint, Star, ExternalLink, Wallet, Loader, Search, Sparkles
+  Fingerprint, Star, ExternalLink, Wallet, Loader, Search, Sparkles, Bot
 } from 'lucide-react'
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
 
 export default function Register() {
-  const { account, connect } = useWallet()
+  const { account, connect, agentWallet } = useWallet()
   const toast = useToast()
   const [agentId, setAgentId] = useState('')
   const [checking, setChecking] = useState(false)
@@ -110,15 +110,34 @@ export default function Register() {
 
         {/* Main card */}
         <BlurFade delay={0.1} inView>
-          <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-7 overflow-hidden">
+          <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
             <BorderBeam size={220} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
+
+            {/* Agent wallet reference (Circle MPC wallet) — informational only.
+                Registering/minting signs an onchain tx and always needs the
+                browser wallet (MetaMask/Rabby) connected below, since Circle's
+                wallet is a separate, headless signer used by your agent's own code. */}
+            {agentWallet && (
+              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-purple-500/15 bg-purple-500/[0.04] mb-4">
+                <Bot size={15} className="text-purple-400 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-purple-300 text-xs font-bold mb-0.5">Agent wallet on file</p>
+                  <p className="text-[var(--text-1)]/35 text-[11px] font-mono truncate" style={{ fontFamily: 'var(--font-mono)' }}>
+                    {agentWallet.address}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Connect wallet warning */}
             {!account && (
               <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] mb-6">
                 <AlertCircle size={15} className="text-amber-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-amber-400 text-xs font-bold mb-1.5">Wallet not connected</p>
+                  <p className="text-amber-400 text-xs font-bold mb-1.5">Browser wallet not connected</p>
+                  <p className="text-amber-200/50 text-[11px] leading-snug mb-2">
+                    Minting and registering sign a transaction, so this needs MetaMask or Rabby — not the Circle agent wallet.
+                  </p>
                   <button onClick={connect}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)]"
                     style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
@@ -157,9 +176,9 @@ export default function Register() {
               )}
 
               <div className="flex items-center gap-3">
-                <div className="h-px bg-[var(--bg-subtle)][0.05] flex-1" />
+                <div className="h-px bg-[var(--bg-subtle)]/5 flex-1" />
                 <span className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-wider">or use an existing token</span>
-                <div className="h-px bg-[var(--bg-subtle)][0.05] flex-1" />
+                <div className="h-px bg-[var(--bg-subtle)]/5 flex-1" />
               </div>
 
               {/* Agent ID input */}
@@ -177,7 +196,7 @@ export default function Register() {
                     style={{ fontFamily: 'var(--font-mono)' }}
                   />
                   <button onClick={checkRegistration} disabled={checking || !agentId.trim()}
-                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)][0.04] text-[var(--text-1)]/60 text-sm font-medium hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)][0.08] transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
+                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)]/4 text-[var(--text-1)]/60 text-sm font-medium hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)]/8 transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
                     {checking ? <Loader size={13} className="animate-spin" /> : <Search size={13} />}
                     Check
                   </button>
@@ -211,7 +230,7 @@ export default function Register() {
                 </div>
               )}
 
-              <div className="h-px bg-[var(--bg-subtle)][0.05]" />
+              <div className="h-px bg-[var(--bg-subtle)]/5" />
 
               {/* Info box */}
               <div className="flex items-start gap-2.5 p-4 rounded-xl bg-purple-500/[0.06] border border-purple-500/12">
@@ -241,7 +260,7 @@ export default function Register() {
 
         {/* How to get ERC-8004 */}
         <BlurFade delay={0.15} inView className="mt-5">
-          <div className="rounded-2xl border border-[var(--border)][0.05] bg-[var(--bg-subtle)][0.01] p-5">
+          <div className="rounded-2xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/1 p-5">
             <h3 className="font-bold text-[var(--text-1)]/60 text-sm mb-4" style={{ fontFamily: 'var(--font-display)' }}>
               How to get an ERC-8004 token
             </h3>
@@ -265,7 +284,7 @@ export default function Register() {
                 </div>
               ))}
             </div>
-            <p className="text-[var(--text-1)]/25 text-[11px] leading-relaxed mt-4 pt-4 border-t border-[var(--bg-subtle)][0.05]">
+            <p className="text-[var(--text-1)]/25 text-[11px] leading-relaxed mt-4 pt-4 border-t border-[var(--bg-subtle)]/5">
               Already own a token minted elsewhere? Skip minting and enter its ID directly in the field above.
             </p>
           </div>

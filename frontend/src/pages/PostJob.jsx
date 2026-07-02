@@ -21,7 +21,7 @@ function Field({ label, icon, children }) {
   )
 }
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)][0.05] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
 
 export default function PostJob() {
   const { account, connect } = useWallet()
@@ -115,7 +115,7 @@ export default function PostJob() {
 
         {!account ? (
           <BlurFade delay={0.1} inView>
-            <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-12 text-center overflow-hidden">
+            <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-12 text-center overflow-hidden">
               <BorderBeam size={200} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
               <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
                 <Wallet size={28} className="text-purple-400" />
@@ -133,7 +133,7 @@ export default function PostJob() {
           <>
             {/* Batch mode toggle */}
             <BlurFade delay={0.08} inView className="mb-4">
-              <div className={cn('flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all', batchMode ? 'border-teal-500/20 bg-teal-500/[0.04]' : 'border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.02]')}>
+              <div className={cn('flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all', batchMode ? 'border-teal-500/20 bg-teal-500/[0.04]' : 'border-[var(--border)]/6 bg-[var(--bg-subtle)]/2')}>
                 <Layers size={14} className={batchMode ? 'text-teal-400' : 'text-[var(--text-1)]/30'} />
                 <div className="flex-1">
                   <span className={cn('text-sm font-semibold', batchMode ? 'text-teal-400' : 'text-[var(--text-1)]/50')}>
@@ -151,17 +151,17 @@ export default function PostJob() {
             {/* Step progress */}
             {step > 0 && (
               <BlurFade delay={0} inView className="mb-4">
-                <div className="flex items-center gap-0 p-4 rounded-xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.02]">
+                <div className="flex items-center gap-0 p-4 rounded-xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2">
                   {steps.map((s, i) => (
                     <div key={i} className="flex items-center flex-1">
                       <div className="flex items-center gap-2">
-                        <div className={cn('w-7 h-7 rounded-full flex items-center justify-center transition-all text-xs font-bold border', step > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : step === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)][0.03] border-[var(--border)] text-[var(--text-1)]/20')}>
+                        <div className={cn('w-7 h-7 rounded-full flex items-center justify-center transition-all text-xs font-bold border', step > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : step === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)]/3 border-[var(--border)] text-[var(--text-1)]/20')}>
                           {step > i + (batchMode ? 0 : 0) ? <CheckCircle size={13} /> : s.icon}
                         </div>
                         <span className={cn('text-xs font-medium whitespace-nowrap', step >= i + 1 ? 'text-[var(--text-1)]/70' : 'text-[var(--text-1)]/20')}>{s.label}</span>
                       </div>
                       {i < steps.length - 1 && (
-                        <div className={cn('flex-1 h-px mx-3 transition-all duration-300', step > i + 1 ? 'bg-purple-500' : 'bg-[var(--bg-subtle)][0.06]')} />
+                        <div className={cn('flex-1 h-px mx-3 transition-all duration-300', step > i + 1 ? 'bg-purple-500' : 'bg-[var(--bg-subtle)]/6')} />
                       )}
                     </div>
                   ))}
@@ -171,7 +171,7 @@ export default function PostJob() {
 
             {/* Form */}
             <BlurFade delay={0.1} inView>
-              <div className="relative rounded-2xl border border-[var(--border)][0.07] bg-[var(--bg-subtle)][0.02] p-7 overflow-hidden">
+              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
                 <BorderBeam size={220} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
                 <div className="flex flex-col gap-5">
 

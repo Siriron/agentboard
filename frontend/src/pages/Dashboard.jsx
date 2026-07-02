@@ -26,11 +26,11 @@ const STATUS_COLORS = {
 
 function StatCard({ label, value, sub, icon, color, trend, ticker }) {
   return (
-    <div className="relative rounded-2xl border border-[var(--border)][0.06] bg-[var(--bg-subtle)][0.02] p-5 overflow-hidden">
+    <div className="relative rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2 p-5 overflow-hidden">
       <BorderBeam size={120} duration={20} colorFrom="#7C5CFC" colorTo="#10b981" />
       <div className="flex items-start justify-between mb-3">
         <div className="text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-widest">{label}</div>
-        <div className="w-8 h-8 rounded-xl bg-[var(--bg-subtle)][0.04] flex items-center justify-center shrink-0">{icon}</div>
+        <div className="w-8 h-8 rounded-xl bg-[var(--bg-subtle)]/4 flex items-center justify-center shrink-0">{icon}</div>
       </div>
       <div className={cn('font-black leading-none mb-1', color)}
         style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.04em' }}>
@@ -170,7 +170,7 @@ export default function Dashboard() {
             </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => load(true)} disabled={refreshing}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.02] text-[var(--text-1)]/50 text-xs font-medium hover:text-[var(--text-1)] transition-all', refreshing && 'opacity-50 pointer-events-none')}>
+                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/2 text-[var(--text-1)]/50 text-xs font-medium hover:text-[var(--text-1)] transition-all', refreshing && 'opacity-50 pointer-events-none')}>
                 <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
               <button onClick={() => navigate('/leaderboard')}
@@ -178,7 +178,7 @@ export default function Dashboard() {
                 <Trophy size={12}/> Leaderboard
               </button>
               <button onClick={() => navigate('/register')}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.02] text-[var(--text-1)]/60 text-xs font-medium hover:text-[var(--text-1)] transition-all">
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/2 text-[var(--text-1)]/60 text-xs font-medium hover:text-[var(--text-1)] transition-all">
                 <Bot size={12}/> Register Agent
               </button>
               <button onClick={() => navigate('/post')}
@@ -202,7 +202,7 @@ export default function Dashboard() {
 
         {/* Tabs + filter */}
         <BlurFade delay={0.08} inView className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <div className="flex gap-2 p-1 rounded-xl bg-[var(--bg-subtle)][0.03] border border-[var(--border)][0.06]">
+          <div className="flex gap-2 p-1 rounded-xl bg-[var(--bg-subtle)]/3 border border-[var(--border)]/6">
             {[['client', `Client (${clientJobs.length})`], ['agent', `Agent (${agentJobs.length})`]].map(([key, label]) => (
               <button key={key} onClick={() => { setTab(key); setStatusFilter('all') }}
                 className={cn('px-4 py-2 rounded-lg text-xs font-semibold transition-all', tab === key ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-[var(--text-1)]/40 hover:text-[var(--text-1)]')}>
@@ -211,7 +211,7 @@ export default function Dashboard() {
             ))}
           </div>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-[var(--border)][0.08] bg-[var(--bg-subtle)][0.03] text-[var(--text-1)] text-xs outline-none focus:border-purple-500/40 cursor-pointer"
+            className="px-3 py-2 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] text-xs outline-none focus:border-purple-500/40 cursor-pointer"
             style={{ fontFamily: 'var(--font-body)' }}>
             <option value="all" style={{ background: 'var(--bg-surface)' }}>All Status</option>
             {STATUS_LABEL.map((l, i) => <option key={i} value={i} style={{ background: 'var(--bg-surface)' }}>{l}</option>)}
@@ -240,7 +240,7 @@ export default function Dashboard() {
               return (
                 <BlurFade key={id} delay={0.02} inView>
                   <div onClick={() => navigate(`/job/${id}`)}
-                    className="group flex items-center gap-4 px-5 py-4 rounded-2xl border border-[var(--border)][0.05] bg-[var(--bg-subtle)][0.02] cursor-pointer hover:border-purple-500/20 hover:bg-[var(--bg-subtle)][0.04] transition-all flex-wrap">
+                    className="group flex items-center gap-4 px-5 py-4 rounded-2xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/2 cursor-pointer hover:border-purple-500/20 hover:bg-[var(--bg-subtle)]/4 transition-all flex-wrap">
                     <div className={cn('w-1 h-10 rounded-full shrink-0', sc.bar)} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
