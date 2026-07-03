@@ -6,7 +6,7 @@ import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '
 import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot } from 'lucide-react'
 
 export default function Layout() {
-  const { account, connect, connecting, disconnect, error: walletError } = useWallet()
+  const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError } = useWallet()
   const navigate = useNavigate()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
@@ -145,11 +145,13 @@ export default function Layout() {
 
         {/* Right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {account ? (
+          {activeAddress ? (
             <>
-              <a href={`https://testnet.arcscan.app/address/${account}`}
-                target="_blank" rel="noreferrer" className="address-pill hide-tablet">
-                <ExternalLink size={9} />{formatAddress(account)}
+              <a href={`https://testnet.arcscan.app/address/${activeAddress}`}
+                target="_blank" rel="noreferrer" className="address-pill hide-tablet"
+                style={activeMode === 'agent' ? { borderColor: 'var(--pink-border)', color: 'var(--pink)' } : undefined}>
+                {activeMode === 'agent' ? <Bot size={9} /> : <ExternalLink size={9} />}
+                {formatAddress(activeAddress)}
               </a>
               <button className="btn btn-secondary btn-sm" onClick={disconnect}>
                 <span className="hide-tablet">Disconnect</span>
@@ -158,7 +160,7 @@ export default function Layout() {
             </>
           ) : (
             <div style={{ position: 'relative' }}>
-              <button className="btn btn-primary btn-sm" onClick={connect} disabled={connecting}>
+              <button className="btn btn-primary btn-sm" onClick={openPicker} disabled={connecting}>
                 {connecting
                   ? <><span className="spinner" style={{ width: 11, height: 11 }} />Connecting…</>
                   : 'Connect Wallet'}
@@ -212,7 +214,7 @@ export default function Layout() {
             </NavLink>
           ))}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-            {account ? (
+            {activeAddress ? (
               <button onClick={disconnect} style={{
                 width: '100%', background: 'var(--bg-subtle)',
                 border: '1.5px solid var(--border)', borderRadius: 10,
@@ -221,7 +223,7 @@ export default function Layout() {
                 fontFamily: 'var(--font-body)', textAlign: 'left',
               }}>Disconnect wallet</button>
             ) : (
-              <button onClick={() => { connect(); setMobileOpen(false) }}
+              <button onClick={() => { openPicker(); setMobileOpen(false) }}
                 className="btn btn-primary" style={{ width: '100%' }}>
                 Connect Wallet
               </button>
