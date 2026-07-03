@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { WalletProvider } from './hooks/useWallet'
 import { ToastContainer } from './components/Toast'
+import WalletPickerModal from './components/WalletPickerModal'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -11,6 +12,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <WalletProvider>
       <App />
       <ToastContainer />
+      <WalletPickerModal />
     </WalletProvider>
   </BrowserRouter>
 )
