@@ -171,7 +171,7 @@ export default function PostJob() {
             <BlurFade delay={0.04} inView className="mb-4">
               <div className={cn('flex items-center gap-3 px-4 py-3 rounded-xl border', usingAgentWallet ? 'border-pink-400/20 bg-pink-500/[0.05]' : 'border-purple-500/15 bg-purple-500/[0.04]')}>
                 {usingAgentWallet ? <Bot size={14} className="text-pink-400 shrink-0" /> : <Wallet size={14} className="text-purple-400 shrink-0" />}
-                <span className={cn('text-xs font-semibold', usingAgentWallet ? 'text-pink-300' : 'text-purple-300')}>
+                <span className={cn('text-xs font-semibold', usingAgentWallet ? 'text-pink-600' : 'text-purple-600')}>
                   {usingAgentWallet ? 'Posting from Agent Wallet' : 'Posting from Browser Wallet'}
                 </span>
                 <span className="text-[var(--text-1)]/30 text-[11px] font-mono ml-auto truncate" style={{ fontFamily: 'var(--font-mono)' }}>{activeAddress}</span>
@@ -254,7 +254,7 @@ export default function PostJob() {
                     <div className="flex items-start gap-2.5">
                       <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-purple-300 text-xs font-bold mb-1">
+                        <p className="text-purple-600 text-xs font-bold mb-1">
                           {usingAgentWallet ? 'Two-step transaction via Agent Wallet' : batchMode ? 'One-click Arc Batch TX (v0.7.2)' : 'Two-step transaction'}
                         </p>
                         <p className="text-[var(--text-1)]/40 text-xs leading-relaxed">

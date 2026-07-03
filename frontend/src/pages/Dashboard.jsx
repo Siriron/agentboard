@@ -205,7 +205,7 @@ export default function Dashboard() {
           <div className="flex gap-2 p-1 rounded-xl bg-[var(--bg-subtle)]/3 border border-[var(--border)]/6">
             {[['client', `Client (${clientJobs.length})`], ['agent', `Agent (${agentJobs.length})`]].map(([key, label]) => (
               <button key={key} onClick={() => { setTab(key); setStatusFilter('all') }}
-                className={cn('px-4 py-2 rounded-lg text-xs font-semibold transition-all', tab === key ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 'text-[var(--text-1)]/40 hover:text-[var(--text-1)]')}>
+                className={cn('px-4 py-2 rounded-lg text-xs font-semibold transition-all', tab === key ? 'bg-purple-500/20 text-purple-600 border border-purple-500/30' : 'text-[var(--text-1)]/40 hover:text-[var(--text-1)]')}>
                 {label}
               </button>
             ))}
@@ -250,7 +250,7 @@ export default function Dashboard() {
                         <span className="text-[var(--text-1)]/20 text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>#{id}</span>
                         <span className="text-[var(--text-1)]/20 text-[10px]">{meta.category}</span>
                       </div>
-                      <p className="font-semibold text-[var(--text-1)] text-sm truncate group-hover:text-purple-200 transition-colors"
+                      <p className="font-semibold text-[var(--text-1)] text-sm truncate group-hover:text-purple-600 transition-colors"
                         style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{meta.title}</p>
                     </div>
                     <div className="flex items-center gap-6 shrink-0">

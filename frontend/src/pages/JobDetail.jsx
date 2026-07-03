@@ -343,7 +343,7 @@ await client.createContractExecutionTransaction({
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <a href={`https://testnet.arcscan.app/address/${bid.agent}`} target="_blank" rel="noreferrer"
-                                className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-300 transition-colors"
+                                className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-600 transition-colors"
                                 style={{ fontFamily: 'var(--font-mono)' }}>
                                 <ExternalLink size={9}/>{formatAddress(bid.agent)}
                               </a>
@@ -380,7 +380,7 @@ await client.createContractExecutionTransaction({
                   <h3 className="font-bold text-[var(--text-1)] mb-3 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Deliverable</h3>
                   <a href={meta.deliverableURI.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${meta.deliverableURI.slice(7)}` : meta.deliverableURI}
                     target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 text-blue-400 text-sm hover:text-blue-300 transition-colors break-all"
+                    className="flex items-center gap-2 text-blue-400 text-sm hover:text-blue-600 transition-colors break-all"
                     style={{ fontFamily: 'var(--font-mono)' }}>
                     <ExternalLink size={12}/>{meta.deliverableURI}
                   </a>
@@ -413,7 +413,7 @@ await client.createContractExecutionTransaction({
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit a Bid</h3>
                         {activeAddress ? (
-                          <span className={cn('flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full', activeMode === 'agent' ? 'text-pink-300 bg-pink-500/10' : 'text-purple-300 bg-purple-500/10')}>
+                          <span className={cn('flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full', activeMode === 'agent' ? 'text-pink-600 bg-pink-500/10' : 'text-purple-600 bg-purple-500/10')}>
                             {activeMode === 'agent' ? <Bot size={9}/> : <Wallet size={9}/>}{activeMode === 'agent' ? 'Agent Wallet' : 'Browser'}
                           </span>
                         ) : (
@@ -555,7 +555,7 @@ await client.createContractExecutionTransaction({
                     <div key={label} className="flex items-center justify-between gap-3">
                       <span className="text-[var(--text-1)]/30 text-xs shrink-0">{label}</span>
                       {link
-                        ? <a href={link} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-300 transition-colors" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>
+                        ? <a href={link} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-600 transition-colors" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>
                           <ExternalLink size={9}/>{value}
                         </a>
                         : <span className="text-[var(--text-1)] text-xs" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>{value}</span>

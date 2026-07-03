@@ -42,6 +42,7 @@ export default function AgentWallet() {
   const [copiedAddr, setCopiedAddr] = useState(false)
   const [diagnosis, setDiagnosis] = useState(null)
   const [diagnosing, setDiagnosing] = useState(false)
+  const [showCode, setShowCode] = useState(false)
 
   // Keep local view state in sync if the persisted agent wallet changes
   // (e.g. loaded from localStorage after a fresh mount).
@@ -249,7 +250,7 @@ await client.createContractExecutionTransaction({
                     <button
                       onClick={runDiagnostics}
                       disabled={diagnosing}
-                      className="mt-2 text-xs font-semibold text-red-300/80 underline underline-offset-2 hover:text-red-200 disabled:opacity-50"
+                      className="mt-2 text-xs font-semibold text-red-600 underline underline-offset-2 hover:text-red-700 disabled:opacity-50"
                     >
                       {diagnosing ? 'Checking Circle credentials…' : 'Diagnose this error'}
                     </button>
@@ -265,9 +266,9 @@ await client.createContractExecutionTransaction({
                     ? <CheckCircle size={14} className="text-teal-400 mt-0.5 shrink-0" />
                     : <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />}
                   <div className="text-sm leading-snug">
-                    <p className={diagnosis.ok ? 'text-teal-300' : 'text-amber-300'}>{diagnosis.message}</p>
+                    <p className={diagnosis.ok ? 'text-teal-700' : 'text-amber-700'}>{diagnosis.message}</p>
                     {diagnosis.fix && (
-                      <p className="text-amber-200/60 text-xs mt-1.5">{diagnosis.fix}</p>
+                      <p className="text-amber-800/70 text-xs mt-1.5">{diagnosis.fix}</p>
                     )}
                   </div>
                 </div>
@@ -307,8 +308,8 @@ await client.createContractExecutionTransaction({
                 />
               </div>
               <div className="p-3.5 rounded-xl bg-purple-500/[0.06] border border-purple-500/15 mb-5">
-                <p className="text-purple-300/70 text-xs leading-relaxed">
-                  <span className="font-bold text-purple-300">accountType: SCA</span> — Smart Contract Account. Enables Circle Gas Station. All Arc Testnet fees are automatically sponsored.
+                <p className="text-purple-600/70 text-xs leading-relaxed">
+                  <span className="font-bold text-purple-600">accountType: SCA</span> — Smart Contract Account. Enables Circle Gas Station. All Arc Testnet fees are automatically sponsored.
                 </p>
               </div>
               {error && (
@@ -319,7 +320,7 @@ await client.createContractExecutionTransaction({
                     <button
                       onClick={runDiagnostics}
                       disabled={diagnosing}
-                      className="mt-2 text-xs font-semibold text-red-300/80 underline underline-offset-2 hover:text-red-200 disabled:opacity-50"
+                      className="mt-2 text-xs font-semibold text-red-600 underline underline-offset-2 hover:text-red-700 disabled:opacity-50"
                     >
                       {diagnosing ? 'Checking Circle credentials…' : 'Diagnose this error'}
                     </button>
@@ -335,9 +336,9 @@ await client.createContractExecutionTransaction({
                     ? <CheckCircle size={14} className="text-teal-400 mt-0.5 shrink-0" />
                     : <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />}
                   <div className="text-sm leading-snug">
-                    <p className={diagnosis.ok ? 'text-teal-300' : 'text-amber-300'}>{diagnosis.message}</p>
+                    <p className={diagnosis.ok ? 'text-teal-700' : 'text-amber-700'}>{diagnosis.message}</p>
                     {diagnosis.fix && (
-                      <p className="text-amber-200/60 text-xs mt-1.5">{diagnosis.fix}</p>
+                      <p className="text-amber-800/70 text-xs mt-1.5">{diagnosis.fix}</p>
                     )}
                   </div>
                 </div>
@@ -395,7 +396,7 @@ await client.createContractExecutionTransaction({
 
               {/* ArcScan link */}
               <a href={`https://testnet.arcscan.app/address/${wallet.address}`} target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-300 transition-colors mb-6">
+                className="flex items-center gap-2 text-sm text-purple-400 hover:text-purple-600 transition-colors mb-6">
                 <ExternalLink size={13} /> View on ArcScan
               </a>
 
@@ -409,26 +410,38 @@ await client.createContractExecutionTransaction({
                     'Use your Wallet ID in the SDK to bid on jobs headlessly',
                   ].map((s, i) => (
                     <div key={i} className="flex items-start gap-2">
-                      <span className="text-amber-400/60 text-xs font-bold shrink-0 mt-0.5">{i + 1}.</span>
-                      <span className="text-amber-200/60 text-xs leading-snug">{s}</span>
+                      <span className="text-amber-600 text-xs font-bold shrink-0 mt-0.5">{i + 1}.</span>
+                      <span className="text-amber-900/70 text-xs leading-snug">{s}</span>
                     </div>
                   ))}
                 </div>
               </div>
             </div>
 
-            {/* SDK snippet */}
+            {/* SDK snippet — collapsed by default; only relevant if you're
+                running an agent headlessly on your own server rather than
+                using this app directly. */}
             <BlurFade delay={0.15} inView>
-              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
+              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 overflow-hidden">
                 <BorderBeam size={180} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
-                <div className="flex items-center gap-2 mb-1">
-                  <Code2 size={14} className="text-purple-400" />
-                  <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>
-                    Use your wallet in code
-                  </h3>
-                </div>
-                <p className="text-[var(--text-1)]/35 text-xs mb-1">Your wallet ID is pre-filled. Copy and run in your agent server.</p>
-                <CodeSnip code={bidSnippet} />
+                <button onClick={() => setShowCode(s => !s)}
+                  className="w-full flex items-center justify-between gap-3 p-6 text-left">
+                  <div className="flex items-center gap-2">
+                    <Code2 size={14} className="text-purple-400 shrink-0" />
+                    <div>
+                      <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>
+                        Use your wallet in code
+                      </h3>
+                      <p className="text-[var(--text-1)]/35 text-xs mt-0.5">For agents running on your own server, without this app</p>
+                    </div>
+                  </div>
+                  <ChevronRight size={15} className={cn('text-[var(--text-1)]/30 shrink-0 transition-transform', showCode && 'rotate-90')} />
+                </button>
+                {showCode && (
+                  <div className="px-6 pb-6 -mt-1">
+                    <CodeSnip code={bidSnippet} />
+                  </div>
+                )}
               </div>
             </BlurFade>
 

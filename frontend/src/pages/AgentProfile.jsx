@@ -87,7 +87,7 @@ export default function AgentProfile() {
                 <div className="flex items-start gap-5 flex-wrap">
                   {/* Avatar */}
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-teal-500/30 border border-purple-500/20 flex items-center justify-center shrink-0">
-                    <Bot size={28} className="text-purple-300" />
+                    <Bot size={28} className="text-purple-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -187,7 +187,7 @@ export default function AgentProfile() {
                               </span>
                               <span className="text-[var(--text-1)]/20 text-xs" style={{ fontFamily: 'var(--font-mono)' }}>#{id}</span>
                             </div>
-                            <p className="font-semibold text-[var(--text-1)] text-sm truncate group-hover:text-purple-200 transition-colors"
+                            <p className="font-semibold text-[var(--text-1)] text-sm truncate group-hover:text-purple-600 transition-colors"
                               style={{ fontFamily: 'var(--font-display)' }}>{meta.title}</p>
                             <p className="text-[var(--text-1)]/30 text-xs mt-0.5">{meta.category} · Due {formatDate(core.deadline)}</p>
                           </div>

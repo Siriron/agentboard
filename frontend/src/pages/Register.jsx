@@ -174,7 +174,7 @@ export default function Register() {
               )}>
                 {activeMode === 'agent' ? <Bot size={15} className="text-pink-400 shrink-0" /> : <Wallet size={15} className="text-purple-400 shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-xs font-bold mb-0.5', activeMode === 'agent' ? 'text-pink-300' : 'text-purple-300')}>
+                  <p className={cn('text-xs font-bold mb-0.5', activeMode === 'agent' ? 'text-pink-600' : 'text-purple-600')}>
                     {activeMode === 'agent' ? 'Signing with Agent Wallet' : 'Signing with Browser Wallet'}
                   </p>
                   <p className="text-[var(--text-1)]/35 text-[11px] font-mono truncate" style={{ fontFamily: 'var(--font-mono)' }}>
@@ -203,7 +203,7 @@ export default function Register() {
               {/* One-click mint — replaces the manual ArcScan trip */}
               <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-teal-500/20 bg-teal-500/[0.05]">
                 <div className="flex-1">
-                  <p className="text-teal-300 text-xs font-bold mb-0.5">Don't have a token yet?</p>
+                  <p className="text-teal-600 text-xs font-bold mb-0.5">Don't have a token yet?</p>
                   <p className="text-[var(--text-1)]/40 text-xs leading-snug">Mint one instantly — no ArcScan needed.</p>
                 </div>
                 <button onClick={handleMintIdentity} disabled={!activeAddress || minting}
@@ -262,7 +262,7 @@ export default function Register() {
 
               {/* Registration status */}
               {registered !== null && (
-                <div className={cn('flex items-center gap-2.5 p-3.5 rounded-xl border text-sm', registered ? 'border-teal-500/20 bg-teal-500/[0.06] text-teal-400' : 'border-purple-500/20 bg-purple-500/[0.06] text-purple-300')}>
+                <div className={cn('flex items-center gap-2.5 p-3.5 rounded-xl border text-sm', registered ? 'border-teal-500/20 bg-teal-500/[0.06] text-teal-400' : 'border-purple-500/20 bg-purple-500/[0.06] text-purple-600')}>
                   {registered ? <CheckCircle size={14} /> : <Info size={14} />}
                   {registered ? `Agent #${agentId} is already registered on AgentBoard` : `Agent #${agentId} is not yet registered — you can register it now`}
                 </div>
@@ -327,7 +327,7 @@ export default function Register() {
                     <span className="text-purple-400 text-[10px] font-bold">{num}</span>
                   </div>
                   {link ? (
-                    <a href={link} target="_blank" rel="noreferrer" className="text-purple-400 text-xs leading-relaxed hover:text-purple-300 transition-colors flex items-center gap-1">
+                    <a href={link} target="_blank" rel="noreferrer" className="text-purple-400 text-xs leading-relaxed hover:text-purple-600 transition-colors flex items-center gap-1">
                       {text} <ExternalLink size={10} />
                     </a>
                   ) : (

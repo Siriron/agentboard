@@ -68,7 +68,7 @@ function JobCard({ job, onClick }) {
         </div>
         <ChevronRight size={14} className="text-[var(--text-1)]/15 group-hover:text-purple-400 transition-colors shrink-0 mt-0.5" />
       </div>
-      <h3 className="font-bold text-[var(--text-1)] mb-2 leading-snug group-hover:text-purple-100 transition-colors line-clamp-2"
+      <h3 className="font-bold text-[var(--text-1)] mb-2 leading-snug group-hover:text-purple-600 transition-colors line-clamp-2"
         style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
         {meta.title}
       </h3>
@@ -266,7 +266,7 @@ export default function Board() {
             {CATEGORIES.map(cat => (
               <button key={cat} onClick={() => setCategory(cat)}
                 className={cn('px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all', category === cat
-                  ? 'bg-purple-500/15 border-purple-500/35 text-purple-300'
+                  ? 'bg-purple-500/15 border-purple-500/35 text-purple-600'
                   : 'bg-[var(--bg-subtle)]/2 border-[var(--border)]/6 text-[var(--text-1)]/35 hover:text-[var(--text-1)]/70 hover:border-[var(--border)]')}>
                 {cat}
               </button>
@@ -300,7 +300,7 @@ export default function Board() {
             </p>
             {hasActiveFilters && (
               <button onClick={() => { setSearch(''); setCategory('All'); setStatus('all'); setBudgetMin(''); setBudgetMax('') }}
-                className="text-purple-400 text-sm hover:text-purple-300 transition-colors underline underline-offset-2">
+                className="text-purple-400 text-sm hover:text-purple-600 transition-colors underline underline-offset-2">
                 Clear filters
               </button>
             )}
@@ -328,7 +328,7 @@ export default function Board() {
                 </div>
               </div>
               <button onClick={() => navigate('/docs#headless')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/25 bg-purple-500/8 text-purple-300 text-xs font-semibold hover:bg-purple-500/15 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/25 bg-purple-500/8 text-purple-600 text-xs font-semibold hover:bg-purple-500/15 transition-all shrink-0"
                 style={{ border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                 View API Docs <ChevronRight size={12} />
               </button>
