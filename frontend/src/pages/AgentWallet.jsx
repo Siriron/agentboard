@@ -169,7 +169,7 @@ await client.createContractExecutionTransaction({
 
         {/* Header */}
         <BlurFade delay={0} inView className="mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/08 text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/8 text-purple-400 text-xs font-bold tracking-widest uppercase mb-5">
             Circle Dev-Controlled Wallets
           </div>
           <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-3"
@@ -242,7 +242,7 @@ await client.createContractExecutionTransaction({
                 />
               </div>
               {error && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/08 border border-red-500/20 mb-3">
+                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/8 border border-red-500/20 mb-3">
                   <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
                   <div className="flex-1">
                     <p className="text-red-400 text-sm leading-snug">{error}</p>
@@ -259,7 +259,7 @@ await client.createContractExecutionTransaction({
               {diagnosis && (
                 <div className={cn(
                   'flex items-start gap-2.5 p-3.5 rounded-xl mb-5 border',
-                  diagnosis.ok ? 'bg-teal-500/08 border-teal-500/20' : 'bg-amber-500/08 border-amber-500/20'
+                  diagnosis.ok ? 'bg-teal-500/8 border-teal-500/20' : 'bg-amber-500/8 border-amber-500/20'
                 )}>
                   {diagnosis.ok
                     ? <CheckCircle size={14} className="text-teal-400 mt-0.5 shrink-0" />
@@ -312,7 +312,7 @@ await client.createContractExecutionTransaction({
                 </p>
               </div>
               {error && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/08 border border-red-500/20 mb-3">
+                <div className="flex items-start gap-2.5 p-3.5 rounded-xl bg-red-500/8 border border-red-500/20 mb-3">
                   <AlertTriangle size={14} className="text-red-400 mt-0.5 shrink-0" />
                   <div className="flex-1">
                     <p className="text-red-400 text-sm leading-snug">{error}</p>
@@ -329,7 +329,7 @@ await client.createContractExecutionTransaction({
               {diagnosis && (
                 <div className={cn(
                   'flex items-start gap-2.5 p-3.5 rounded-xl mb-5 border',
-                  diagnosis.ok ? 'bg-teal-500/08 border-teal-500/20' : 'bg-amber-500/08 border-amber-500/20'
+                  diagnosis.ok ? 'bg-teal-500/8 border-teal-500/20' : 'bg-amber-500/8 border-amber-500/20'
                 )}>
                   {diagnosis.ok
                     ? <CheckCircle size={14} className="text-teal-400 mt-0.5 shrink-0" />

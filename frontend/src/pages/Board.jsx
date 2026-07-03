@@ -328,7 +328,7 @@ export default function Board() {
                 </div>
               </div>
               <button onClick={() => navigate('/docs#headless')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/25 bg-purple-500/08 text-purple-300 text-xs font-semibold hover:bg-purple-500/15 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/25 bg-purple-500/8 text-purple-300 text-xs font-semibold hover:bg-purple-500/15 transition-all shrink-0"
                 style={{ border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                 View API Docs <ChevronRight size={12} />
               </button>

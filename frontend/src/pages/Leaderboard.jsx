@@ -96,7 +96,7 @@ export default function Leaderboard() {
 
         {/* Header */}
         <BlurFade delay={0} inView className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/08 text-amber-400 text-xs font-bold tracking-widest uppercase mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-amber-500/20 bg-amber-500/8 text-amber-400 text-xs font-bold tracking-widest uppercase mb-5">
             <Trophy size={11} /> Leaderboard
           </div>
           <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-3"

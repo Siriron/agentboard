@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { useWallet } from '../hooks/useWallet'
-import { getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, mintAgentIdentity } from '../lib/arc'
+import {
+  getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI,
+  mintAgentIdentity, executeViaAgentWallet, IDENTITY_REGISTRY, IDENTITY_REGISTRY_ABI,
+} from '../lib/arc'
 import { useToast } from '../components/Toast'
 import { BlurFade } from '../components/magicui/BlurFade'
 import { BorderBeam } from '../components/magicui/BorderBeam'
@@ -13,7 +16,7 @@ import {
 const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
 
 export default function Register() {
-  const { account, connect, agentWallet } = useWallet()
+  const { activeAddress, activeMode, agentWallet, openPicker } = useWallet()
   const toast = useToast()
   const [agentId, setAgentId] = useState('')
   const [checking, setChecking] = useState(false)
@@ -24,10 +27,44 @@ export default function Register() {
   const [mintTxHash, setMintTxHash] = useState(null)
 
   async function handleMintIdentity() {
-    if (!account) { toast('Connect wallet first', 'error'); return }
+    if (!activeAddress) { toast('Connect a wallet first', 'error'); return }
     setMinting(true)
     try {
-      const { agentId: newId, txHash: mintTx } = await mintAgentIdentity({})
+      let newId, mintTx
+      if (activeMode === 'agent') {
+        const metadata = {
+          type: 'https://eips.ethereum.org/EIPS/eip-8004#registration-v1',
+          name: `AgentBoard Agent ${agentWallet.address.slice(0, 6)}`,
+          description: 'Registered via AgentBoard on Arc Testnet.',
+          active: true,
+        }
+        const agentURI = 'data:application/json;base64,' + btoa(JSON.stringify(metadata))
+        const { txHash: hash } = await executeViaAgentWallet({
+          walletId: agentWallet.id,
+          contractAddress: IDENTITY_REGISTRY,
+          abi: IDENTITY_REGISTRY_ABI,
+          functionName: 'register',
+          args: [agentURI],
+          memo: 'agentboard:mint-identity',
+        })
+        mintTx = hash
+        const receipt = await getPublicClient().waitForTransactionReceipt({ hash })
+        for (const log of receipt.logs) {
+          if (log.address.toLowerCase() !== IDENTITY_REGISTRY.toLowerCase()) continue
+          try {
+            const { decodeEventLog } = await import('viem')
+            const decoded = decodeEventLog({ abi: IDENTITY_REGISTRY_ABI, data: log.data, topics: log.topics })
+            if (decoded.eventName === 'Transfer' && decoded.args.to.toLowerCase() === agentWallet.address.toLowerCase()) {
+              newId = decoded.args.tokenId.toString()
+            }
+          } catch {}
+        }
+        if (!newId) throw new Error('Mint transaction confirmed but no Transfer event was found — check the transaction on ArcScan.')
+      } else {
+        const result = await mintAgentIdentity({})
+        newId = result.agentId
+        mintTx = result.txHash
+      }
       setAgentId(newId)
       setMintTxHash(mintTx)
       setRegistered(false) // freshly minted — definitely not registered on AgentBoard yet
@@ -52,18 +89,32 @@ export default function Register() {
   }
 
   async function handleRegister() {
-    if (!account) { toast('Connect wallet', 'error'); return }
+    if (!activeAddress) { toast('Connect a wallet first', 'error'); return }
     const parsed = parseInt(agentId)
     if (isNaN(parsed) || parsed < 0) { toast('Enter a valid Agent ID', 'error'); return }
     setRegistering(true)
     try {
-      const wc = await getWalletClient()
-      const [addr] = await wc.getAddresses()
-      const tx = await wc.writeContract({
-        address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-        functionName: 'registerAgent', args: [BigInt(parsed)], account: addr
-      })
-      await getPublicClient().waitForTransactionReceipt({ hash: tx })
+      let tx
+      if (activeMode === 'agent') {
+        const { txHash: hash } = await executeViaAgentWallet({
+          walletId: agentWallet.id,
+          contractAddress: CONTRACT_ADDRESS,
+          abi: CONTRACT_ABI,
+          functionName: 'registerAgent',
+          args: [BigInt(parsed)],
+          memo: 'agentboard:register-agent',
+        })
+        tx = hash
+        await getPublicClient().waitForTransactionReceipt({ hash: tx })
+      } else {
+        const wc = await getWalletClient()
+        const [addr] = await wc.getAddresses()
+        tx = await wc.writeContract({
+          address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
+          functionName: 'registerAgent', args: [BigInt(parsed)], account: addr
+        })
+        await getPublicClient().waitForTransactionReceipt({ hash: tx })
+      }
       setTxHash(tx)
       setRegistered(true)
       toast('Agent registered!', 'success')
@@ -81,7 +132,7 @@ export default function Register() {
 
         {/* Header */}
         <BlurFade delay={0} inView className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/08 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/8 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
             ERC-8004 Identity
           </div>
           <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-2"
@@ -113,32 +164,33 @@ export default function Register() {
           <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
             <BorderBeam size={220} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
 
-            {/* Agent wallet reference (Circle MPC wallet) — informational only.
-                Registering/minting signs an onchain tx and always needs the
-                browser wallet (MetaMask/Rabby) connected below, since Circle's
-                wallet is a separate, headless signer used by your agent's own code. */}
-            {agentWallet && (
-              <div className="flex items-center gap-3 p-3.5 rounded-xl border border-purple-500/15 bg-purple-500/[0.04] mb-4">
-                <Bot size={15} className="text-purple-400 shrink-0" />
+            {/* Active signer status — reflects whichever wallet is currently
+                selected (Browser or Agent), both of which can mint and
+                register directly from this page. */}
+            {activeAddress ? (
+              <div className={cn(
+                'flex items-center gap-3 p-3.5 rounded-xl border mb-6',
+                activeMode === 'agent' ? 'border-pink-400/20 bg-pink-500/[0.05]' : 'border-purple-500/15 bg-purple-500/[0.04]'
+              )}>
+                {activeMode === 'agent' ? <Bot size={15} className="text-pink-400 shrink-0" /> : <Wallet size={15} className="text-purple-400 shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <p className="text-purple-300 text-xs font-bold mb-0.5">Agent wallet on file</p>
+                  <p className={cn('text-xs font-bold mb-0.5', activeMode === 'agent' ? 'text-pink-300' : 'text-purple-300')}>
+                    {activeMode === 'agent' ? 'Signing with Agent Wallet' : 'Signing with Browser Wallet'}
+                  </p>
                   <p className="text-[var(--text-1)]/35 text-[11px] font-mono truncate" style={{ fontFamily: 'var(--font-mono)' }}>
-                    {agentWallet.address}
+                    {activeAddress}
                   </p>
                 </div>
               </div>
-            )}
-
-            {/* Connect wallet warning */}
-            {!account && (
+            ) : (
               <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] mb-6">
                 <AlertCircle size={15} className="text-amber-400 shrink-0" />
                 <div className="flex-1">
-                  <p className="text-amber-400 text-xs font-bold mb-1.5">Browser wallet not connected</p>
-                  <p className="text-amber-200/50 text-[11px] leading-snug mb-2">
-                    Minting and registering sign a transaction, so this needs MetaMask or Rabby — not the Circle agent wallet.
+                  <p className="text-amber-400 text-xs font-bold mb-1.5">No wallet connected</p>
+                  <p className="text-amber-800/60 text-[11px] leading-snug mb-2">
+                    Minting and registering sign a transaction — connect a Browser Wallet or an Agent Wallet to continue.
                   </p>
-                  <button onClick={connect}
+                  <button onClick={openPicker}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)]"
                     style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
                     <Wallet size={11} /> Connect Wallet
@@ -154,8 +206,8 @@ export default function Register() {
                   <p className="text-teal-300 text-xs font-bold mb-0.5">Don't have a token yet?</p>
                   <p className="text-[var(--text-1)]/40 text-xs leading-snug">Mint one instantly — no ArcScan needed.</p>
                 </div>
-                <button onClick={handleMintIdentity} disabled={!account || minting}
-                  className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-1)] shrink-0 transition-all', (!account || minting) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]')}
+                <button onClick={handleMintIdentity} disabled={!activeAddress || minting}
+                  className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-1)] shrink-0 transition-all', (!activeAddress || minting) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]')}
                   style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)', boxShadow: '0 0 20px rgba(16,185,129,0.25)' }}>
                   {minting ? <Loader size={13} className="animate-spin" /> : <Sparkles size={13} />}
                   {minting ? 'Minting…' : 'Mint Identity'}
@@ -243,8 +295,8 @@ export default function Register() {
               {/* Register button */}
               <button
                 onClick={handleRegister}
-                disabled={!account || registered === true || registering || !agentId.trim()}
-                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!account || registered === true || registering || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                disabled={!activeAddress || registered === true || registering || !agentId.trim()}
+                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
                 style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
                 {registering ? (
                   <><Loader size={14} className="animate-spin" /> Registering on Arc…</>

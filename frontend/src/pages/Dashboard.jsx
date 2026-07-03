@@ -65,7 +65,7 @@ function EmptyState({ icon, title, desc, action, actionLabel }) {
 }
 
 export default function Dashboard() {
-  const { account, connect } = useWallet()
+  const { activeAddress, openPicker } = useWallet()
   const navigate = useNavigate()
   const [clientJobs, setClientJobs] = useState([])
   const [agentJobs, setAgentJobs] = useState([])
@@ -81,8 +81,8 @@ export default function Dashboard() {
     try {
       const client = getPublicClient()
       const [cIds, aIds] = await Promise.all([
-        client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getClientJobs', args: [account] }),
-        client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getAgentJobs', args: [account] }),
+        client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getClientJobs', args: [activeAddress] }),
+        client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getAgentJobs', args: [activeAddress] }),
       ])
       async function loadList(ids) {
         const jobs = []
@@ -101,16 +101,16 @@ export default function Dashboard() {
       setClientJobs(cj)
       setAgentJobs(aj)
       // Try Goldsky for enriched agent stats (non-blocking)
-      getAgentStats(account).then(gs => {
+      getAgentStats(activeAddress).then(gs => {
         if (gs?.agent) setGoldskyStats(gs.agent)
       }).catch(() => {})
     } catch(e) { console.error(e) }
     finally { setLoading(false); setRefreshing(false) }
-  }, [account])
+  }, [activeAddress])
 
-  useEffect(() => { if (account) load() }, [account, load])
+  useEffect(() => { if (activeAddress) load() }, [activeAddress, load])
 
-  if (!account) return (
+  if (!activeAddress) return (
     <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-6 text-center px-6 relative">
       <div className="absolute inset-0 pointer-events-none">
         <div style={{ position: 'absolute', width: 500, height: 500, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(124,92,252,0.1) 0%, transparent 65%)', filter: 'blur(60px)' }} />
@@ -126,7 +126,7 @@ export default function Dashboard() {
           See all jobs posted, bids submitted, and USDC earned on Arc.
         </p>
       </div>
-      <button onClick={connect}
+      <button onClick={openPicker}
         className="relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
         style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
         Connect Wallet
@@ -161,10 +161,10 @@ export default function Dashboard() {
               </h1>
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-                <a href={`https://testnet.arcscan.app/address/${account}`} target="_blank" rel="noreferrer"
+                <a href={`https://testnet.arcscan.app/address/${activeAddress}`} target="_blank" rel="noreferrer"
                   className="flex items-center gap-1.5 text-[var(--text-1)]/30 text-xs hover:text-purple-400 transition-colors"
                   style={{ fontFamily: 'var(--font-mono)' }}>
-                  {account?.slice(0,10)}…{account?.slice(-6)} <ExternalLink size={10}/>
+                  {activeAddress?.slice(0,10)}…{activeAddress?.slice(-6)} <ExternalLink size={10}/>
                 </a>
               </div>
             </div>

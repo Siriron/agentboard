@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getPublicClient, getWalletClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatAddress, formatDate, STATUS_LABEL, isZeroAddress, buildMemo } from '../lib/arc'
+import { getPublicClient, getWalletClient, executeViaAgentWallet, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatAddress, formatDate, STATUS_LABEL, isZeroAddress, buildMemo } from '../lib/arc'
 import { useWallet } from '../hooks/useWallet'
 import { useToast } from '../components/Toast'
 import { BlurFade } from '../components/magicui/BlurFade'
@@ -61,7 +61,7 @@ async function uploadToIPFS(file) {
 export default function JobDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { account } = useWallet()
+  const { activeAddress, activeMode, agentWallet, openPicker } = useWallet()
   const toast = useToast()
   const [job, setJob] = useState(null)
   const [bids, setBids] = useState([])
@@ -96,10 +96,20 @@ export default function JobDetail() {
   async function write(fn, args, label) {
     setSubmitting(label)
     try {
-      const wc = await getWalletClient()
-      const [addr] = await wc.getAddresses()
-      const tx = await wc.writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: fn, args, account: addr })
-      await getPublicClient().waitForTransactionReceipt({ hash: tx })
+      let tx
+      if (activeMode === 'agent') {
+        const { txHash } = await executeViaAgentWallet({
+          walletId: agentWallet.id, contractAddress: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
+          functionName: fn, args, memo: buildMemo(fn, id),
+        })
+        tx = txHash
+        await getPublicClient().waitForTransactionReceipt({ hash: tx })
+      } else {
+        const wc = await getWalletClient()
+        const [addr] = await wc.getAddresses()
+        tx = await wc.writeContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: fn, args, account: addr })
+        await getPublicClient().waitForTransactionReceipt({ hash: tx })
+      }
       setLastTx(tx)
       load()
       return { txHash: tx }
@@ -186,9 +196,9 @@ export default function JobDetail() {
   const { core, meta } = job
   const sn = Number(core.status)
   const sc = STATUS_COLORS[sn] || STATUS_COLORS[5]
-  const isClient = account?.toLowerCase() === core.client?.toLowerCase()
-  const isAgent = !isZeroAddress(core.hiredAgent) && account?.toLowerCase() === core.hiredAgent?.toLowerCase()
-  const isValidator = !isZeroAddress(core.validator) && account?.toLowerCase() === core.validator?.toLowerCase()
+  const isClient = activeAddress?.toLowerCase() === core.client?.toLowerCase()
+  const isAgent = !isZeroAddress(core.hiredAgent) && activeAddress?.toLowerCase() === core.hiredAgent?.toLowerCase()
+  const isValidator = !isZeroAddress(core.validator) && activeAddress?.toLowerCase() === core.validator?.toLowerCase()
   const activeBids = bids.filter(b => !b.withdrawn)
 
   const headlessCode = `import { initiateDeveloperControlledWalletsClient } from '@circle-fin/developer-controlled-wallets'
@@ -390,7 +400,7 @@ await client.createContractExecutionTransaction({
                   <BorderBeam size={180} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
                   {/* Tabs */}
                   <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-subtle)]/4 mb-5">
-                    {[['wallet', <Wallet size={11}/>, 'Wallet'], ['headless', <Bot size={11}/>, 'API']].map(([key, icon, label]) => (
+                    {[['wallet', <Wallet size={11}/>, 'Submit Bid'], ['headless', <Terminal size={11}/>, 'Copy Code']].map(([key, icon, label]) => (
                       <button key={key} onClick={() => setBidTab(key)}
                         className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-subtle)]/8 border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-1)]/35 hover:text-[var(--text-1)]/60')}>
                         {icon}{label}
@@ -400,7 +410,18 @@ await client.createContractExecutionTransaction({
 
                   {bidTab === 'wallet' ? (
                     <>
-                      <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit a Bid</h3>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit a Bid</h3>
+                        {activeAddress ? (
+                          <span className={cn('flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full', activeMode === 'agent' ? 'text-pink-300 bg-pink-500/10' : 'text-purple-300 bg-purple-500/10')}>
+                            {activeMode === 'agent' ? <Bot size={9}/> : <Wallet size={9}/>}{activeMode === 'agent' ? 'Agent Wallet' : 'Browser'}
+                          </span>
+                        ) : (
+                          <button onClick={openPicker} className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)]" style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+                            <Wallet size={9}/> Connect
+                          </button>
+                        )}
+                      </div>
                       <div className="flex flex-col gap-3">
                         {[
                           { label: 'ERC-8004 Agent ID', key: 'agentId', type: 'number', placeholder: 'e.g. 42' },
@@ -420,22 +441,22 @@ await client.createContractExecutionTransaction({
                             value={bidForm.proposal} onChange={e => setBidForm(f => ({ ...f, proposal: e.target.value }))}
                             style={{ fontFamily: 'var(--font-body)' }} />
                         </div>
-                        <button onClick={handleBid} disabled={submitting === 'bid'}
+                        <button onClick={activeAddress ? handleBid : openPicker} disabled={submitting === 'bid'}
                           className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
                           style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
                           {submitting === 'bid' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
-                          {submitting === 'bid' ? 'Submitting…' : 'Submit Bid'}
+                          {submitting === 'bid' ? 'Submitting…' : activeAddress ? 'Submit Bid' : 'Connect Wallet to Bid'}
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
                       <div className="flex items-center gap-2 mb-2">
-                        <Bot size={14} className="text-purple-400"/>
-                        <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Bid Without MetaMask</h3>
+                        <Terminal size={14} className="text-purple-400"/>
+                        <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Bid From Your Own Backend</h3>
                       </div>
                       <p className="text-[var(--text-1)]/40 text-xs leading-relaxed mb-3">
-                        Use Circle Dev-Controlled Wallets. No browser, no extension. Gas sponsored by Circle Gas Station.
+                        For an agent running unattended on a server, sign directly with Circle's SDK using your Agent Wallet's ID — no browser involved at all.
                       </p>
                       <CodeSnip code={headlessCode} />
                     </>
