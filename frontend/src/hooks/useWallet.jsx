@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
 
 const WalletContext = createContext(null)
 
@@ -31,6 +31,7 @@ async function ensureArcChain() {
 }
 
 const AGENT_WALLET_KEY = 'agentboard.agentWallet'
+const ACTIVE_MODE_KEY = 'agentboard.activeWalletMode' // 'browser' | 'agent'
 
 function loadAgentWallet() {
   try {
@@ -41,13 +42,28 @@ function loadAgentWallet() {
   }
 }
 
+function loadActiveMode() {
+  try {
+    return localStorage.getItem(ACTIVE_MODE_KEY) || null
+  } catch {
+    return null
+  }
+}
+
 export function WalletProvider({ children }) {
   const [account, setAccount] = useState(null)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState(null)
+
   // Circle-managed agent wallet (MPC), separate from the MetaMask/Rabby
   // browser wallet above. Persisted so it survives navigation/reloads.
   const [agentWallet, setAgentWallet] = useState(loadAgentWallet)
+
+  // Which signer is "active" right now — this is what every page should
+  // read from instead of `account` directly, so Browser Wallet and Agent
+  // Wallet behave as two interchangeable options behind one Connect button.
+  const [activeMode, setActiveModeState] = useState(loadActiveMode)
+  const [pickerOpen, setPickerOpen] = useState(false)
 
   const saveAgentWallet = useCallback((wallet) => {
     setAgentWallet(wallet)
@@ -57,7 +73,22 @@ export function WalletProvider({ children }) {
     } catch {}
   }, [])
 
-  const clearAgentWallet = useCallback(() => saveAgentWallet(null), [saveAgentWallet])
+  const clearAgentWallet = useCallback(() => {
+    saveAgentWallet(null)
+    setActiveModeState(prev => {
+      if (prev !== 'agent') return prev
+      try { localStorage.removeItem(ACTIVE_MODE_KEY) } catch {}
+      return null
+    })
+  }, [saveAgentWallet])
+
+  const setActiveMode = useCallback((mode) => {
+    setActiveModeState(mode)
+    try {
+      if (mode) localStorage.setItem(ACTIVE_MODE_KEY, mode)
+      else localStorage.removeItem(ACTIVE_MODE_KEY)
+    } catch {}
+  }, [])
 
   useEffect(() => {
     if (!window.ethereum) return
@@ -74,7 +105,7 @@ export function WalletProvider({ children }) {
     }
   }, [])
 
-  const connect = useCallback(async () => {
+  const connectBrowser = useCallback(async () => {
     if (!window.ethereum) {
       setError('No wallet detected. Install MetaMask or Rabby to connect.')
       return
@@ -86,6 +117,7 @@ export function WalletProvider({ children }) {
       if (accounts?.[0]) {
         setAccount(accounts[0])
         await ensureArcChain()
+        setActiveMode('browser')
       }
     } catch (e) {
       if (e.code !== 4001) {
@@ -95,17 +127,48 @@ export function WalletProvider({ children }) {
     } finally {
       setConnecting(false)
     }
-  }, [])
+  }, [setActiveMode])
+
+  // Backwards-compatible alias — existing call sites using `connect()`
+  // continue to connect the browser wallet directly.
+  const connect = connectBrowser
+
+  const useAgentWallet = useCallback(() => {
+    if (!agentWallet) return false
+    setActiveMode('agent')
+    return true
+  }, [agentWallet, setActiveMode])
 
   const disconnect = useCallback(() => {
     setAccount(null)
     setError(null)
-  }, [])
+    setActiveMode(null)
+  }, [setActiveMode])
+
+  const openPicker = useCallback(() => setPickerOpen(true), [])
+  const closePicker = useCallback(() => setPickerOpen(false), [])
+
+  // Unified signer surface: whichever wallet is "active" right now,
+  // regardless of whether it's the browser extension or the Circle
+  // agent wallet. Pages should prefer these over raw `account`.
+  const activeAddress = useMemo(() => {
+    if (activeMode === 'agent') return agentWallet?.address || null
+    if (activeMode === 'browser') return account || null
+    return null
+  }, [activeMode, agentWallet, account])
+
+  const isConnected = !!activeAddress
 
   return (
     <WalletContext.Provider value={{
-      account, connecting, connect, disconnect, error,
-      agentWallet, saveAgentWallet, clearAgentWallet,
+      // Raw browser wallet state (kept for backward compatibility)
+      account, connecting, connect, connectBrowser, disconnect, error,
+      // Agent wallet state
+      agentWallet, saveAgentWallet, clearAgentWallet, useAgentWallet,
+      // Unified "active signer" surface
+      activeMode, setActiveMode, activeAddress, isConnected,
+      // Wallet picker UI state (Browser vs Agent chooser)
+      pickerOpen, openPicker, closePicker,
     }}>
       {children}
     </WalletContext.Provider>
