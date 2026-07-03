@@ -196,6 +196,49 @@ export async function switchToArc() {
   }
 }
 
+// Sign and submit a contract call through a Circle-managed Agent Wallet
+// instead of a browser extension — used when the user has picked "Agent
+// Wallet" as their active signer. Encodes calldata client-side, submits it
+// via the serverless /api/agent-wallet execute action, then polls
+// tx-status until Circle reports a final state.
+export async function executeViaAgentWallet({ walletId, contractAddress, abi, functionName, args, memo }) {
+  const calldata = encodeFunctionData({ abi, functionName, args })
+
+  const submitRes = await fetch('/api/agent-wallet?action=execute', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ walletId, contractAddress, calldata, memo }),
+  })
+  const submitData = await submitRes.json()
+  if (!submitRes.ok) {
+    throw new Error(submitData.error || submitData.likelyCause || 'Agent wallet transaction failed to submit')
+  }
+  const { txId } = submitData
+
+  // Poll until Circle reports the transaction as complete or failed.
+  const TERMINAL_STATES = ['COMPLETE', 'CONFIRMED', 'FAILED', 'CANCELLED']
+  let state = 'PENDING'
+  let txHash = null
+  let errorReason = null
+  for (let i = 0; i < 40; i++) {
+    await new Promise(r => setTimeout(r, 1500))
+    const statusRes = await fetch(`/api/agent-wallet?action=tx-status&txId=${encodeURIComponent(txId)}`)
+    const statusData = await statusRes.json()
+    state = statusData.state || state
+    txHash = statusData.txHash || txHash
+    errorReason = statusData.errorReason || errorReason
+    if (TERMINAL_STATES.includes(state)) break
+  }
+
+  if (state === 'FAILED' || state === 'CANCELLED') {
+    throw new Error(errorReason || `Agent wallet transaction ${state.toLowerCase()}`)
+  }
+  if (!TERMINAL_STATES.includes(state)) {
+    throw new Error('Agent wallet transaction is taking longer than expected — check its status from the Agent Wallet page.')
+  }
+  return { txId, txHash }
+}
+
 export const STATUS_LABEL = ['OPEN', 'HIRED', 'SUBMITTED', 'VALIDATED', 'DISPUTED', 'CANCELLED', 'EXPIRED']
 export const STATUS_COLOR = ['#19fb9b', '#fbbf24', '#60a5fa', '#19fb9b', '#f87171', '#6b7280', '#6b7280']
 
