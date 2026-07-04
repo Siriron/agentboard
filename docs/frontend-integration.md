@@ -55,48 +55,58 @@ export function getPublicClient() {
 
 ## Wallet Client
 
-The wallet client is created per-call using the browser's injected provider (MetaMask).
+The wallet client is created per-call, resolved through an EIP-6963 provider registry rather than reading `window.ethereum` directly. With more than one wallet extension installed (MetaMask + Bitget being the common case), `window.ethereum` is ambiguous — it's whichever extension won the injection race, not necessarily the one the user connected with. The registry keeps every announced provider distinct and pins whichever one the user picked.
 
 ```js
+import { getActiveProvider } from './providerRegistry'
+
 export async function getWalletClient() {
-  if (!window.ethereum) throw new Error('No wallet detected')
+  const provider = getActiveProvider()
+  if (!provider) throw new Error('No wallet detected')
+  // Re-assert Arc right before signing, not just at connect — catches
+  // the wallet having been switched to another chain in the meantime.
+  const result = await ensureArcChain()
+  if (!result.ok) throw new Error('Please switch your wallet to Arc Testnet to continue.')
   return createWalletClient({
     chain: arcTestnet,
-    transport: custom(window.ethereum)
+    transport: custom(provider)
   })
 }
 ```
 
 ## Wallet Connection
 
-The wallet connection flow requests accounts first, then adds/switches to Arc Testnet silently.
+Connecting no longer forces a chain switch prompt. It requests accounts, then just reads the wallet's current chain — if the wallet is already on Arc (regardless of which RPC entry it's using internally), connect succeeds immediately with no popup. The chain switch/add prompt only fires lazily, right before a write actually needs to sign, via `ensureArcChain()` inside `getWalletClient()`.
 
 ```js
-const connect = useCallback(async () => {
-  if (!window.ethereum) {
-    alert('Please install MetaMask.')
+const connectBrowser = useCallback(async (uuid) => {
+  const provider = uuid ? pickProvider(uuid) : getActiveProvider()
+  if (!provider) {
+    setError('No wallet detected. Install MetaMask or Rabby to connect.')
     return
   }
   setConnecting(true)
   try {
-    // Step 1: request accounts (triggers MetaMask popup)
-    const accounts = await window.ethereum.request({
-      method: 'eth_requestAccounts'
-    })
+    const accounts = await provider.request({ method: 'eth_requestAccounts' })
     if (accounts?.[0]) {
+      if (uuid) { saveActiveProviderUuid(uuid); setProviderUuid(uuid) }
       setAccount(accounts[0])
-      // Step 2: switch/add Arc chain silently
-      await ensureArcChain()
+      // Just read the chain here — no switch/add prompt during connect.
+      const currentChainId = await provider.request({ method: 'eth_chainId' })
+      setWrongChain(currentChainId?.toLowerCase() !== ARC_CHAIN_ID.toLowerCase())
+      setActiveMode('browser')
     }
   } catch (e) {
-    if (e.code !== 4001) console.error(e)
+    if (e.code !== 4001) setError(e.message)
   } finally {
     setConnecting(false)
   }
 }, [])
 ```
 
-`eth_requestAccounts` must come before `wallet_switchEthereumChain`. MetaMask will not switch chains until an account is connected.
+`ensureArcChain()` itself re-checks `eth_chainId` before ever calling `wallet_addEthereumChain` — some wallets (Bitget in particular) can return a "chain not recognized" error from `wallet_switchEthereumChain` even when the chain is already configured, if their internal chain table is briefly out of sync. Re-reading `eth_chainId` instead of trusting that error message is what avoids creating a duplicate network entry.
+
+One easy trap worth calling out explicitly: Arc's chain ID (`5042002`) doesn't have a short, memorable hex form like mainnet (`0x1`) or Polygon (`0x89`). Its correct hex is `0x4cef52` — transposing even one digit (e.g. `0x4CE352`, which decodes to a completely different chain ID) will silently break every `eth_chainId` comparison in the app. If wallet connection or chain detection is misbehaving, checking `parseInt(ARC_CHAIN_ID, 16) === 5042002` is the first thing to verify.
 
 ## Reading Contract Data
 

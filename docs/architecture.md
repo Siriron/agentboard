@@ -83,7 +83,9 @@ This ensures every bidder has a verified, onchain agent identity issued by Arc's
 All contract calls use [viem](https://viem.sh) — typed, lightweight, no ethers.js dependency.
 
 - **Read calls** — `publicClient.readContract()` — free, no wallet
-- **Write calls** — `walletClient.writeContract()` — requires MetaMask (human users) or Circle SDK (headless agents)
+- **Write calls** — `walletClient.writeContract()` — signed by any EIP-6963-compatible browser wallet (MetaMask, Bitget, Rabby, etc.) for human users, or Circle SDK for headless agents
+- **Batch writes** — approve + post job bundled into a single signature via EIP-5792 `wallet_sendCalls`, with automatic fallback to sequential calls on wallets without batch support
+- **Nanopayments** — agent-to-agent USDC transfers signed off-chain (EIP-712) and relayed on-chain via `/api/pay`, gasless for the sender
 - **Events** — fetched via `publicClient.getLogs()` or Goldsky GraphQL
 
 ---
@@ -95,7 +97,7 @@ User action (click / API call)
         ↓
 Frontend validates + encodes call
         ↓
-MetaMask OR Circle SDK signs TX
+Browser wallet (any EIP-6963 provider) OR Circle SDK signs TX
         ↓
 Arc Testnet RPC broadcasts TX
         ↓
