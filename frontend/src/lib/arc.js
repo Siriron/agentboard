@@ -1,4 +1,5 @@
 import { createPublicClient, createWalletClient, custom, http, encodeFunctionData, decodeEventLog } from 'viem'
+import { ensureArcChain } from '../hooks/useWallet'
 
 export const arcTestnet = {
   id: 5042002,
@@ -121,6 +122,14 @@ export function getPublicClient() {
 
 export async function getWalletClient() {
   if (!window.ethereum) throw new Error('No wallet detected. Please install MetaMask.')
+  // Re-assert Arc Testnet right before signing — not just at initial
+  // connect. If the wallet was switched to another chain in the meantime
+  // (another dapp, the wallet's own UI), this catches it here instead of
+  // silently sending the transaction to the wrong network.
+  const result = await ensureArcChain()
+  if (!result.ok) {
+    throw new Error('Please switch your wallet to Arc Testnet to continue.')
+  }
   return createWalletClient({ chain: arcTestnet, transport: custom(window.ethereum) })
 }
 
@@ -237,6 +246,87 @@ export async function executeViaAgentWallet({ walletId, contractAddress, abi, fu
     throw new Error('Agent wallet transaction is taking longer than expected — check its status from the Agent Wallet page.')
   }
   return { txId, txHash }
+}
+
+// Aggregate protocol stats computed from real job data — used on the
+// landing page instead of hardcoded placeholder numbers. Caps how many
+// Shared scan of recent jobs — used by both getProtocolStats and
+// getOnchainLeaderboard so they read the same underlying data once each,
+// rather than each page defining its own ad-hoc fetch.
+async function scanRecentJobs(maxJobs = 60) {
+  const pc = getPublicClient()
+  const total = await pc.readContract({
+    address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'jobCount',
+  })
+  const totalJobs = Number(total)
+  const scanCount = Math.min(totalJobs, maxJobs)
+  if (scanCount === 0) return { totalJobs, scanCount, cores: [] }
+
+  const ids = Array.from({ length: scanCount }, (_, i) => BigInt(totalJobs - scanCount + i + 1))
+  const cores = await Promise.all(
+    ids.map(id => pc.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobCore', args: [id] }).catch(() => null))
+  )
+  return { totalJobs, scanCount, cores: cores.filter(Boolean) }
+}
+
+// jobs it reads to stay cheap on a testnet with a small job count; if
+// that cap is ever hit the number is presented as a floor ("50+") rather
+// than a false total.
+export async function getProtocolStats() {
+  const { totalJobs, scanCount, cores } = await scanRecentJobs(60)
+
+  if (scanCount === 0) {
+    return { totalJobs: 0, escrowedUSDC: 0, totalBids: 0, scanned: 0, isPartial: false }
+  }
+
+  let escrowedRaw = 0n
+  let totalBids = 0
+  for (const core of cores) {
+    // OPEN (0) or HIRED (1) — budget is still locked in the contract
+    if (Number(core.status) === 0 || Number(core.status) === 1) {
+      escrowedRaw += core.budget
+    }
+    totalBids += Number(core.bidCount)
+  }
+
+  return {
+    totalJobs,
+    escrowedUSDC: Number(escrowedRaw) / 1e6,
+    totalBids,
+    scanned: scanCount,
+    isPartial: scanCount < totalJobs,
+  }
+}
+
+// Real onchain leaderboard — ranks agents by jobs actually completed and
+// paid out (status VALIDATED), aggregated directly from job data. No
+// fabricated rows: an agent only appears here if they were genuinely
+// hired and their work was genuinely validated onchain. Used as the
+// leaderboard source until a Goldsky subgraph is deployed, at which
+// point that becomes the faster source for a larger job history — this
+// stays correct either way since it reads the same underlying facts.
+export async function getOnchainLeaderboard(maxJobs = 60) {
+  const { totalJobs, scanCount, cores } = await scanRecentJobs(maxJobs)
+  if (scanCount === 0) return { agents: [], scanned: 0, isPartial: false }
+
+  const byAgent = new Map()
+  for (const core of cores) {
+    if (Number(core.status) !== 3) continue // VALIDATED only — real, paid completions
+    if (isZeroAddress(core.hiredAgent)) continue
+    const key = core.hiredAgent.toLowerCase()
+    const fee = (core.budget * 100n) / 10000n // matches PLATFORM_FEE_BPS
+    const earned = core.budget - fee
+    const prev = byAgent.get(key) || { address: core.hiredAgent, agentId: Number(core.hiredAgentId), jobsCompleted: 0, totalEarnedRaw: 0n }
+    prev.jobsCompleted += 1
+    prev.totalEarnedRaw += earned
+    byAgent.set(key, prev)
+  }
+
+  const agents = Array.from(byAgent.values())
+    .map(a => ({ ...a, totalEarned: Number(a.totalEarnedRaw) }))
+    .sort((a, b) => b.totalEarnedRaw > a.totalEarnedRaw ? 1 : -1)
+
+  return { agents, scanned: scanCount, isPartial: scanCount < totalJobs }
 }
 
 export const STATUS_LABEL = ['OPEN', 'HIRED', 'SUBMITTED', 'VALIDATED', 'DISPUTED', 'CANCELLED', 'EXPIRED']
