@@ -11,22 +11,50 @@ const ARC_CHAIN = {
   blockExplorerUrls: ['https://testnet.arcscan.app'],
 }
 
-async function ensureArcChain() {
-  if (!window.ethereum) return
+// Checks the wallet's current chain and only switches/adds Arc Testnet
+// when actually necessary. Many wallets (Bitget in particular) throw a
+// generic -32603 for unrelated hiccups on wallet_switchEthereumChain —
+// treating that as "chain missing" caused a duplicate add-chain prompt
+// even when Arc was already configured. Only 4902 (and the couple of
+// wallets that report it via message instead of code) means "not added."
+export async function ensureArcChain() {
+  if (!window.ethereum) return { ok: false, reason: 'no-wallet' }
+
+  try {
+    const currentChainId = await window.ethereum.request({ method: 'eth_chainId' })
+    if (typeof currentChainId === 'string' && currentChainId.toLowerCase() === ARC_CHAIN_ID.toLowerCase()) {
+      return { ok: true } // already on Arc — do nothing, no prompts at all
+    }
+  } catch {
+    // eth_chainId should never really fail; fall through to attempting a switch
+  }
+
   try {
     await window.ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: ARC_CHAIN_ID }],
     })
+    return { ok: true }
   } catch (e) {
-    if (e.code === 4902 || e.code === -32603) {
+    const isUnrecognizedChain =
+      e?.code === 4902 ||
+      /unrecognized chain|add.*chain|not.*added/i.test(e?.message || '')
+
+    if (isUnrecognizedChain) {
       try {
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
           params: [ARC_CHAIN],
         })
-      } catch {}
+        return { ok: true }
+      } catch (addErr) {
+        return { ok: false, reason: 'add-failed', error: addErr }
+      }
     }
+
+    // Any other error (user rejected the switch, wallet's internal hiccup,
+    // etc.) — don't guess and don't spam wallet_addEthereumChain.
+    return { ok: false, reason: 'switch-failed', error: e }
   }
 }
 
@@ -54,6 +82,7 @@ export function WalletProvider({ children }) {
   const [account, setAccount] = useState(null)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState(null)
+  const [wrongChain, setWrongChain] = useState(false)
 
   // Circle-managed agent wallet (MPC), separate from the MetaMask/Rabby
   // browser wallet above. Persisted so it survives navigation/reloads.
@@ -92,11 +121,26 @@ export function WalletProvider({ children }) {
 
   useEffect(() => {
     if (!window.ethereum) return
+
     window.ethereum.request({ method: 'eth_accounts' })
       .then(accounts => { if (accounts?.[0]) setAccount(accounts[0]) })
       .catch(() => {})
+
+    window.ethereum.request({ method: 'eth_chainId' })
+      .then(id => setWrongChain(typeof id === 'string' && id.toLowerCase() !== ARC_CHAIN_ID.toLowerCase()))
+      .catch(() => {})
+
     const onAccounts = (accounts) => setAccount(accounts?.[0] || null)
-    const onChain = () => { setAccount(null); window.location.reload() }
+
+    // Switching networks (for any reason — another dapp, manual switch,
+    // the wallet's own UI) used to wipe the whole session and force a
+    // full page reload. Now it just updates whether we're on the right
+    // chain; the account and active signer stay intact, and every write
+    // path re-asserts Arc right before it actually needs to sign.
+    const onChain = (chainId) => {
+      setWrongChain(typeof chainId === 'string' && chainId.toLowerCase() !== ARC_CHAIN_ID.toLowerCase())
+    }
+
     window.ethereum.on('accountsChanged', onAccounts)
     window.ethereum.on('chainChanged', onChain)
     return () => {
@@ -116,7 +160,8 @@ export function WalletProvider({ children }) {
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
       if (accounts?.[0]) {
         setAccount(accounts[0])
-        await ensureArcChain()
+        const result = await ensureArcChain()
+        setWrongChain(!result.ok)
         setActiveMode('browser')
       }
     } catch (e) {
@@ -128,6 +173,14 @@ export function WalletProvider({ children }) {
       setConnecting(false)
     }
   }, [setActiveMode])
+
+  // Lets any page prompt a chain switch without forcing a disconnect —
+  // e.g. "Switch to Arc" button shown when wrongChain is true.
+  const switchChain = useCallback(async () => {
+    const result = await ensureArcChain()
+    setWrongChain(!result.ok)
+    return result.ok
+  }, [])
 
   // Backwards-compatible alias — existing call sites using `connect()`
   // continue to connect the browser wallet directly.
@@ -163,6 +216,8 @@ export function WalletProvider({ children }) {
     <WalletContext.Provider value={{
       // Raw browser wallet state (kept for backward compatibility)
       account, connecting, connect, connectBrowser, disconnect, error,
+      // Chain state — lets the UI prompt a switch without a disconnect/reconnect cycle
+      wrongChain, switchChain,
       // Agent wallet state
       agentWallet, saveAgentWallet, clearAgentWallet, useAgentWallet,
       // Unified "active signer" surface
