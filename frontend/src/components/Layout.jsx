@@ -3,10 +3,10 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import Lenis from 'lenis'
 import { useWallet } from '../hooks/useWallet'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
-import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot } from 'lucide-react'
+import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot, AlertTriangle } from 'lucide-react'
 
 export default function Layout() {
-  const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError } = useWallet()
+  const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError, wrongChain, switchChain } = useWallet()
   const navigate = useNavigate()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
@@ -19,7 +19,11 @@ export default function Layout() {
   useEffect(() => { setMobileOpen(false) }, [location.pathname])
 
   // ── Lenis smooth scroll (mounted once at app root) ──
+  // Skipped entirely for users who prefer reduced motion — native instant
+  // scroll is the correct behavior there, not a slowed-down version of it.
   useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
     const lenis = new Lenis({
       duration: 1.1,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -147,6 +151,17 @@ export default function Layout() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
           {activeAddress ? (
             <>
+              {activeMode === 'browser' && wrongChain && (
+                <button onClick={switchChain} className="hide-tablet" style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: 'var(--amber-dim)', border: '1.5px solid rgba(245,158,11,0.3)',
+                  color: 'var(--amber)', fontSize: 11.5, fontWeight: 700,
+                  padding: '6px 12px', borderRadius: 99, cursor: 'pointer',
+                  fontFamily: 'var(--font-body)',
+                }}>
+                  <AlertTriangle size={11} /> Switch to Arc
+                </button>
+              )}
               <a href={`https://testnet.arcscan.app/address/${activeAddress}`}
                 target="_blank" rel="noreferrer" className="address-pill hide-tablet"
                 style={activeMode === 'agent' ? { borderColor: 'var(--pink-border)', color: 'var(--pink)' } : undefined}>
@@ -214,6 +229,17 @@ export default function Layout() {
             </NavLink>
           ))}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+            {activeMode === 'browser' && wrongChain && (
+              <button onClick={switchChain} style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                background: 'var(--amber-dim)', border: '1.5px solid rgba(245,158,11,0.3)',
+                color: 'var(--amber)', fontSize: 13, fontWeight: 700,
+                padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+                fontFamily: 'var(--font-body)', marginBottom: 8,
+              }}>
+                <AlertTriangle size={12} /> Switch to Arc Testnet
+              </button>
+            )}
             {activeAddress ? (
               <button onClick={disconnect} style={{
                 width: '100%', background: 'var(--bg-subtle)',
