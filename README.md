@@ -172,7 +172,7 @@ npm run dev
 
 ```json
 {
-  "chainId": "0x4CE352",
+  "chainId": "0x4cef52",
   "chainName": "Arc Testnet",
   "nativeCurrency": { "name": "USD Coin", "symbol": "USDC", "decimals": 6 },
   "rpcUrls": ["https://rpc.testnet.arc.network"],
