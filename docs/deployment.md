@@ -53,7 +53,7 @@ This is required for React Router to handle client-side routes like `/docs`, `/b
 
 | Parameter | Value |
 |---|---|
-| Chain ID | `5042002` (hex: `0x4CE352`) |
+| Chain ID | `5042002` (hex: `0x4cef52`) |
 | RPC URL | `https://rpc.testnet.arc.network` |
 | Explorer | `https://testnet.arcscan.app` |
 | Gas Token | USDC `0x3600…0000` |
