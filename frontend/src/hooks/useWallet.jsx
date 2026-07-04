@@ -6,7 +6,7 @@ import {
 
 const WalletContext = createContext(null)
 
-const ARC_CHAIN_ID = '0x4CE352' // 5042002
+const ARC_CHAIN_ID = '0x4cef52' // 5042002 — was '0x4CE352' (decodes to 5038930, a different/nonexistent chain). That mismatch was the actual root cause of both bugs: the app compared eth_chainId against the wrong number, so it never recognized an already-correct Arc Testnet connection, and wallet_switchEthereumChain always failed, forcing a fallback to wallet_addEthereumChain that created a duplicate/bogus network entry.
 const ARC_CHAIN = {
   chainId: ARC_CHAIN_ID,
   chainName: 'Arc Testnet',
