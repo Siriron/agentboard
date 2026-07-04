@@ -125,7 +125,9 @@ body {
   color: var(--accent);
 }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-xs { padding: 6px 14px !important; font-size: 12px !important; border-radius: var(--r-pill) !important; gap: 5px !important; }
 .btn-sm { padding: 8px 18px !important; font-size: 13px !important; border-radius: var(--r-pill) !important; }
+.btn-lg { padding: 16px 34px !important; font-size: 16px !important; border-radius: var(--r-pill) !important; }
 .btn-icon {
   width: 40px; height: 40px;
   border-radius: var(--r);
@@ -135,6 +137,20 @@ body {
   cursor: pointer; transition: all 0.2s; color: var(--text-2);
 }
 .btn-icon:hover { background: var(--accent-dim); border-color: var(--accent-light); color: var(--accent); }
+
+/* ── MOTION SAFETY ──
+   Respect the OS-level reduced-motion preference: freeze decorative
+   CSS keyframe animations and cut JS-driven transitions down to a
+   near-instant duration rather than disabling transforms outright
+   (so layout/visibility changes still resolve correctly). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ── CARDS ── */
 .card {
@@ -334,7 +350,7 @@ textarea.input { resize: vertical; min-height: 90px; }
 /* ── HERO STATS GRID (Landing) ── */
 .hero-stat-cell { border-right: 1px solid var(--border); }
 .hero-stat-cell:last-child { border-right: none; }
-@media (max-width: 480px) {
+@media (max-width: 700px) {
   .hero-stats-grid { grid-template-columns: repeat(2, 1fr) !important; row-gap: 18px; }
   .hero-stat-cell:nth-child(2) { border-right: none; }
   .hero-stat-cell:nth-child(1),
@@ -364,4 +380,48 @@ textarea.input { resize: vertical; min-height: 90px; }
 .nav-link-active {
   color: var(--accent) !important;
   background: var(--accent-dim) !important;
+}
+
+/* ── CARD TILT (subtle 3D hover, GPU-cheap, disabled under reduced motion
+   via the global media query already freezing transitions) ── */
+.tilt-card {
+  transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), box-shadow 0.35s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.tilt-card:hover {
+  box-shadow: 0 20px 50px rgba(124,92,252,0.16), 0 4px 14px rgba(0,0,0,0.06);
+}
+
+/* ── BUTTON ARROW MICRO-INTERACTION ── */
+.btn-arrow {
+  display: inline-flex;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.btn:hover .btn-arrow,
+button:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+/* ── CURSOR-AWARE GLOW (position set via inline CSS custom properties
+   --mx/--my from pointermove; pure CSS fallback stays centered) ── */
+.cursor-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--mx, 50%) var(--my, 50%),
+    rgba(124,92,252,0.14),
+    transparent 65%
+  );
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.cursor-glow-active { opacity: 1; }
+
+/* Touch devices have no real hover — keep tilt/glow inert there so
+   nothing gets visually "stuck" after a tap. */
+@media (hover: none) {
+  .tilt-card:hover { box-shadow: none; }
+  .cursor-glow { display: none; }
 }
