@@ -1,4 +1,8 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
+import {
+  initProviderDiscovery, getAnnouncedProviders, getActiveProvider,
+  pickProvider, saveActiveProviderUuid, loadActiveProviderUuid, clearActiveProvider,
+} from '../lib/providerRegistry'
 
 const WalletContext = createContext(null)
 
@@ -18,10 +22,11 @@ const ARC_CHAIN = {
 // even when Arc was already configured. Only 4902 (and the couple of
 // wallets that report it via message instead of code) means "not added."
 export async function ensureArcChain() {
-  if (!window.ethereum) return { ok: false, reason: 'no-wallet' }
+  const provider = getActiveProvider()
+  if (!provider) return { ok: false, reason: 'no-wallet' }
 
   try {
-    const currentChainId = await window.ethereum.request({ method: 'eth_chainId' })
+    const currentChainId = await provider.request({ method: 'eth_chainId' })
     if (typeof currentChainId === 'string' && currentChainId.toLowerCase() === ARC_CHAIN_ID.toLowerCase()) {
       return { ok: true } // already on Arc — do nothing, no prompts at all
     }
@@ -30,7 +35,7 @@ export async function ensureArcChain() {
   }
 
   try {
-    await window.ethereum.request({
+    await provider.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: ARC_CHAIN_ID }],
     })
@@ -40,21 +45,40 @@ export async function ensureArcChain() {
       e?.code === 4902 ||
       /unrecognized chain|add.*chain|not.*added/i.test(e?.message || '')
 
-    if (isUnrecognizedChain) {
-      try {
-        await window.ethereum.request({
-          method: 'wallet_addEthereumChain',
-          params: [ARC_CHAIN],
-        })
-        return { ok: true }
-      } catch (addErr) {
-        return { ok: false, reason: 'add-failed', error: addErr }
-      }
+    if (!isUnrecognizedChain) {
+      // Any other error (user rejected the switch, wallet's internal
+      // hiccup, etc.) — don't guess and don't spam wallet_addEthereumChain.
+      return { ok: false, reason: 'switch-failed', error: e }
     }
 
-    // Any other error (user rejected the switch, wallet's internal hiccup,
-    // etc.) — don't guess and don't spam wallet_addEthereumChain.
-    return { ok: false, reason: 'switch-failed', error: e }
+    // Before adding, double-check the wallet doesn't already have Arc
+    // configured under a chain table that just failed to switch cleanly.
+    // Some wallets (Bitget in particular) return a switch error that
+    // looks like "unrecognized chain" even when the chain is already
+    // present, if their internal chain list is momentarily out of sync
+    // with eth_chainId. Re-reading chainId here — instead of trusting the
+    // error message — is what avoids the duplicate add.
+    try {
+      const recheck = await provider.request({ method: 'eth_chainId' })
+      if (typeof recheck === 'string' && recheck.toLowerCase() === ARC_CHAIN_ID.toLowerCase()) {
+        return { ok: true }
+      }
+    } catch {}
+
+    try {
+      await provider.request({
+        method: 'wallet_addEthereumChain',
+        params: [ARC_CHAIN],
+      })
+      return { ok: true }
+    } catch (addErr) {
+      // "already exists"-style rejections mean the add was redundant —
+      // treat as success rather than surfacing an error for a chain
+      // that's actually fine.
+      const alreadyExists = /already exist|already added/i.test(addErr?.message || '')
+      if (alreadyExists) return { ok: true }
+      return { ok: false, reason: 'add-failed', error: addErr }
+    }
   }
 }
 
@@ -119,14 +143,24 @@ export function WalletProvider({ children }) {
     } catch {}
   }, [])
 
-  useEffect(() => {
-    if (!window.ethereum) return
+  const [providerUuid, setProviderUuid] = useState(loadActiveProviderUuid)
+  const [availableProviders, setAvailableProviders] = useState([])
 
-    window.ethereum.request({ method: 'eth_accounts' })
+  useEffect(() => {
+    initProviderDiscovery()
+    const t = setTimeout(() => setAvailableProviders(getAnnouncedProviders()), 150)
+    return () => clearTimeout(t)
+  }, [])
+
+  useEffect(() => {
+    const provider = getActiveProvider()
+    if (!provider) return
+
+    provider.request({ method: 'eth_accounts' })
       .then(accounts => { if (accounts?.[0]) setAccount(accounts[0]) })
       .catch(() => {})
 
-    window.ethereum.request({ method: 'eth_chainId' })
+    provider.request({ method: 'eth_chainId' })
       .then(id => setWrongChain(typeof id === 'string' && id.toLowerCase() !== ARC_CHAIN_ID.toLowerCase()))
       .catch(() => {})
 
@@ -141,27 +175,49 @@ export function WalletProvider({ children }) {
       setWrongChain(typeof chainId === 'string' && chainId.toLowerCase() !== ARC_CHAIN_ID.toLowerCase())
     }
 
-    window.ethereum.on('accountsChanged', onAccounts)
-    window.ethereum.on('chainChanged', onChain)
+    provider.on?.('accountsChanged', onAccounts)
+    provider.on?.('chainChanged', onChain)
     return () => {
-      window.ethereum.removeListener('accountsChanged', onAccounts)
-      window.ethereum.removeListener('chainChanged', onChain)
+      provider.removeListener?.('accountsChanged', onAccounts)
+      provider.removeListener?.('chainChanged', onChain)
     }
-  }, [])
+  }, [providerUuid, availableProviders])
 
-  const connectBrowser = useCallback(async () => {
-    if (!window.ethereum) {
+  // Lets the picker offer a specific injected wallet by name (MetaMask vs
+  // Bitget vs Rabby) instead of guessing from window.ethereum. Falls back
+  // to plain auto-resolved connect when only one wallet is present.
+  const connectBrowser = useCallback(async (uuid) => {
+    const provider = uuid ? pickProvider(uuid) : getActiveProvider()
+    if (!provider) {
       setError('No wallet detected. Install MetaMask or Rabby to connect.')
       return
     }
     setConnecting(true)
     setError(null)
     try {
-      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+      const accounts = await provider.request({ method: 'eth_requestAccounts' })
       if (accounts?.[0]) {
+        // Pin this exact provider object as "the" wallet for the rest of
+        // the session — every later switchChain/addChain/writeContract
+        // call goes back through getActiveProvider(), which now resolves
+        // to this same instance instead of re-guessing window.ethereum.
+        if (uuid) {
+          saveActiveProviderUuid(uuid)
+          setProviderUuid(uuid)
+        }
         setAccount(accounts[0])
-        const result = await ensureArcChain()
-        setWrongChain(!result.ok)
+        // Just read the current chain here — don't prompt switch/add-chain
+        // as part of connecting. Whatever RPC/network the wallet is already
+        // on, connect should succeed immediately. The actual chain
+        // assertion (and any switch/add prompt) happens lazily, right
+        // before a write via getWalletClient(), which is the only moment
+        // it's actually needed.
+        try {
+          const currentChainId = await provider.request({ method: 'eth_chainId' })
+          setWrongChain(typeof currentChainId === 'string' && currentChainId.toLowerCase() !== ARC_CHAIN_ID.toLowerCase())
+        } catch {
+          setWrongChain(false)
+        }
         setActiveMode('browser')
       }
     } catch (e) {
@@ -196,6 +252,10 @@ export function WalletProvider({ children }) {
     setAccount(null)
     setError(null)
     setActiveMode(null)
+    // Clear the pinned provider too — next connect should be free to pick
+    // (or re-pick) whichever injected wallet the user chooses.
+    clearActiveProvider()
+    setProviderUuid(null)
   }, [setActiveMode])
 
   const openPicker = useCallback(() => setPickerOpen(true), [])
@@ -218,6 +278,10 @@ export function WalletProvider({ children }) {
       account, connecting, connect, connectBrowser, disconnect, error,
       // Chain state — lets the UI prompt a switch without a disconnect/reconnect cycle
       wrongChain, switchChain,
+      // Multi-wallet (EIP-6963) discovery — lets the picker show MetaMask,
+      // Bitget, Rabby etc. as distinct named options instead of a single
+      // ambiguous "Browser Wallet" button when more than one is installed.
+      availableProviders, providerUuid,
       // Agent wallet state
       agentWallet, saveAgentWallet, clearAgentWallet, useAgentWallet,
       // Unified "active signer" surface
