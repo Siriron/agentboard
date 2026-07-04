@@ -147,7 +147,7 @@ export async function sendBatchTransaction(calls) {
       method: 'wallet_sendCalls',
       params: [{
         version: '1.0',
-        chainId: '0x4CE352',
+        chainId: '0x4cef52', // 5042002 — corrected from '0x4CE352' (wrong chain)
         from: addr,
         calls: calls.map(c => ({
           to: c.to,
