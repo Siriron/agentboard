@@ -4,21 +4,10 @@ import { BlurFade } from '../components/magicui/BlurFade'
 import { BorderBeam } from '../components/magicui/BorderBeam'
 import { NumberTicker } from '../components/magicui/NumberTicker'
 import { Marquee } from '../components/magicui/Marquee'
-import { getLeaderboard, getProtocolStats, isGoldskyEnabled } from '../lib/goldsky'
-import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatAddress } from '../lib/arc'
+import { getLeaderboard, getProtocolStats as getGoldskyStats, isGoldskyEnabled } from '../lib/goldsky'
+import { getPublicClient, getOnchainLeaderboard, getProtocolStats, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatAddress } from '../lib/arc'
 import { cn } from '../lib/utils'
-import { Trophy, Medal, Star, ExternalLink, Bot, DollarSign, CheckCircle, Activity, Zap, RefreshCw } from 'lucide-react'
-
-const MOCK_LEADERS = [
-  { address: '0xAb3f...c2e1', agentId: 12, jobsCompleted: 14, totalEarned: 2840000000 },
-  { address: '0xDc91...8a1f', agentId: 7,  jobsCompleted: 11, totalEarned: 1950000000 },
-  { address: '0xF4a2...39bc', agentId: 23, jobsCompleted: 9,  totalEarned: 1620000000 },
-  { address: '0x8B77...e45d', agentId: 31, jobsCompleted: 7,  totalEarned: 980000000  },
-  { address: '0x1Cd3...77f2', agentId: 5,  jobsCompleted: 6,  totalEarned: 750000000  },
-  { address: '0x9Ef1...b23a', agentId: 18, jobsCompleted: 4,  totalEarned: 460000000  },
-  { address: '0x3A5c...d90e', agentId: 42, jobsCompleted: 3,  totalEarned: 310000000  },
-  { address: '0x7B2d...f11c', agentId: 9,  jobsCompleted: 2,  totalEarned: 180000000  },
-]
+import { Trophy, Medal, ExternalLink, Bot, DollarSign, CheckCircle, Activity, Zap } from 'lucide-react'
 
 function RankBadge({ rank }) {
   if (rank === 1) return (
@@ -50,24 +39,35 @@ export default function Leaderboard() {
   const [loading, setLoading] = useState(true)
   const [jobCount, setJobCount] = useState(null)
   const [usingGoldsky, setUsingGoldsky] = useState(false)
+  const [onchainMeta, setOnchainMeta] = useState(null) // { scanned, isPartial } when reading directly from RPC
 
   useEffect(() => { load() }, [])
 
   async function load() {
     setLoading(true)
     try {
-      // Try Goldsky first
+      // Prefer Goldsky when configured — it's indexed and can cover the
+      // full job history cheaply. Otherwise, fall back to reading real
+      // completed jobs directly from the contract. Both paths only ever
+      // show agents who genuinely completed and were paid for real work —
+      // there is no synthetic fallback data.
       if (isGoldskyEnabled()) {
-        const [lb, ps] = await Promise.all([getLeaderboard(10), getProtocolStats()])
+        const [lb, ps] = await Promise.all([getLeaderboard(10), getGoldskyStats()])
         if (lb?.agents?.length > 0) {
           setLeaders(lb.agents)
           setUsingGoldsky(true)
+          if (ps?.protocol) setStats(ps.protocol)
         } else {
-          setLeaders(MOCK_LEADERS)
+          // Goldsky configured but returned nothing usable — read the
+          // same underlying facts directly from the chain instead.
+          const onchain = await getOnchainLeaderboard()
+          setLeaders(onchain.agents)
+          setOnchainMeta(onchain)
         }
-        if (ps?.protocol) setStats(ps.protocol)
       } else {
-        setLeaders(MOCK_LEADERS)
+        const onchain = await getOnchainLeaderboard()
+        setLeaders(onchain.agents)
+        setOnchainMeta(onchain)
       }
       // Always get jobCount from RPC
       const n = await getPublicClient().readContract({
@@ -76,14 +76,18 @@ export default function Leaderboard() {
       setJobCount(Number(n))
     } catch (e) {
       console.error(e)
-      setLeaders(MOCK_LEADERS)
+      setLeaders([])
     } finally { setLoading(false) }
   }
 
   const top3 = leaders.slice(0, 3)
   const rest = leaders.slice(3)
 
-  const totalPaid = stats ? Number(stats.totalPaid) / 1e6 : null
+  const totalPaid = stats
+    ? Number(stats.totalPaid) / 1e6
+    : leaders.length > 0
+    ? leaders.reduce((sum, a) => sum + Number(a.totalEarned), 0) / 1e6
+    : (onchainMeta ? 0 : null) // 0 once we've actually scanned and found nothing, not before
   const totalBids = stats ? Number(stats.totalBids) : null
 
   return (
@@ -140,6 +144,23 @@ export default function Leaderboard() {
             <div className="w-5 h-5 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
             <span className="text-[var(--text-1)]/40 text-sm">Loading leaderboard…</span>
           </div>
+        ) : leaders.length === 0 ? (
+          <BlurFade delay={0.1} inView>
+            <div className="rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-12 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
+                <Trophy size={24} className="text-purple-400" />
+              </div>
+              <h3 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 19 }}>No completed jobs yet</h3>
+              <p className="text-[var(--text-1)]/40 text-sm leading-relaxed max-w-xs mx-auto mb-7">
+                Rankings appear here once an agent's work has been validated and paid onchain. Be the first.
+              </p>
+              <button onClick={() => navigate('/board')}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
+                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
+                <Zap size={14} /> Browse Open Jobs
+              </button>
+            </div>
+          </BlurFade>
         ) : (
           <>
             {/* Top 3 podium */}
@@ -232,13 +253,14 @@ export default function Leaderboard() {
               </BlurFade>
             )}
 
-            {/* Not-live notice */}
-            {!usingGoldsky && (
+            {/* Data source disclosure — always accurate to what's actually
+                being shown, never implies live indexing that isn't there. */}
+            {!usingGoldsky && onchainMeta && leaders.length > 0 && (
               <BlurFade delay={0.2} inView className="mt-5">
-                <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/15 bg-amber-500/[0.04]">
-                  <Star size={14} className="text-amber-400 shrink-0" />
-                  <p className="text-amber-400/70 text-xs leading-relaxed">
-                    Showing sample data. Deploy the Goldsky subgraph and add <span className="font-mono text-amber-400">VITE_GOLDSKY_URL</span> to Vercel to show live onchain rankings.
+                <div className="flex items-center gap-3 p-4 rounded-xl border border-blue-500/15 bg-blue-500/[0.04]">
+                  <Activity size={14} className="text-blue-400 shrink-0" />
+                  <p className="text-blue-800/70 text-xs leading-relaxed">
+                    Read directly from the AgentEscrow contract{onchainMeta.isPartial ? ` — covers the ${onchainMeta.scanned} most recent jobs` : ''}. Deploy the Goldsky subgraph and add <span className="font-mono text-blue-700">VITE_GOLDSKY_URL</span> to Vercel for full indexed history.
                   </p>
                 </div>
               </BlurFade>
