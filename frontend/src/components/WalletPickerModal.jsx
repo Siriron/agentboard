@@ -9,6 +9,7 @@ export default function WalletPickerModal() {
     pickerOpen, closePicker,
     account, connectBrowser, connecting,
     agentWallet, useAgentWallet, activeMode,
+    availableProviders, providerUuid,
   } = useWallet()
   const navigate = useNavigate()
 
@@ -21,8 +22,8 @@ export default function WalletPickerModal() {
 
   if (!pickerOpen) return null
 
-  async function pickBrowser() {
-    await connectBrowser()
+  async function pickBrowser(uuid) {
+    await connectBrowser(uuid)
     closePicker()
   }
 
@@ -69,31 +70,69 @@ export default function WalletPickerModal() {
 
         <div style={{ padding: '4px 22px 22px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-          {/* Browser wallet option */}
-          <button onClick={pickBrowser} disabled={connecting} style={{
-            display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
-            width: '100%', padding: '15px 16px', borderRadius: 14,
-            border: activeMode === 'browser' ? '1.5px solid rgba(124,92,252,0.5)' : '1.5px solid var(--border)',
-            background: activeMode === 'browser' ? 'var(--accent-dim)' : '#fff',
-            cursor: connecting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
-          }}>
-            <div style={{
-              width: 40, height: 40, borderRadius: 11, flexShrink: 0,
-              background: 'var(--accent-dim)', border: '1.5px solid rgba(124,92,252,0.25)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
+          {/* Browser wallet option(s) — if more than one extension is
+              installed (MetaMask + Bitget being the common case), list
+              them by name instead of one ambiguous "Browser Wallet"
+              button. Picking explicitly is what pins the exact provider
+              used for every switch/add-chain and signing call afterwards,
+              instead of guessing from window.ethereum. */}
+          {availableProviders.length > 1 ? (
+            availableProviders.map(({ info, provider }) => (
+              <button key={info.uuid} onClick={() => pickBrowser(info.uuid)} disabled={connecting} style={{
+                display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+                width: '100%', padding: '15px 16px', borderRadius: 14,
+                border: providerUuid === info.uuid && activeMode === 'browser' ? '1.5px solid rgba(124,92,252,0.5)' : '1.5px solid var(--border)',
+                background: providerUuid === info.uuid && activeMode === 'browser' ? 'var(--accent-dim)' : '#fff',
+                cursor: connecting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
+              }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+                  background: 'var(--accent-dim)', border: '1.5px solid rgba(124,92,252,0.25)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+                }}>
+                  {info.icon
+                    ? <img src={info.icon} alt="" width={22} height={22} />
+                    : <Wallet size={18} style={{ color: 'var(--accent)' }} />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>{info.name}</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
+                    {providerUuid === info.uuid && account ? `Connected · ${formatAddress(account)}` : 'Sign with a click'}
+                  </div>
+                </div>
+                {connecting
+                  ? <span className="spinner" style={{ width: 14, height: 14 }} />
+                  : <ArrowRight size={15} style={{ color: 'var(--text-1)', opacity: 0.25, flexShrink: 0 }} />}
+              </button>
+            ))
+          ) : (
+            <button onClick={() => pickBrowser(availableProviders[0]?.info.uuid)} disabled={connecting} style={{
+              display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
+              width: '100%', padding: '15px 16px', borderRadius: 14,
+              border: activeMode === 'browser' ? '1.5px solid rgba(124,92,252,0.5)' : '1.5px solid var(--border)',
+              background: activeMode === 'browser' ? 'var(--accent-dim)' : '#fff',
+              cursor: connecting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
             }}>
-              <Wallet size={18} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>Browser Wallet</div>
-              <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
-                {account ? `Connected · ${formatAddress(account)}` : 'MetaMask, Rabby — sign with a click'}
+              <div style={{
+                width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+                background: 'var(--accent-dim)', border: '1.5px solid rgba(124,92,252,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
+              }}>
+                <Wallet size={18} />
               </div>
-            </div>
-            {connecting
-              ? <span className="spinner" style={{ width: 14, height: 14 }} />
-              : <ArrowRight size={15} style={{ color: 'var(--text-1)', opacity: 0.25, flexShrink: 0 }} />}
-          </button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>
+                  {availableProviders[0]?.info.name || 'Browser Wallet'}
+                </div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
+                  {account ? `Connected · ${formatAddress(account)}` : 'MetaMask, Rabby — sign with a click'}
+                </div>
+              </div>
+              {connecting
+                ? <span className="spinner" style={{ width: 14, height: 14 }} />
+                : <ArrowRight size={15} style={{ color: 'var(--text-1)', opacity: 0.25, flexShrink: 0 }} />}
+            </button>
+          )}
 
           {/* Agent wallet option */}
           {agentWallet ? (
