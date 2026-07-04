@@ -1,5 +1,6 @@
 import { createPublicClient, createWalletClient, custom, http, encodeFunctionData, decodeEventLog } from 'viem'
 import { ensureArcChain } from '../hooks/useWallet'
+import { getActiveProvider } from './providerRegistry'
 
 export const arcTestnet = {
   id: 5042002,
@@ -121,7 +122,8 @@ export function getPublicClient() {
 }
 
 export async function getWalletClient() {
-  if (!window.ethereum) throw new Error('No wallet detected. Please install MetaMask.')
+  const provider = getActiveProvider()
+  if (!provider) throw new Error('No wallet detected. Please install MetaMask.')
   // Re-assert Arc Testnet right before signing — not just at initial
   // connect. If the wallet was switched to another chain in the meantime
   // (another dapp, the wallet's own UI), this catches it here instead of
@@ -130,7 +132,7 @@ export async function getWalletClient() {
   if (!result.ok) {
     throw new Error('Please switch your wallet to Arc Testnet to continue.')
   }
-  return createWalletClient({ chain: arcTestnet, transport: custom(window.ethereum) })
+  return createWalletClient({ chain: arcTestnet, transport: custom(provider) })
 }
 
 // Arc Batch Transaction helper - combines multiple calls into one TX using Arc v0.7.2 batch support
@@ -138,9 +140,10 @@ export async function sendBatchTransaction(calls) {
   const wc = await getWalletClient()
   const [addr] = await wc.getAddresses()
   const pc = getPublicClient()
+  const provider = getActiveProvider()
   // Arc supports EIP-5792 wallet_sendCalls for batching
   try {
-    const batchResult = await window.ethereum.request({
+    const batchResult = await provider.request({
       method: 'wallet_sendCalls',
       params: [{
         version: '1.0',
@@ -158,7 +161,7 @@ export async function sendBatchTransaction(calls) {
     while (!receipts) {
       await new Promise(r => setTimeout(r, 1200))
       try {
-        const status = await window.ethereum.request({
+        const status = await provider.request({
           method: 'wallet_getCallsStatus',
           params: [batchResult]
         })
@@ -189,20 +192,6 @@ export async function sendBatchTransaction(calls) {
 // Transaction memo helper — Arc v0.7.2 supports arbitrary data field as memo
 export function buildMemo(type, jobId, extra = '') {
   return `agentboard:${type}:${jobId}${extra ? ':' + extra : ''}`
-}
-
-export async function switchToArc() {
-  if (!window.ethereum) throw new Error('No wallet detected')
-  try {
-    await window.ethereum.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0x4CE352' }] })
-  } catch (e) {
-    if (e.code === 4902 || e.code === -32603) {
-      await window.ethereum.request({
-        method: 'wallet_addEthereumChain',
-        params: [{ chainId: '0x4CE352', chainName: 'Arc Testnet', nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 }, rpcUrls: ['https://rpc.testnet.arc.network'], blockExplorerUrls: ['https://testnet.arcscan.app'] }],
-      })
-    } else throw e
-  }
 }
 
 // Sign and submit a contract call through a Circle-managed Agent Wallet

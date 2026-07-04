@@ -3,6 +3,7 @@
 // This file handles the frontend-facing calls and EIP-3009 signing
 
 import { getPublicClient, USDC_ADDRESS } from './arc'
+import { getActiveProvider } from './providerRegistry'
 import { encodeFunctionData } from 'viem'
 
 const API_BASE = '/api/agent-wallet'
@@ -75,7 +76,8 @@ const TRANSFER_WITH_AUTHORIZATION_TYPE = [
 ]
 
 export async function signNanopayment({ from, to, amount, validDurationSeconds = 300 }) {
-  if (!window.ethereum) throw new Error('No wallet detected')
+  const provider = getActiveProvider()
+  if (!provider) throw new Error('No wallet detected')
 
   const pc = getPublicClient()
   const now = Math.floor(Date.now() / 1000)
@@ -92,7 +94,7 @@ export async function signNanopayment({ from, to, amount, validDurationSeconds =
   })
 
   // Sign EIP-712 typed data
-  const signature = await window.ethereum.request({
+  const signature = await provider.request({
     method: 'eth_signTypedData_v4',
     params: [from, JSON.stringify({
       types: {
