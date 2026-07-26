@@ -162,12 +162,12 @@ export default function Layout() {
                   <AlertTriangle size={11} /> Switch to Arc
                 </button>
               )}
-              <a href={`https://testnet.arcscan.app/address/${activeAddress}`}
-                target="_blank" rel="noreferrer" className="address-pill hide-tablet"
+              <button onClick={() => navigate(`/agent/${activeAddress}`)}
+                className="address-pill hide-tablet"
                 style={activeMode === 'agent' ? { borderColor: 'var(--pink-border)', color: 'var(--pink)' } : undefined}>
-                {activeMode === 'agent' ? <Bot size={9} /> : <ExternalLink size={9} />}
+                <Bot size={9} />
                 {formatAddress(activeAddress)}
-              </a>
+              </button>
               <button className="btn btn-secondary btn-sm" onClick={disconnect}>
                 <span className="hide-tablet">Disconnect</span>
                 <span className="show-tablet-only">Exit</span>
