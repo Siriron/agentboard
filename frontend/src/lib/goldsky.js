@@ -4,17 +4,28 @@
 
 const GOLDSKY_URL = import.meta.env.VITE_GOLDSKY_URL || null
 
+// Callers that need to tell "no data" apart from "query failed" should use
+// queryOrThrow instead of query — e.g. a page that would otherwise render
+// an identical empty state for both cases. `query` keeps its old
+// swallow-and-log behavior for lower-stakes, best-effort call sites (like
+// Dashboard's non-blocking enrichment) that intentionally don't want a
+// Goldsky outage to affect their primary (chain-read) data path.
+async function queryOrThrow(gql, variables = {}) {
+  if (!GOLDSKY_URL) throw new Error('VITE_GOLDSKY_URL is not configured')
+  const res = await fetch(GOLDSKY_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: gql, variables }),
+  })
+  if (!res.ok) throw new Error(`Goldsky request failed: ${res.status} ${res.statusText}`)
+  const { data, errors } = await res.json()
+  if (errors?.length) throw new Error(errors[0].message)
+  return data
+}
+
 async function query(gql, variables = {}) {
-  if (!GOLDSKY_URL) return null
   try {
-    const res = await fetch(GOLDSKY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query: gql, variables }),
-    })
-    const { data, errors } = await res.json()
-    if (errors?.length) throw new Error(errors[0].message)
-    return data
+    return await queryOrThrow(gql, variables)
   } catch (e) {
     console.warn('[Goldsky]', e.message)
     return null
@@ -71,23 +82,47 @@ export async function getRecentActivity(limit = 10) {
   `, { limit })
 }
 
-// Agent stats by address
+// Agent stats by address. Now includes `registered`/`registeredAt`, which
+// only resolve to real values once the subgraph's AgentRegistered handler
+// (added alongside this) has backfilled from the AgentRegistered event —
+// on a subgraph deployed with startBlock: 0 that happens automatically,
+// but on a subgraph re-pointed to a later startBlock, agents who
+// registered before that block will show registered: false here even
+// though registerAgent() succeeded onchain. Cross-check with the direct
+// agentIdRegistered() read in arc.js (as Register.jsx already does) if
+// that mismatch ever shows up.
 export async function getAgentStats(address) {
   return query(`
     query AgentStats($id: ID!) {
       agent(id: $id) {
-        address agentId jobsCompleted totalEarned registeredAt
+        address agentId registered registeredAt jobsCompleted totalEarned
       }
     }
   `, { id: address.toLowerCase() })
 }
 
-// Top agents leaderboard
+// Same as getAgentStats but throws on failure/misconfiguration instead of
+// resolving null — use this where the caller needs to show the user a
+// real error rather than an indistinguishable empty state.
+export async function getAgentStatsOrThrow(address) {
+  return queryOrThrow(`
+    query AgentStats($id: ID!) {
+      agent(id: $id) {
+        address agentId registered registeredAt jobsCompleted totalEarned
+      }
+    }
+  `, { id: address.toLowerCase() })
+}
+
+// Top agents leaderboard — registered-but-unpaid agents now show up here
+// too (jobsCompleted: 0, totalEarned: 0) rather than being absent, since
+// AgentRegistered now creates the Agent entity instead of JobValidated
+// being the only creation path.
 export async function getLeaderboard(limit = 10) {
   return query(`
     query Leaderboard($limit: Int) {
       agents(orderBy: totalEarned, orderDirection: desc, first: $limit) {
-        address agentId jobsCompleted totalEarned
+        address agentId registered jobsCompleted totalEarned
       }
     }
   `, { limit })
