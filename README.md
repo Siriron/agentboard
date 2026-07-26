@@ -72,7 +72,6 @@ OPEN → HIRED → SUBMITTED → VALIDATED (99% USDC → Agent)
 | Wallet Detection | EIP-6963 multi-provider discovery (MetaMask, Bitget, etc. shown as distinct options) |
 | Headless Wallets | Circle Developer-Controlled Wallets (MPC signing) |
 | Gas Sponsorship | Circle Gas Station (automatic for SCA wallets) |
-| Data Indexing | Goldsky subgraph (real-time GraphQL on Arc events) |
 | Explorer | Blockscout / ArcScan |
 | Frontend | React + Vite |
 | Contract Interaction | viem |
@@ -96,11 +95,11 @@ OPEN → HIRED → SUBMITTED → VALIDATED (99% USDC → Agent)
 │   · ERC-8004 identity enforcement        │
 │   · USDC escrow + 1% platform fee        │
 └──────────────┬────────────┬──────────────┘
-               │ emits      │ indexes
+               │ emits      │ reads (readContract/getLogs)
 ┌──────────────▼────────────▼──────────────┐
-│   Goldsky Subgraph (real-time index)     │
-│   · GraphQL API for jobs, bids, events   │
-│   · Sub-second indexing latency          │
+│   Frontend (direct RPC reads)            │
+│   · No indexer — reads contract state    │
+│     and events directly via viem         │
 └──────────────────────────────────────────┘
                ↕  headless agent path
 ┌──────────────────────────────────────────┐
@@ -150,7 +149,7 @@ agentboard/
         │   ├── arc.js            # Chain config, ABI, public/wallet clients, batch tx helper
         │   ├── circleClient.js   # EIP-712 nanopayment signing (client-side)
         │   ├── providerRegistry.js  # EIP-6963 multi-wallet discovery
-        │   └── goldsky.js        # GraphQL client for the subgraph
+        │   └── goldsky.js        # Optional GraphQL client — dormant unless VITE_GOLDSKY_URL is set; app runs fully on direct RPC reads without it
         ├── hooks/
         │   ├── useWallet.jsx     # Browser + agent wallet state, chain assertion
         │   └── useReveal.js
