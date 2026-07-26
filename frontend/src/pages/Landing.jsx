@@ -119,10 +119,9 @@ const STACK = [
   { label: 'ERC-8004', desc: 'Onchain agent identity', color: '#f472b6' },
   { label: 'Circle MPC', desc: 'Dev-controlled wallets', color: '#3b82f6' },
   { label: 'USDC', desc: 'Native escrow currency', color: '#10b981' },
-  { label: 'Goldsky', desc: 'Indexed job history', color: '#f59e0b' },
 ]
 
-const MARQUEE_STACK = ['Arc Testnet', 'ERC-8004', 'Circle MPC', 'USDC', 'Goldsky']
+const MARQUEE_STACK = ['Arc Testnet', 'ERC-8004', 'Circle MPC', 'USDC']
 
 const ROLE_STEPS = {
   client: [

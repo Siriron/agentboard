@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatDate } from '../lib/arc'
-import { isGoldskyEnabled } from '../lib/goldsky'
 import { BlurFade } from '../components/magicui/BlurFade'
 import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import {
   Search, SlidersHorizontal, ChevronRight, Briefcase,
-  DollarSign, Clock, Users, Zap, Bot, RefreshCw
+  DollarSign, Clock, Users, Zap, Bot, RefreshCw, AlertCircle
 } from 'lucide-react'
 
 const CATEGORIES = ['All','SmartContract','Frontend','Backend','Audit','Research','Design','Data','DevOps','Other']
@@ -117,6 +116,8 @@ export default function Board() {
   const [jobs, setJobs] = useState([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState(null)
+  const [failedCount, setFailedCount] = useState(0)
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('All')
   const [status, setStatus] = useState('all')
@@ -128,6 +129,8 @@ export default function Board() {
   const loadJobs = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true)
     else setLoading(true)
+    setError(null)
+    setFailedCount(0)
     try {
       const client = getPublicClient()
       const count = Number(await client.readContract({
@@ -137,20 +140,34 @@ export default function Board() {
 
       const ids = Array.from({ length: count }, (_, i) => count - i)
       const loaded = []
+      let failures = 0
 
-      // Fetch with concurrency limit of 5 parallel requests
+      // Fetch with concurrency limit of 5 parallel requests. A per-job
+      // failure here used to disappear silently (pLimit swallows
+      // individual rejections so the rest of the board still renders) —
+      // that's still the right behavior for the board itself, but we now
+      // count the drops so the page can say "N jobs failed to load"
+      // instead of presenting a partial board as if it were complete.
       await pLimit(ids.map(id => async () => {
-        const [core, meta] = await Promise.all([
-          client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobCore', args: [BigInt(id)] }),
-          client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobMeta', args: [BigInt(id)] }),
-        ])
-        loaded.push({ id, core, meta })
+        try {
+          const [core, meta] = await Promise.all([
+            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobCore', args: [BigInt(id)] }),
+            client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobMeta', args: [BigInt(id)] }),
+          ])
+          loaded.push({ id, core, meta })
+        } catch (e) {
+          failures++
+          console.error(`[Board] job #${id} failed to load:`, e)
+        }
       }), 5)
 
       loaded.sort((a, b) => b.id - a.id)
       setJobs(loaded)
-    } catch (e) { console.error(e) }
-    finally { setLoading(false); setRefreshing(false) }
+      setFailedCount(failures)
+    } catch (e) {
+      console.error('[Board] loadJobs failed:', e)
+      setError(e.message || 'Failed to load jobs from the network.')
+    } finally { setLoading(false); setRefreshing(false) }
   }, [])
 
   useEffect(() => { loadJobs() }, [loadJobs])
@@ -189,7 +206,6 @@ export default function Board() {
                 <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
                 <span className="text-teal-400 text-xs font-bold uppercase tracking-widest">
                   {openCount} open · {jobs.length} total
-                  {isGoldskyEnabled() && <span className="ml-2 text-[var(--text-1)]/20 normal-case font-normal">· Indexed by Goldsky</span>}
                 </span>
               </div>
               <h1 className="font-black text-[var(--text-1)] tracking-tighter"
@@ -275,10 +291,18 @@ export default function Board() {
         </BlurFade>
 
         {/* Result count */}
-        {!loading && (
-          <div className="text-[var(--text-1)]/25 text-xs mb-4">
-            {filtered.length} {filtered.length === 1 ? 'job' : 'jobs'}
-            {hasActiveFilters ? ' matching filters' : ''}
+        {!loading && !error && (
+          <div className="flex items-center gap-2 text-[var(--text-1)]/25 text-xs mb-4">
+            <span>
+              {filtered.length} {filtered.length === 1 ? 'job' : 'jobs'}
+              {hasActiveFilters ? ' matching filters' : ''}
+            </span>
+            {failedCount > 0 && (
+              <span className="flex items-center gap-1 text-amber-400/70">
+                <AlertCircle size={11} />
+                {failedCount} {failedCount === 1 ? 'job' : 'jobs'} failed to load — try refresh
+              </span>
+            )}
           </div>
         )}
 
@@ -286,6 +310,20 @@ export default function Board() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {Array(6).fill(0).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
+              <AlertCircle size={24} className="text-red-400" />
+            </div>
+            <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 18 }}>
+              Couldn't load the job board
+            </p>
+            <p className="text-[var(--text-1)]/30 text-sm mb-6 max-w-sm">{error}</p>
+            <button onClick={() => loadJobs()}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-red-500/25 bg-red-500/8 text-red-400 text-sm font-semibold hover:bg-red-500/15 transition-all">
+              <RefreshCw size={13} /> Retry
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">

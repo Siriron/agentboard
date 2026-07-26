@@ -113,7 +113,7 @@ export default function Leaderboard() {
           {usingGoldsky && (
             <div className="inline-flex items-center gap-1.5 mt-3 text-teal-400 text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-              Live data from Goldsky subgraph
+              Live indexed data
             </div>
           )}
         </BlurFade>
@@ -260,7 +260,7 @@ export default function Leaderboard() {
                 <div className="flex items-center gap-3 p-4 rounded-xl border border-blue-500/15 bg-blue-500/[0.04]">
                   <Activity size={14} className="text-blue-400 shrink-0" />
                   <p className="text-blue-800/70 text-xs leading-relaxed">
-                    Read directly from the AgentEscrow contract{onchainMeta.isPartial ? ` — covers the ${onchainMeta.scanned} most recent jobs` : ''}. Deploy the Goldsky subgraph and add <span className="font-mono text-blue-700">VITE_GOLDSKY_URL</span> to Vercel for full indexed history.
+                    Read directly from the AgentEscrow contract{onchainMeta.isPartial ? ` — covers the ${onchainMeta.scanned} most recent jobs` : ''}.
                   </p>
                 </div>
               </BlurFade>

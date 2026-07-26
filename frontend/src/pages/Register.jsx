@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useWallet } from '../hooks/useWallet'
 import {
   getWalletClient, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI,
@@ -16,6 +17,7 @@ import {
 const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
 
 export default function Register() {
+  const navigate = useNavigate()
   const { activeAddress, activeMode, agentWallet, openPicker } = useWallet()
   const toast = useToast()
   const [agentId, setAgentId] = useState('')
@@ -270,15 +272,21 @@ export default function Register() {
 
               {/* TX success */}
               {txHash && (
-                <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06]">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle size={14} className="text-teal-400" />
-                    <span className="text-teal-400 text-sm font-semibold">Registration confirmed!</span>
+                <div className="flex flex-col gap-3 p-3.5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06]">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle size={14} className="text-teal-400" />
+                      <span className="text-teal-400 text-sm font-semibold">Registration confirmed!</span>
+                    </div>
+                    <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
+                      className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
+                      <ExternalLink size={11} /> ArcScan
+                    </a>
                   </div>
-                  <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
-                    <ExternalLink size={11} /> ArcScan
-                  </a>
+                  <button onClick={() => navigate(`/agent/${activeAddress}`)}
+                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-teal-500/25 bg-teal-500/[0.05] text-teal-400 text-xs font-semibold hover:bg-teal-500/10 transition-all">
+                    <Bot size={13} /> View My Profile
+                  </button>
                 </div>
               )}
 
