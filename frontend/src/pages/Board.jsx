@@ -34,20 +34,6 @@ const STATUS_META = {
   6: { text: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20', dot: 'bg-gray-500', label: 'EXPIRED' },
 }
 
-// Concurrency-limited parallel fetching
-async function pLimit(fns, limit = 5) {
-  const results = []
-  const pool = []
-  for (const fn of fns) {
-    const p = Promise.resolve().then(fn).then(r => { results.push(r) }).catch(() => {})
-    pool.push(p)
-    if (pool.length >= limit) await Promise.race(pool).catch(() => {})
-    pool.splice(pool.findIndex(x => x === p), 1)
-  }
-  await Promise.allSettled(pool)
-  return results
-}
-
 function JobCard({ job, onClick }) {
   const { id, core, meta } = job
   const sn = Number(core.status)
@@ -142,13 +128,18 @@ export default function Board() {
       const loaded = []
       let failures = 0
 
-      // Fetch with concurrency limit of 5 parallel requests. A per-job
-      // failure here used to disappear silently (pLimit swallows
-      // individual rejections so the rest of the board still renders) —
-      // that's still the right behavior for the board itself, but we now
-      // count the drops so the page can say "N jobs failed to load"
-      // instead of presenting a partial board as if it were complete.
-      await pLimit(ids.map(id => async () => {
+      // All 28 readContract calls (14 jobs × getJobCore + getJobMeta)
+      // fire together via Promise.allSettled so viem's client-level
+      // multicall batching (configured in arc.js) can gather them into
+      // a single eth_call instead of 28 separate ones. A prior version
+      // of this used a concurrency-5 pLimit gate, which was the right
+      // idea when the mitigation was "send fewer simultaneous raw
+      // requests" — but it actively worked against batching, since
+      // calls only combine into one batch if they land in the same
+      // tick, and staggering them across waves defeated that. A
+      // per-task failure is still caught individually below so one bad
+      // job doesn't take down the rest of the board.
+      const tasks = ids.map(id => (async () => {
         try {
           const [core, meta] = await Promise.all([
             client.readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'getJobCore', args: [BigInt(id)] }),
@@ -159,7 +150,8 @@ export default function Board() {
           failures++
           console.error(`[Board] job #${id} failed to load:`, e)
         }
-      }), 5)
+      })())
+      await Promise.allSettled(tasks)
 
       loaded.sort((a, b) => b.id - a.id)
       setJobs(loaded)
