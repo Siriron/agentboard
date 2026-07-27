@@ -116,7 +116,24 @@ export async function mintAgentIdentity({ name, description }) {
 let _publicClient = null
 export function getPublicClient() {
   if (!_publicClient) {
-    _publicClient = createPublicClient({ chain: arcTestnet, transport: http('https://rpc.testnet.arc.network') })
+    _publicClient = createPublicClient({
+      chain: arcTestnet,
+      // Board.jsx alone fires up to 2 calls per job (getJobCore +
+      // getJobMeta) — 14 jobs is already 28 separate eth_call requests
+      // on every page load, on top of Layout.jsx's own jobCount poll
+      // every 30s. Arc's public testnet RPC rate-limits per-IP, and at
+      // that volume it was throttling nearly every call ("request limit
+      // reached" on all 14 job reads, confirmed via browser console).
+      // batch: true merges same-tick JSON-RPC calls into a single HTTP
+      // request — turns those 28 requests into as few as 1-3, which
+      // directly reduces the odds of hitting the limit rather than just
+      // handling the failure better after the fact.
+      transport: http('https://rpc.testnet.arc.network', {
+        batch: { batchSize: 40, wait: 50 },
+        retryCount: 4,
+        retryDelay: 800,
+      }),
+    })
   }
   return _publicClient
 }
