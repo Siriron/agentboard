@@ -118,36 +118,48 @@ export function getPublicClient() {
   if (!_publicClient) {
     _publicClient = createPublicClient({
       chain: arcTestnet,
-      // Board.jsx alone fires up to 2 calls per job (getJobCore +
-      // getJobMeta) — 14 jobs is already 28 separate eth_call requests
-      // on every page load, on top of Layout.jsx's own jobCount poll
-      // every 30s. Arc's public testnet RPC rate-limits per-IP, and at
-      // that volume it was throttling nearly every call ("request limit
-      // reached" on all 14 job reads, confirmed via browser console).
-      //
-      // IMPORTANT: viem has two separate batching mechanisms and this
-      // needs the client-level one. `http(url, { batch: true })` only
-      // batches raw JSON-RPC transport calls (getBlockNumber,
-      // getBalance, etc.) — it does NOT intercept readContract() calls
-      // at all, which is why an earlier attempt at this fix (batch
-      // config on the transport) had zero effect: every getJobCore/
-      // getJobMeta call kept going out as its own separate eth_call,
-      // confirmed via browser console showing individual request
-      // bodies instead of one batched array. readContract is a
-      // *client*-level action, so the batching has to be configured via
-      // `batch.multicall` on createPublicClient itself (below) — that's
-      // what actually intercepts readContract calls and combines them
-      // into one eth_call. `deployless: true` avoids depending on
-      // Multicall3 being deployed on Arc Testnet (unverified) — it
-      // works by temporarily deploying a small factory contract inline
-      // via eth_call instead of requiring a pre-deployed multicall
-      // contract at a known address.
+      // Client-level multicall batching: readContract calls are a
+      // *client*-level action, not a raw transport call, so batching
+      // has to be configured via `batch.multicall` here rather than on
+      // http()'s own `batch` option (which only affects raw JSON-RPC
+      // methods like getBlockNumber and never intercepts readContract
+      // at all — an earlier version of this fix used the wrong one and
+      // had zero effect, confirmed via console showing 28 separate
+      // eth_call requests instead of one combined array).
+      // `deployless: true` avoids depending on Multicall3 being
+      // deployed on Arc Testnet (unverified) — works by temporarily
+      // deploying a small factory contract inline via eth_call instead
+      // of requiring a pre-deployed multicall contract at a known
+      // address. Confirmed working via console: 14 jobs loaded
+      // correctly with real data through this path.
       batch: {
-        multicall: { batchSize: 1024 * 8, wait: 50, deployless: true },
+        // wait: 100 (up from viem's zero-delay default) gives calls
+        // from different components — Board.jsx's job-read loop and
+        // Layout.jsx's jobCount poll, both landing near app mount —
+        // a better chance of actually merging into one request instead
+        // of landing just outside a tighter window as two separate,
+        // closely-spaced ones. A moderate wait costs a small amount of
+        // first-paint latency in exchange for meaningfully fewer
+        // requests against a rate-limited endpoint.
+        multicall: { batchSize: 1024 * 8, wait: 100, deployless: true },
       },
+      // Even with all 28 job-read calls collapsed into one batched
+      // request, Arc's public testnet RPC still intermittently 429s —
+      // confirmed by reload-then-reload testing: first load succeeds
+      // with all 14 jobs, immediate reload fails, matching a short
+      // (single-digit-seconds, not minutes) per-IP cooldown window
+      // rather than a volume problem. viem's retry backoff is
+      // exponential: `2^count * retryDelay`. At retryDelay=2000 with
+      // 5 retries, the wait sequence is 2s, 4s, 8s, 16s, 32s (~62s
+      // total worst case) — long enough to clear a short cooldown
+      // window that a low base delay (the previous 800ms → ~12s total)
+      // could still exhaust while still inside the window. This can't
+      // eliminate the limit outright — a public testnet RPC's cooldown
+      // is out of this app's control — but it gives a stuck request a
+      // real chance to succeed on retry instead of giving up early.
       transport: http('https://rpc.testnet.arc.network', {
-        retryCount: 4,
-        retryDelay: 800,
+        retryCount: 5,
+        retryDelay: 2000,
       }),
     })
   }
