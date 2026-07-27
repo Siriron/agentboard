@@ -22,7 +22,9 @@ export default function AgentProfile() {
   const { address } = useParams()
   const navigate = useNavigate()
   const [jobs, setJobs] = useState([])
-  const [agentId, setAgentId] = useState(null)
+  // Always null for now — see the comment in load() below for why an
+  // honest "no badge" beats a check that was silently failing.
+  const agentId = null
   const [loading, setLoading] = useState(true)
 
   useEffect(() => { if (address) load() }, [address])
@@ -46,18 +48,21 @@ export default function AgentProfile() {
           loaded.push({ id: Number(id), core, meta })
         } catch {}
       }
-      // Try to get registered agent ID. A wallet with no registered
-      // agent returns 0 here (not a revert) — Number(0) !== null is
-      // still true, so without the extra > 0 check this would render
-      // "ERC-8004 #0" for an unregistered wallet. Guard against that.
-      try {
-        const id = await client.readContract({
-          address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-          functionName: 'agentIdByAddress', args: [address]
-        })
-        const n = Number(id)
-        setAgentId(n > 0 ? n : null)
-      } catch {}
+      // agentIdByAddress does not exist on the deployed AgentEscrow
+      // contract — confirmed by reading the verified source on
+      // ArcScan. AgentEscrow has no address-to-agentId mapping at all;
+      // registerAgent() only ever records that link in the
+      // AgentRegistered *event log*, not in queryable contract state.
+      // A previous version of this called agentIdByAddress here, which
+      // always reverted and silently fell through this catch — so the
+      // badge never actually reflected real on-chain state, it just
+      // happened to render identically to "not registered" either way.
+      // This is a public profile for any address (not just the
+      // connected wallet), so there's no localStorage fallback that
+      // makes sense the way there is on the Register page — showing
+      // the badge here for real would need the subgraph deployed and
+      // indexing AgentRegistered events. Until then, omitting the
+      // badge entirely is more honest than a check that never worked.
       setJobs(loaded)
     } catch (e) { console.error(e) }
     finally { setLoading(false) }

@@ -16,6 +16,12 @@ import {
 
 const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
 
+// Per-address key so switching wallets doesn't show someone else's
+// saved agentId. Lowercased address in the key since addresses can
+// arrive with different casing depending on the source (checksum vs
+// not) — normalizing here avoids two keys for the same wallet.
+const REGISTERED_AGENT_KEY_PREFIX = 'agentboard:registered-agent:'
+
 export default function Register() {
   const navigate = useNavigate()
   const { activeAddress, activeMode, agentWallet, openPicker } = useWallet()
@@ -35,32 +41,46 @@ export default function Register() {
   // status. This looks up the connected wallet's own agent ID on mount
   // (and whenever the connected wallet changes) and restores the real
   // state instead of starting from a blank slate every time.
+  //
+  // IMPORTANT: this used to call a contract function `agentIdByAddress`
+  // to *discover* the wallet's agentId from the chain. That function
+  // does not exist on the deployed AgentEscrow contract — confirmed by
+  // reading the verified source directly on ArcScan. The contract has
+  // no address-to-agentId mapping at all; `registerAgent()` only sets
+  // `agentIdRegistered[agentId] = true`, keyed by agentId, and the
+  // address→agentId link only ever exists in the AgentRegistered event
+  // log, not in queryable contract state. Every call to the
+  // nonexistent function reverted, which is why this never actually
+  // worked — there was nothing wrong with the RPC, the timing, or the
+  // contract; the lookup itself was never possible on-chain without an
+  // indexer. The real fix doesn't need the chain to discover this at
+  // all: handleRegister already has the agentId in hand the moment
+  // registration succeeds, so save it locally then, and read it back
+  // here — same pattern useWallet.jsx already uses for the agent
+  // wallet and active mode.
   useEffect(() => {
+    if (!activeAddress) return
     let cancelled = false
     async function loadExisting() {
-      if (!activeAddress) return
+      const saved = localStorage.getItem(REGISTERED_AGENT_KEY_PREFIX + activeAddress.toLowerCase())
+      const n = Number(saved)
+      if (!saved || n <= 0) return
       setLoadingExisting(true)
       try {
-        const id = await getPublicClient().readContract({
-          address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
-          functionName: 'agentIdByAddress', args: [activeAddress]
-        })
-        const n = Number(id)
-        // 0 means this wallet has no registered agent yet — not an
-        // error, just nothing to restore. Leave the form blank so the
-        // person can mint or enter a token ID themselves.
-        if (cancelled || n <= 0) return
-        setAgentId(String(n))
+        // The saved ID is just a local memory of what this wallet last
+        // registered — still confirm it's actually valid on-chain
+        // (agentIdRegistered does exist and works) rather than trusting
+        // localStorage blindly, in case it was registered from a
+        // different device/browser and never actually confirmed here.
         const isRegistered = await getPublicClient().readContract({
           address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
           functionName: 'agentIdRegistered', args: [BigInt(n)]
         })
-        if (!cancelled) setRegistered(isRegistered)
+        if (cancelled) return
+        setAgentId(String(n))
+        setRegistered(isRegistered)
       } catch (e) {
-        // Non-fatal — worst case the person sees a blank form and can
-        // still register manually via the ID field, same as before this
-        // fix existed.
-        console.warn('[Register] could not restore existing registration:', e)
+        console.warn('[Register] could not verify saved registration:', e)
       } finally {
         if (!cancelled) setLoadingExisting(false)
       }
@@ -160,6 +180,14 @@ export default function Register() {
       }
       setTxHash(tx)
       setRegistered(true)
+      // Remember this locally so returning to /register later restores
+      // the right agentId for this wallet — there's no way to discover
+      // it from the chain alone (see the mount-effect comment above),
+      // so this is the only place that link actually gets recorded for
+      // this app's own use.
+      if (activeAddress) {
+        localStorage.setItem(REGISTERED_AGENT_KEY_PREFIX + activeAddress.toLowerCase(), String(parsed))
+      }
       toast('Agent registered!', 'success')
     } catch (e) {
       toast(e.message?.includes('NotAgentOwner') ? 'You do not own this ERC-8004 token.' : e.message || 'Registration failed', 'error')
