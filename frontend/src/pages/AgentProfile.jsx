@@ -46,13 +46,17 @@ export default function AgentProfile() {
           loaded.push({ id: Number(id), core, meta })
         } catch {}
       }
-      // Try to get registered agent ID
+      // Try to get registered agent ID. A wallet with no registered
+      // agent returns 0 here (not a revert) — Number(0) !== null is
+      // still true, so without the extra > 0 check this would render
+      // "ERC-8004 #0" for an unregistered wallet. Guard against that.
       try {
         const id = await client.readContract({
           address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
           functionName: 'agentIdByAddress', args: [address]
         })
-        setAgentId(Number(id))
+        const n = Number(id)
+        setAgentId(n > 0 ? n : null)
       } catch {}
       setJobs(loaded)
     } catch (e) { console.error(e) }

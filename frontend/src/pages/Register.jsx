@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useWallet } from '../hooks/useWallet'
 import {
@@ -27,6 +27,47 @@ export default function Register() {
   const [txHash, setTxHash] = useState(null)
   const [minting, setMinting] = useState(false)
   const [mintTxHash, setMintTxHash] = useState(null)
+  const [loadingExisting, setLoadingExisting] = useState(false)
+
+  // Every remount (including navigating away and back) previously reset
+  // agentId/registered to blank, so a wallet that had just registered
+  // would see "Register Agent Identity" again instead of its actual
+  // status. This looks up the connected wallet's own agent ID on mount
+  // (and whenever the connected wallet changes) and restores the real
+  // state instead of starting from a blank slate every time.
+  useEffect(() => {
+    let cancelled = false
+    async function loadExisting() {
+      if (!activeAddress) return
+      setLoadingExisting(true)
+      try {
+        const id = await getPublicClient().readContract({
+          address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
+          functionName: 'agentIdByAddress', args: [activeAddress]
+        })
+        const n = Number(id)
+        // 0 means this wallet has no registered agent yet — not an
+        // error, just nothing to restore. Leave the form blank so the
+        // person can mint or enter a token ID themselves.
+        if (cancelled || n <= 0) return
+        setAgentId(String(n))
+        const isRegistered = await getPublicClient().readContract({
+          address: CONTRACT_ADDRESS, abi: CONTRACT_ABI,
+          functionName: 'agentIdRegistered', args: [BigInt(n)]
+        })
+        if (!cancelled) setRegistered(isRegistered)
+      } catch (e) {
+        // Non-fatal — worst case the person sees a blank form and can
+        // still register manually via the ID field, same as before this
+        // fix existed.
+        console.warn('[Register] could not restore existing registration:', e)
+      } finally {
+        if (!cancelled) setLoadingExisting(false)
+      }
+    }
+    loadExisting()
+    return () => { cancelled = true }
+  }, [activeAddress])
 
   async function handleMintIdentity() {
     if (!activeAddress) { toast('Connect a wallet first', 'error'); return }
@@ -262,31 +303,39 @@ export default function Register() {
                 </a>
               </div>
 
-              {/* Registration status */}
+              {/* Registration status — shown whether `registered` came
+                  from a fresh registration this session or was restored
+                  by the mount-check above, so the profile link is
+                  reachable either way, not just right after registering. */}
               {registered !== null && (
-                <div className={cn('flex items-center gap-2.5 p-3.5 rounded-xl border text-sm', registered ? 'border-teal-500/20 bg-teal-500/[0.06] text-teal-400' : 'border-purple-500/20 bg-purple-500/[0.06] text-purple-600')}>
-                  {registered ? <CheckCircle size={14} /> : <Info size={14} />}
-                  {registered ? `Agent #${agentId} is already registered on AgentBoard` : `Agent #${agentId} is not yet registered — you can register it now`}
+                <div className={cn('flex flex-col gap-2.5 p-3.5 rounded-xl border text-sm', registered ? 'border-teal-500/20 bg-teal-500/[0.06] text-teal-400' : 'border-purple-500/20 bg-purple-500/[0.06] text-purple-600')}>
+                  <div className="flex items-center gap-2.5">
+                    {registered ? <CheckCircle size={14} /> : <Info size={14} />}
+                    {registered ? `Agent #${agentId} is already registered on AgentBoard` : `Agent #${agentId} is not yet registered — you can register it now`}
+                  </div>
+                  {registered && (
+                    <button onClick={() => navigate(`/agent/${activeAddress}`)}
+                      className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-teal-500/25 bg-teal-500/[0.05] text-teal-400 text-xs font-semibold hover:bg-teal-500/10 transition-all">
+                      <Bot size={13} /> View My Profile
+                    </button>
+                  )}
                 </div>
               )}
 
-              {/* TX success */}
+              {/* TX success — the profile link now lives on the
+                  registration-status banner above (it covers both this
+                  fresh-registration case and the restored-on-mount case),
+                  so it isn't repeated here. */}
               {txHash && (
-                <div className="flex flex-col gap-3 p-3.5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06]">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle size={14} className="text-teal-400" />
-                      <span className="text-teal-400 text-sm font-semibold">Registration confirmed!</span>
-                    </div>
-                    <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
-                      <ExternalLink size={11} /> ArcScan
-                    </a>
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06]">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle size={14} className="text-teal-400" />
+                    <span className="text-teal-400 text-sm font-semibold">Registration confirmed!</span>
                   </div>
-                  <button onClick={() => navigate(`/agent/${activeAddress}`)}
-                    className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-teal-500/25 bg-teal-500/[0.05] text-teal-400 text-xs font-semibold hover:bg-teal-500/10 transition-all">
-                    <Bot size={13} /> View My Profile
-                  </button>
+                  <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
+                    className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
+                    <ExternalLink size={11} /> ArcScan
+                  </a>
                 </div>
               )}
 
@@ -303,10 +352,12 @@ export default function Register() {
               {/* Register button */}
               <button
                 onClick={handleRegister}
-                disabled={!activeAddress || registered === true || registering || !agentId.trim()}
-                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                disabled={!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()}
+                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
                 style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
-                {registering ? (
+                {loadingExisting ? (
+                  <><Loader size={14} className="animate-spin" /> Checking your registration…</>
+                ) : registering ? (
                   <><Loader size={14} className="animate-spin" /> Registering on Arc…</>
                 ) : registered === true ? (
                   <><CheckCircle size={14} /> Already Registered</>
