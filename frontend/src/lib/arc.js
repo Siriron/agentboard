@@ -124,12 +124,28 @@ export function getPublicClient() {
       // every 30s. Arc's public testnet RPC rate-limits per-IP, and at
       // that volume it was throttling nearly every call ("request limit
       // reached" on all 14 job reads, confirmed via browser console).
-      // batch: true merges same-tick JSON-RPC calls into a single HTTP
-      // request — turns those 28 requests into as few as 1-3, which
-      // directly reduces the odds of hitting the limit rather than just
-      // handling the failure better after the fact.
+      //
+      // IMPORTANT: viem has two separate batching mechanisms and this
+      // needs the client-level one. `http(url, { batch: true })` only
+      // batches raw JSON-RPC transport calls (getBlockNumber,
+      // getBalance, etc.) — it does NOT intercept readContract() calls
+      // at all, which is why an earlier attempt at this fix (batch
+      // config on the transport) had zero effect: every getJobCore/
+      // getJobMeta call kept going out as its own separate eth_call,
+      // confirmed via browser console showing individual request
+      // bodies instead of one batched array. readContract is a
+      // *client*-level action, so the batching has to be configured via
+      // `batch.multicall` on createPublicClient itself (below) — that's
+      // what actually intercepts readContract calls and combines them
+      // into one eth_call. `deployless: true` avoids depending on
+      // Multicall3 being deployed on Arc Testnet (unverified) — it
+      // works by temporarily deploying a small factory contract inline
+      // via eth_call instead of requiring a pre-deployed multicall
+      // contract at a known address.
+      batch: {
+        multicall: { batchSize: 1024 * 8, wait: 50, deployless: true },
+      },
       transport: http('https://rpc.testnet.arc.network', {
-        batch: { batchSize: 40, wait: 50 },
         retryCount: 4,
         retryDelay: 800,
       }),
