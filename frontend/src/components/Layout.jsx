@@ -63,7 +63,12 @@ export default function Layout() {
           address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'jobCount'
         })
         setJobCount(Number(n))
-      } catch {}
+      } catch (e) {
+        // Non-fatal — the nav badge just keeps its last known value.
+        // Logged (not silent) so a stale badge is debuggable instead of
+        // an invisible mismatch against what other pages show.
+        console.warn('[Layout] jobCount poll failed:', e)
+      }
     }
     load()
     const t = setInterval(load, 30000)
