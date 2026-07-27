@@ -70,9 +70,16 @@ export default function Layout() {
         console.warn('[Layout] jobCount poll failed:', e)
       }
     }
-    load()
+    // A 1.5s delay on the very first poll only (not the recurring
+    // interval) keeps this call from landing in the exact same instant
+    // as Board.jsx's own job-read batch, which fires immediately on
+    // that page's mount. Two separate near-simultaneous requests
+    // against a rate-limited endpoint is worse than one slightly later
+    // one — this trades a small nav-badge delay on first load for a
+    // better chance of both loads actually succeeding.
+    const initial = setTimeout(load, 1500)
     const t = setInterval(load, 30000)
-    return () => clearInterval(t)
+    return () => { clearTimeout(initial); clearInterval(t) }
   }, [])
 
   const navLinks = [
