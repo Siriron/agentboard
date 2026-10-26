@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react'
+import { getActiveNetwork } from '../lib/networks'
+import { useNetwork } from './useNetwork'
 import {
   initProviderDiscovery, getAnnouncedProviders, getActiveProvider,
   pickProvider, saveActiveProviderUuid, loadActiveProviderUuid, clearActiveProvider,
@@ -6,13 +8,11 @@ import {
 
 const WalletContext = createContext(null)
 
-const ARC_CHAIN_ID = '0x4cef52' // 5042002 — was '0x4CE352' (decodes to 5038930, a different/nonexistent chain). That mismatch was the actual root cause of both bugs: the app compared eth_chainId against the wrong number, so it never recognized an already-correct Arc Testnet connection, and wallet_switchEthereumChain always failed, forcing a fallback to wallet_addEthereumChain that created a duplicate/bogus network entry.
-const ARC_CHAIN = {
-  chainId: ARC_CHAIN_ID,
-  chainName: 'Arc Testnet',
-  nativeCurrency: { name: 'USD Coin', symbol: 'USDC', decimals: 6 },
-  rpcUrls: ['https://rpc.testnet.arc.network'],
-  blockExplorerUrls: ['https://testnet.arcscan.app'],
+// Chain params now come from the active network (see lib/networks.js).
+// Testnet values are unchanged from the original constants.
+function activeChainParams() {
+  const { wallet } = getActiveNetwork()
+  return { ARC_CHAIN_ID: wallet.chainId, ARC_CHAIN: wallet.addParams }
 }
 
 // Checks the wallet's current chain and only switches/adds Arc Testnet
@@ -22,6 +22,7 @@ const ARC_CHAIN = {
 // even when Arc was already configured. Only 4902 (and the couple of
 // wallets that report it via message instead of code) means "not added."
 export async function ensureArcChain() {
+  const { ARC_CHAIN_ID, ARC_CHAIN } = activeChainParams()
   const provider = getActiveProvider()
   if (!provider) return { ok: false, reason: 'no-wallet' }
 
@@ -103,6 +104,8 @@ function loadActiveMode() {
 }
 
 export function WalletProvider({ children }) {
+  const { network: activeNet } = useNetwork()
+  const ARC_CHAIN_ID = activeNet.wallet.chainId
   const [account, setAccount] = useState(null)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState(null)
@@ -181,7 +184,7 @@ export function WalletProvider({ children }) {
       provider.removeListener?.('accountsChanged', onAccounts)
       provider.removeListener?.('chainChanged', onChain)
     }
-  }, [providerUuid, availableProviders])
+  }, [providerUuid, availableProviders, ARC_CHAIN_ID])
 
   // Lets the picker offer a specific injected wallet by name (MetaMask vs
   // Bitget vs Rabby) instead of guessing from window.ethereum. Falls back
