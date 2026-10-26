@@ -1,0 +1,32 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts-v2:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts-v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: ./script/install-deps.sh
+      - run: forge build
+      - run: forge test -vv
+      # Arc-specific EVM behaviour is covered by running the same suite on Arc Foundry
+      # locally: arc-forge test --network arc
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-audit --no-fund
+      - run: npm run build

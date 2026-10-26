@@ -1,4 +1,5 @@
-import { createPublicClient, createWalletClient, custom, http, encodeFunctionData, decodeEventLog } from 'viem'
+import { createPublicClient, createWalletClient, custom, http, fallback, encodeFunctionData, decodeEventLog } from 'viem'
+import { NETWORKS, getActiveNetwork, getActiveNetworkKey, isProtocolLive } from './networks'
 import { ensureArcChain } from '../hooks/useWallet'
 import { getActiveProvider } from './providerRegistry'
 
@@ -112,10 +113,39 @@ export async function mintAgentIdentity({ name, description }) {
   return { agentId: agentId.toString(), txHash: tx }
 }
 
-let _publicClient = null
+const _publicClients = {}
+
+// Addresses that exist only on Arc Testnet. On any other network a read or
+// write against them would hit the wrong (or no) contract, so it is refused.
+const TESTNET_ONLY = new Set([CONTRACT_ADDRESS, IDENTITY_REGISTRY].map(a => a.toLowerCase()))
+
+function createMainnetPublicClient() {
+  const net = NETWORKS.mainnet
+  const extra = (import.meta.env?.VITE_ARC_MAINNET_RPC_EXTRA || '').split(',').map(x => x.trim()).filter(Boolean)
+  const urls = [...net.rpcFallbacks, ...extra]
+  const client = createPublicClient({
+    chain: net.chain,
+    batch: { multicall: { batchSize: 1024 * 8, wait: 100 } },
+    transport: fallback(urls.map(u => http(u, { retryCount: 2, retryDelay: 500 })), { rank: false }),
+  })
+  return client.extend(c => ({
+    async readContract(args) {
+      if (TESTNET_ONLY.has(String(args?.address).toLowerCase())) {
+        throw new Error('That contract exists on Arc Testnet only. AgentBoard is not live on Arc Mainnet yet.')
+      }
+      return c.readContract(args)
+    },
+  }))
+}
+
 export function getPublicClient() {
-  if (!_publicClient) {
-    _publicClient = createPublicClient({
+  const key = getActiveNetworkKey()
+  if (key === 'mainnet') {
+    if (!_publicClients.mainnet) _publicClients.mainnet = createMainnetPublicClient()
+    return _publicClients.mainnet
+  }
+  if (!_publicClients.testnet) {
+    _publicClients.testnet = createPublicClient({
       chain: arcTestnet,
       // Client-level multicall batching: readContract calls are a
       // *client*-level action, not a raw transport call, so batching
@@ -162,10 +192,17 @@ export function getPublicClient() {
       }),
     })
   }
-  return _publicClient
+  return _publicClients.testnet
 }
 
 export async function getWalletClient() {
+  const net = getActiveNetwork()
+  // Never sign against mainnet until the mainnet contracts are deployed and set
+  // in lib/networks.js. This also blocks testnet-address writes (e.g. identity
+  // mint) from being sent to the wrong chain.
+  if (net.key === 'mainnet' && !isProtocolLive('mainnet')) {
+    throw new Error('AgentBoard is not live on Arc Mainnet yet. Switch to Arc Testnet to use the app.')
+  }
   const provider = getActiveProvider()
   if (!provider) throw new Error('No wallet detected. Please install MetaMask.')
   // Re-assert Arc Testnet right before signing — not just at initial
@@ -174,9 +211,9 @@ export async function getWalletClient() {
   // silently sending the transaction to the wrong network.
   const result = await ensureArcChain()
   if (!result.ok) {
-    throw new Error('Please switch your wallet to Arc Testnet to continue.')
+    throw new Error(`Please switch your wallet to ${net.label} to continue.`)
   }
-  return createWalletClient({ chain: arcTestnet, transport: custom(provider) })
+  return createWalletClient({ chain: net.key === 'mainnet' ? net.chain : arcTestnet, transport: custom(provider) })
 }
 
 // Arc Batch Transaction helper - combines multiple calls into one TX using Arc v0.7.2 batch support
@@ -191,7 +228,7 @@ export async function sendBatchTransaction(calls) {
       method: 'wallet_sendCalls',
       params: [{
         version: '1.0',
-        chainId: '0x4cef52', // 5042002 — corrected from '0x4CE352' (wrong chain)
+        chainId: getActiveNetwork().wallet.chainId,
         from: addr,
         calls: calls.map(c => ({
           to: c.to,

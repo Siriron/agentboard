@@ -2,11 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import Lenis from 'lenis'
 import { useWallet } from '../hooks/useWallet'
+import { useNetwork } from '../hooks/useNetwork'
+import NetworkSwitch from './NetworkSwitch'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
 import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot, AlertTriangle } from 'lucide-react'
 
 export default function Layout() {
   const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError, wrongChain, switchChain } = useWallet()
+  const { key: netKey, network, protocolLive } = useNetwork()
   const navigate = useNavigate()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
@@ -57,6 +60,8 @@ export default function Layout() {
   }, [])
 
   useEffect(() => {
+    setJobCount(null)
+    if (!protocolLive) return
     async function load() {
       try {
         const n = await getPublicClient().readContract({
@@ -80,9 +85,9 @@ export default function Layout() {
     const initial = setTimeout(load, 1500)
     const t = setInterval(load, 30000)
     return () => { clearTimeout(initial); clearInterval(t) }
-  }, [])
+  }, [netKey, protocolLive])
 
-  const navLinks = [
+  const allNavLinks = [
     { to: '/board', label: 'Board', badge: jobCount > 0 ? jobCount : null },
     { to: '/post', label: 'Post Job' },
     { to: '/agent-wallet', label: 'Agent Wallet' },
@@ -91,6 +96,9 @@ export default function Layout() {
     { to: '/register', label: 'Register' },
     { to: '/docs', label: 'Docs' },
   ]
+  const navLinks = network.features.circleAgentWallets
+    ? allNavLinks
+    : allNavLinks.filter(l => l.to !== '/agent-wallet')
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -161,6 +169,7 @@ export default function Layout() {
 
         {/* Right */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <NetworkSwitch compact />
           {activeAddress ? (
             <>
               {activeMode === 'browser' && wrongChain && (
@@ -171,7 +180,7 @@ export default function Layout() {
                   padding: '6px 12px', borderRadius: 99, cursor: 'pointer',
                   fontFamily: 'var(--font-body)',
                 }}>
-                  <AlertTriangle size={11} /> Switch to Arc
+                  <AlertTriangle size={11} /> Switch to {network.short}
                 </button>
               )}
               <button onClick={() => navigate(`/agent/${activeAddress}`)}
@@ -219,6 +228,15 @@ export default function Layout() {
         </div>
       </header>
 
+      {network.realFunds && (
+        <div role="status" style={{
+          position: 'fixed', top: 64, left: 0, right: 0, zIndex: 98, textAlign: 'center',
+          background: '#0f766e', color: '#fff', fontSize: 12, fontWeight: 600, padding: '4px 12px',
+        }}>
+          Arc Mainnet · real USDC{protocolLive ? '' : ' · contracts not live yet, read-only'}
+        </div>
+      )}
+
       {/* ── MOBILE NAV ── */}
       {mobileOpen && (
         <div style={{
@@ -249,7 +267,7 @@ export default function Layout() {
                 padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
                 fontFamily: 'var(--font-body)', marginBottom: 8,
               }}>
-                <AlertTriangle size={12} /> Switch to Arc Testnet
+                <AlertTriangle size={12} /> Switch to {network.label}
               </button>
             )}
             {activeAddress ? (
@@ -271,7 +289,7 @@ export default function Layout() {
       )}
 
       {/* ── MAIN ── */}
-      <main style={{ flex: 1, paddingTop: isLanding ? 0 : 64 }}>
+      <main style={{ flex: 1, paddingTop: isLanding ? (network.realFunds ? 28 : 0) : (network.realFunds ? 92 : 64) }}>
         <Outlet />
       </main>
 
@@ -291,7 +309,7 @@ export default function Layout() {
                 <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: 'var(--text-1)' }}>AgentBoard</span>
               </div>
               <p style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.65, maxWidth: 190 }}>
-                Decentralized AI agent commerce on Arc Testnet.
+                Decentralized AI agent commerce on {network.label}.
               </p>
             </div>
             {[
@@ -325,7 +343,7 @@ export default function Layout() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 24, borderTop: '1.5px solid var(--border)' }}>
             <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>© 2026 AgentBoard · Built on Arc · Powered by Circle MPC</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[['Arc Testnet', '#10b981'], ['ERC-8183', '#7C5CFC'], ['ERC-8004', '#f472b6']].map(([label, color]) => (
+              {[[network.label, network.realFunds ? '#0f766e' : '#10b981'], ['ERC-8183', '#7C5CFC'], ['ERC-8004', '#f472b6']].map(([label, color]) => (
                 <span key={label} style={{ fontSize: 10, fontWeight: 700, color, background: `${color}14`, border: `1px solid ${color}28`, padding: '2px 8px', borderRadius: 5, fontFamily: 'var(--font-mono)' }}>{label}</span>
               ))}
             </div>
