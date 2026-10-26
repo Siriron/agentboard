@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toHex, type Address } from 'viem'
 import { getDashboard, withdrawClaimable, ListingStatus } from '../../protocol/v2'
+import { STATUS_LABEL } from '../../protocol/state'
 import { formatUsdc } from '../../protocol/units'
 import { Empty, ErrorBox, Loading, Page, RealFundsBanner, TxStatus, useAction, useV2Wallet } from '../ui'
 
@@ -29,6 +30,15 @@ export default function V2Dashboard() {
             </div>
           )}
           <section>
+            <h2 style={{ fontSize: 16, marginBottom: 8 }}>My jobs</h2>
+            {q.data.jobs.length === 0 && <Empty>No jobs yet.</Empty>}
+            {q.data.jobs.map(j => (
+              <Link key={String(j.jobId)} to={`/job/${toHex(j.jobId, { size: 32 })}`} className="card" style={{ display: 'block', padding: 14, marginBottom: 8, textDecoration: 'none', color: 'inherit' }}>
+                Job #{String(j.number)} · {j.role === 'buyer' ? 'you are the buyer' : 'you are the seller'} · {formatUsdc(j.budget)} USDC · {STATUS_LABEL[j.status]}
+              </Link>
+            ))}
+          </section>
+          <section>
             <h2 style={{ fontSize: 16, marginBottom: 8 }}>My listings</h2>
             {q.data.listings.length === 0 && <Empty>No listings yet.</Empty>}
             {q.data.listings.map(l => (
@@ -46,7 +56,7 @@ export default function V2Dashboard() {
               </Link>
             ))}
           </section>
-          <small style={{ color: 'var(--text-3)' }}>Shows activity in the most recent 100 listings. Jobs created directly on the kernel are not listed; open them by link.</small>
+          <small style={{ color: 'var(--text-3)' }}>Listings and bids cover the most recent 100 listings. Jobs are found from chain events, including jobs created directly on the kernel.</small>
         </div>
       )}
     </Page>

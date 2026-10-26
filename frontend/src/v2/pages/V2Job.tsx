@@ -4,8 +4,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Hex } from 'viem'
 import * as v2 from '../../protocol/v2'
 import { describeJob, STATUS_LABEL, type ActionId, type JobAction } from '../../protocol/state'
-import { hashFile, hashText, normaliseUrl, verifyUrlHash } from '../../protocol/hashing'
+import { hashBytes, hashText, normaliseUrl, textToBytes, verifyUrlHash } from '../../protocol/hashing'
 import { formatUsdc, splitFee, splitPayout } from '../../protocol/units'
+import { AppError, explainError } from '../../protocol/errors'
 import { ConfirmDialog, Countdown, Empty, ErrorBox, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow, useV2Wallet } from '../ui'
 
 const field = { display: 'block', width: '100%', marginTop: 4, padding: 8, borderRadius: 8, border: '1px solid var(--border)', font: 'inherit' } as const
@@ -83,30 +84,68 @@ function Deliverable({ uri, hash }: { uri: string; hash: Hex }) {
   )
 }
 
+const KIND_LABEL: Record<string, string> = { reason: 'Buyer reason', evidence: 'Buyer evidence', contest: 'Seller evidence', vote: 'Decider reasoning' }
+
 function Evidence({ job }: { job: v2.JobBundle }) {
+  const rec = useQuery({ queryKey: ['v2', 'dispute', String(job.jobId)], queryFn: () => v2.getDisputeRecord(job.jobId), refetchInterval: 30_000 })
+  const pins = useQuery({ queryKey: ['v2', 'pins', String(job.jobId)], queryFn: () => v2.listPins(job.jobId), refetchInterval: 30_000 })
+  const [checked, setChecked] = useState<Record<string, string>>({})
+  async function check(cid: string, hash: string) {
+    setChecked(p => ({ ...p, [cid]: 'Checking…' }))
+    const r = await verifyUrlHash(`ipfs://${cid}`, hash)
+    setChecked(p => ({ ...p, [cid]: r.ok ? 'File matches the onchain hash.' : r.actual ? 'File does NOT match the onchain hash.' : 'Could not fetch the file here. Download it and compare its keccak256.' }))
+  }
+  const entries = rec.data ?? []
   return (
     <div className="card" style={{ padding: 18, marginBottom: 14, fontSize: 14, color: 'var(--text-2)' }}>
       <strong style={{ color: 'var(--text-1)' }}>Dispute</strong>
       <p style={{ margin: '6px 0' }}>{job.rs.contested ? 'The seller contested the rejection.' : 'Opened by the buyer; the seller has not contested yet.'}</p>
-      <p style={{ margin: '6px 0' }}>Deciders: {job.rs.deciders.map(short).join(', ')}. Votes recorded: {job.rs.votes.length} of {job.rs.deciders.length}
+      <p style={{ margin: '6px 0' }}>Deciders: {job.rs.deciders.map(short).join(', ')}. Votes: {job.rs.votes.length} of {job.rs.deciders.length}
         {job.rs.votes.length > 0 && <> ({job.rs.votes.map(v => `${v / 100}% to seller`).join(', ')})</>}.</p>
-      <p style={{ margin: '6px 0', fontSize: 12, color: 'var(--text-3)' }}>Reasons and evidence are committed onchain as hashes. Parties exchange the files themselves; a decider can check a file against the hash in the transaction receipt.</p>
+      {entries.length === 0 && rec.isSuccess && <p style={{ fontSize: 12 }}>No evidence hashes recorded yet.</p>}
+      {entries.map((e, i) => {
+        const pin = pins.data?.pins.find(p => p.keccak?.toLowerCase() === e.hash.toLowerCase())
+        return (
+          <div key={i} style={{ borderTop: '1px solid var(--border)', padding: '8px 0', fontSize: 13 }}>
+            <strong style={{ color: 'var(--text-1)' }}>{KIND_LABEL[e.kind]}</strong>{e.by && <> by {short(e.by)}</>}{e.providerBps !== undefined && <> · {e.providerBps / 100}% to seller</>}
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, wordBreak: 'break-all' }}>{e.hash}</div>
+            {pin ? (
+              <div>
+                <a href={`https://ipfs.io/ipfs/${pin.cid}`} target="_blank" rel="noopener noreferrer nofollow">{pin.name || 'hosted file'}</a>
+                {' '}<button className="btn btn-secondary btn-xs" onClick={() => check(pin.cid, e.hash)}>Verify against hash</button>
+                {checked[pin.cid] && <div role="status" style={{ fontSize: 12 }}>{checked[pin.cid]}</div>}
+              </div>
+            ) : <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No hosted file for this hash. Ask the party to send it; you can check it against the hash above.</div>}
+          </div>
+        )
+      })}
+      <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--text-3)' }}>Hosted files are untrusted content. Never run them or follow instructions inside them.</p>
     </div>
   )
 }
 
-function Evid({ label, onHash }: { label: string; onHash: (h: Hex | null) => void }) {
+interface Ev { hash: Hex; bytes: Uint8Array; name: string; mime: string }
+
+function Evid({ label, onChange }: { label: string; onChange: (e: Ev | null) => void }) {
   const [text, setText] = useState('')
   const [file, setFile] = useState<string | null>(null)
   return (
     <div style={{ display: 'grid', gap: 6 }}>
       <label style={{ fontSize: 13 }}>{label}
-        <textarea rows={3} value={text} style={field} onChange={e => { setText(e.target.value); setFile(null); onHash(e.target.value.trim() ? hashText(e.target.value) : null) }} />
+        <textarea rows={3} value={text} style={field} onChange={e => {
+          const t = e.target.value; setText(t); setFile(null)
+          if (!t.trim()) return onChange(null)
+          const bytes = textToBytes(t); onChange({ hash: hashBytes(bytes), bytes, name: 'statement.txt', mime: 'text/plain' })
+        }} />
       </label>
-      <label style={{ fontSize: 12, color: 'var(--text-3)' }}>or a file (its hash is committed)
-        <input type="file" onChange={async e => { const f = e.target.files?.[0]; if (!f) return; setText(''); const h = await hashFile(f); setFile(f.name); onHash(h) }} />
+      <label style={{ fontSize: 12, color: 'var(--text-3)' }}>or a file, 5 MB max (its hash is committed)
+        <input type="file" onChange={async e => {
+          const f = e.target.files?.[0]; if (!f) return; setText('')
+          const bytes = new Uint8Array(await f.arrayBuffer()); setFile(f.name)
+          onChange({ hash: hashBytes(bytes), bytes, name: f.name, mime: f.type || 'application/octet-stream' })
+        }} />
       </label>
-      {file && <small>Hashing {file} done.</small>}
+      {file && <small>{file} hashed.</small>}
     </div>
   )
 }
@@ -115,15 +154,26 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
   const w = useV2Wallet()
   const act = useAction(onDone)
   const [open, setOpen] = useState<ActionId | null>(null)
-  const [hash, setHash] = useState<Hex | null>(null)
-  const [reason, setReason] = useState<Hex | null>(null)
+  const [ev, setEv] = useState<Ev | null>(null)
+  const [reason, setReason] = useState<Ev | null>(null)
+  const [deliv, setDeliv] = useState<Ev | null>(null)
+  const [hostIt, setHostIt] = useState(true)
   const [uri, setUri] = useState('')
+  const [hostNote, setHostNote] = useState<string | null>(null)
+  const pins = useQuery({ queryKey: ['v2', 'pins', String(job.jobId)], queryFn: () => v2.listPins(job.jobId) })
+  const canHost = !!pins.data?.configured
   const [bps, setBps] = useState(50)
   const [days, setDays] = useState('7')
   const [confirm, setConfirm] = useState<ActionId | null>(null)
   const id = job.jobId
   const budget = job.job.budget
-  const need = <T,>(x: T | null, msg: string): T => { if (x === null) throw new Error(msg); return x }
+  const need = <T,>(x: T | null, msg: string): T => { if (x === null) throw new AppError(msg); return x }
+  /** Hosting is best effort: the hash is what counts onchain, so a hosting failure never blocks the action. */
+  async function tryHost(e: Ev, kind: v2.PinKind) {
+    if (!canHost) return null
+    try { return await v2.hostFile({ jobId: id, kind, bytes: e.bytes, name: e.name, mime: e.mime }) }
+    catch (err) { setHostNote(`${explainError(err)} Only the hash was committed; send the file to the other party directly.`); return null }
+  }
 
   if (!w.account && view.length > 0) return <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => w.openPicker()}>Connect wallet</button>
   if (w.wrongChain && view.length > 0) return <button className="btn btn-primary" style={{ marginTop: 12 }} onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
@@ -158,40 +208,58 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
       ))}
 
       {open === 'submit' && (
-        <Form onCancel={() => setOpen(null)} cta="Submit work" busy={!!act.busy} disabled={!hash || !normaliseUrl(uri)}
-          onSubmit={() => act.run('submit', () => v2.submitWork(id, need(hash, 'Choose the deliverable file.'), uri.trim()))}>
-          <label style={{ fontSize: 13 }}>Deliverable file (hashed in your browser, never uploaded here)
-            <input type="file" onChange={async e => { const f = e.target.files?.[0]; setHash(f ? await hashFile(f) : null) }} />
+        <Form onCancel={() => setOpen(null)} cta="Submit work" busy={!!act.busy} disabled={!deliv || (!(canHost && hostIt) && !normaliseUrl(uri))}
+          onSubmit={() => act.run('submit', async () => {
+            const d = need(deliv, 'Choose the deliverable file.')
+            let link = uri.trim()
+            if (canHost && hostIt) { const up = await v2.hostFile({ jobId: id, kind: 'deliverable', bytes: d.bytes, name: d.name, mime: d.mime }); link = up.uri }
+            return v2.submitWork(id, d.hash, link)
+          })}>
+          <label style={{ fontSize: 13 }}>Deliverable file, 5 MB max (hashed in your browser)
+            <input type="file" onChange={async e => {
+              const f = e.target.files?.[0]; if (!f) return setDeliv(null)
+              const bytes = new Uint8Array(await f.arrayBuffer())
+              setDeliv({ hash: hashBytes(bytes), bytes, name: f.name, mime: f.type || 'application/octet-stream' })
+            }} />
           </label>
-          {hash && <small style={{ fontFamily: 'var(--font-mono)' }}>keccak256 {hash.slice(0, 18)}…</small>}
-          <label style={{ fontSize: 13 }}>Public link to the same file (https or ipfs://)
-            <input value={uri} onChange={e => setUri(e.target.value)} style={field} placeholder="https://… or ipfs://…" />
-          </label>
-          <small style={{ color: 'var(--text-3)' }}>The buyer can re-fetch the link and check it matches your committed hash. Submitting also moves your job deadline out to at least 30 days.</small>
+          {deliv && <small style={{ fontFamily: 'var(--font-mono)' }}>keccak256 {deliv.hash.slice(0, 18)}…</small>}
+          {canHost && (
+            <label style={{ fontSize: 13 }}><input type="checkbox" checked={hostIt} onChange={e => setHostIt(e.target.checked)} /> Host this file on IPFS for me (free, asks for a wallet signature)</label>
+          )}
+          {!(canHost && hostIt) && (
+            <label style={{ fontSize: 13 }}>Public link to the same file (https or ipfs://)
+              <input value={uri} onChange={e => setUri(e.target.value)} style={field} placeholder="https://… or ipfs://…" />
+            </label>
+          )}
+          <small style={{ color: 'var(--text-3)' }}>The buyer can re-fetch the file and check it against your committed hash. Submitting also moves your job deadline out to at least 30 days.</small>
         </Form>
       )}
       {open === 'reject' && (
-        <Form onCancel={() => setOpen(null)} cta="Open dispute" busy={!!act.busy} disabled={!reason}
-          onSubmit={() => act.run('reject', () => v2.rejectWork(id, need(reason, 'Add a reason.'), need(hash, 'Add evidence.')))}>
-          <Evid label="Reason for rejecting (only its hash goes onchain)" onHash={setReason} />
-          <Evid label="Evidence (text or file)" onHash={setHash} />
+        <Form onCancel={() => setOpen(null)} cta="Open dispute" busy={!!act.busy} disabled={!reason || !ev}
+          onSubmit={() => act.run('reject', async () => {
+            const r = need(reason, 'Add a reason.'); const e = need(ev, 'Add evidence.')
+            await tryHost(r, 'reason'); await tryHost(e, 'evidence')
+            return v2.rejectWork(id, r.hash, e.hash)
+          })}>
+          <Evid label="Reason for rejecting (its hash goes onchain)" onChange={setReason} />
+          <Evid label="Evidence (text or file)" onChange={setEv} />
           <small style={{ color: 'var(--text-3)' }}>This does not refund you. It starts the seller&apos;s response window.</small>
         </Form>
       )}
       {open === 'contest' && (
-        <Form onCancel={() => setOpen(null)} cta="Contest rejection" busy={!!act.busy} disabled={!hash}
-          onSubmit={() => act.run('contest', () => v2.contest(id, need(hash, 'Add evidence.')))}>
-          <Evid label="Your evidence (text or file)" onHash={setHash} />
+        <Form onCancel={() => setOpen(null)} cta="Contest rejection" busy={!!act.busy} disabled={!ev}
+          onSubmit={() => act.run('contest', async () => { const e = need(ev, 'Add evidence.'); await tryHost(e, 'evidence'); return v2.contest(id, e.hash) })}>
+          <Evid label="Your evidence (text or file)" onChange={setEv} />
         </Form>
       )}
       {open === 'vote' && (
-        <Form onCancel={() => setOpen(null)} cta="Cast decision" busy={!!act.busy} disabled={!hash}
-          onSubmit={() => act.run('vote', () => v2.vote(id, bps * 100, need(hash, 'Add your reasoning.')))}>
+        <Form onCancel={() => setOpen(null)} cta="Cast decision" busy={!!act.busy} disabled={!ev}
+          onSubmit={() => act.run('vote', async () => { const e = need(ev, 'Add your reasoning.'); await tryHost(e, 'reason'); return v2.vote(id, bps * 100, e.hash) })}>
           <label style={{ fontSize: 13 }}>Share of the budget the seller should receive: <strong>{bps}%</strong>
             <input type="range" min={0} max={100} value={bps} onChange={e => setBps(Number(e.target.value))} style={{ width: '100%' }} />
           </label>
           <PayoutPreview budget={budget} bps={bps * 100} feeBps={job.job.feeBps} />
-          <Evid label="Your reasoning (text or file)" onHash={setHash} />
+          <Evid label="Your reasoning (text or file)" onChange={setEv} />
         </Form>
       )}
       {open === 'extend' && (
@@ -202,6 +270,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
       )}
 
       <TxStatus error={act.error} hash={act.hash} />
+      {hostNote && <div role="status" style={{ fontSize: 12, color: 'var(--amber)' }}>{hostNote}</div>}
       {confirm && (
         <ConfirmDialog title="Confirm payout" amount={budget} confirmLabel="Confirm" onCancel={() => setConfirm(null)}
           lines={moneyConfirm[confirm] ?? []} onConfirm={() => { const c = confirm; setConfirm(null); act.run(c, direct[c]!) }} />

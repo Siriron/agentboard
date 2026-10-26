@@ -7,9 +7,13 @@ export async function hashFile(file: File): Promise<Hex> {
 }
 
 /** keccak256 of UTF-8 text with line endings normalised. Used for spec and evidence text. */
-export function hashText(text: string): Hex {
-  return keccak256(toBytes(String(text).replace(/\r\n/g, '\n').trim()))
+export function textToBytes(text: string): Uint8Array {
+  return toBytes(String(text).replace(/\r\n/g, '\n').trim())
 }
+export function hashText(text: string): Hex {
+  return keccak256(textToBytes(text))
+}
+export const hashBytes = (b: Uint8Array): Hex => keccak256(b)
 
 /** Re-fetch a URL and compare to a committed hash. Returns {ok, actual, reason}. */
 export async function verifyUrlHash(url: string, expected: string): Promise<{ ok: boolean; actual?: Hex; reason?: string }> {
