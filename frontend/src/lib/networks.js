@@ -121,7 +121,21 @@ let active = readInitial()
 
 export function getActiveNetworkKey() { return active }
 export function getActiveNetwork() { return NETWORKS[active] }
-export function isProtocolLive(key = active) { return !!NETWORKS[key].contracts.escrow }
+// Mainnet V2 (AgentKernel + EvaluatorRouter + JobBoard) opens only when VITE_MAINNET_V2=1 is set on the
+// host (Vercel preview first, production when ready). `contracts.mainnet.escrow` stays null on purpose:
+// it is the V1 slot, and a non-null value would point the V1 testnet ABI at V2 contracts.
+export function isV2Enabled() {
+  return import.meta.env?.VITE_MAINNET_V2 === '1'
+}
+
+/** Which protocol implementation serves a network: 'v1' (testnet escrow), 'v2' (mainnet), or null (gated). */
+export function protocolFor(key = active) {
+  if (key === 'testnet') return 'v1'
+  if (NETWORKS.mainnet.contracts.escrow) return 'v1'
+  return isV2Enabled() ? 'v2' : null
+}
+
+export function isProtocolLive(key = active) { return protocolFor(key) !== null }
 
 export function setActiveNetworkKey(key) {
   if (!NETWORK_KEYS.includes(key) || key === active) return

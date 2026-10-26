@@ -125,7 +125,7 @@ function createMainnetPublicClient() {
   const urls = [...net.rpcFallbacks, ...extra]
   const client = createPublicClient({
     chain: net.chain,
-    batch: { multicall: { batchSize: 1024 * 8, wait: 100 } },
+    batch: { multicall: { batchSize: 1024 * 8, wait: 100, deployless: true } },
     transport: fallback(urls.map(u => http(u, { retryCount: 2, retryDelay: 500 })), { rank: false }),
   })
   return client.extend(c => ({
@@ -200,7 +200,9 @@ export async function getWalletClient() {
   // Never sign against mainnet until the mainnet contracts are deployed and set
   // in lib/networks.js. This also blocks testnet-address writes (e.g. identity
   // mint) from being sent to the wrong chain.
-  if (net.key === 'mainnet' && !isProtocolLive('mainnet')) {
+  // V1 code can never sign on mainnet: only a non-null V1 `escrow` address opens this path. V2 writes
+  // go through protocol/v2.ts, which signs for the V2 contracts only.
+  if (net.key === 'mainnet' && !net.contracts.escrow) {
     throw new Error('AgentBoard is not live on Arc Mainnet yet. Switch to Arc Testnet to use the app.')
   }
   const provider = getActiveProvider()

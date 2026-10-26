@@ -3,6 +3,7 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import Lenis from 'lenis'
 import { useWallet } from '../hooks/useWallet'
 import { useNetwork } from '../hooks/useNetwork'
+import { protocolFor } from '../lib/networks'
 import NetworkSwitch from './NetworkSwitch'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
 import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot, AlertTriangle } from 'lucide-react'
@@ -61,7 +62,7 @@ export default function Layout() {
 
   useEffect(() => {
     setJobCount(null)
-    if (!protocolLive) return
+    if (!protocolLive || protocolFor(netKey) !== 'v1') return
     async function load() {
       try {
         const n = await getPublicClient().readContract({
@@ -96,9 +97,13 @@ export default function Layout() {
     { to: '/register', label: 'Register' },
     { to: '/docs', label: 'Docs' },
   ]
-  const navLinks = network.features.circleAgentWallets
+  // Mainnet V2 has no leaderboard, registration or Circle agent wallet pages yet.
+  const hiddenOnMainnet = ['/agent-wallet', '/leaderboard', '/register']
+  const navLinks = (network.features.circleAgentWallets
     ? allNavLinks
-    : allNavLinks.filter(l => l.to !== '/agent-wallet')
+    : allNavLinks.filter(l => l.to !== '/agent-wallet'))
+    .filter(l => !(netKey === 'mainnet' && hiddenOnMainnet.includes(l.to)))
+    .map(l => (netKey === 'mainnet' && l.to === '/post' ? { ...l, label: 'Post Listing' } : l))
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>

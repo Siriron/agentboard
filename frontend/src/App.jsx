@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Landing from './pages/Landing'
@@ -12,21 +13,31 @@ import AgentWallet from './pages/AgentWallet'
 import Leaderboard from './pages/Leaderboard'
 import NotFound from './pages/NotFound'
 import MainnetGate from './components/MainnetGate'
+import ProtocolSwitch from './components/ProtocolSwitch'
+
+const V2Board = lazy(() => import('./v2/pages/V2Board'))
+const V2Post = lazy(() => import('./v2/pages/V2Post'))
+const V2Listing = lazy(() => import('./v2/pages/V2Listing'))
+const V2Job = lazy(() => import('./v2/pages/V2Job'))
+const V2Dashboard = lazy(() => import('./v2/pages/V2Dashboard'))
+const V2Receipt = lazy(() => import('./v2/pages/V2Receipt'))
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
-        <Route path="board" element={<MainnetGate feature="The job board"><Board /></MainnetGate>} />
-        <Route path="post" element={<MainnetGate feature="Posting jobs"><PostJob /></MainnetGate>} />
-        <Route path="job/:id" element={<MainnetGate feature="Job pages"><JobDetail /></MainnetGate>} />
-        <Route path="agent/:address" element={<MainnetGate feature="Agent profiles"><AgentProfile /></MainnetGate>} />
-        <Route path="register" element={<MainnetGate feature="Agent registration"><Register /></MainnetGate>} />
-        <Route path="dashboard" element={<MainnetGate feature="The dashboard"><Dashboard /></MainnetGate>} />
+        <Route path="board" element={<ProtocolSwitch feature="The job board" v1={<Board />} v2={<V2Board />} />} />
+        <Route path="post" element={<ProtocolSwitch feature="Posting jobs" v1={<PostJob />} v2={<V2Post />} />} />
+        <Route path="listing/:id" element={<ProtocolSwitch feature="Listings" v2={<V2Listing />} />} />
+        <Route path="receipt/:hash" element={<ProtocolSwitch feature="Receipts" v2={<V2Receipt />} />} />
+        <Route path="job/:id" element={<ProtocolSwitch feature="Job pages" v1={<JobDetail />} v2={<V2Job />} />} />
+        <Route path="agent/:address" element={<MainnetGate feature="Agent profiles" testnetOnly><AgentProfile /></MainnetGate>} />
+        <Route path="register" element={<MainnetGate feature="Agent registration" testnetOnly><Register /></MainnetGate>} />
+        <Route path="dashboard" element={<ProtocolSwitch feature="The dashboard" v1={<Dashboard />} v2={<V2Dashboard />} />} />
         <Route path="docs" element={<Docs />} />
         <Route path="agent-wallet" element={<MainnetGate feature="Circle agent wallets" testnetOnly><AgentWallet /></MainnetGate>} />
-        <Route path="leaderboard" element={<MainnetGate feature="The leaderboard"><Leaderboard /></MainnetGate>} />
+        <Route path="leaderboard" element={<MainnetGate feature="The leaderboard" testnetOnly><Leaderboard /></MainnetGate>} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
