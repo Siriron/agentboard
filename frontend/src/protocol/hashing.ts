@@ -29,10 +29,9 @@ export async function verifyUrlHash(url: string, expected: string): Promise<{ ok
   }
 }
 
-/** Deliverables are untrusted content. Only http(s) and ipfs:// links are fetched, never executed. */
+/** Deliverables are untrusted content. Only https links are fetched, never executed. */
 export function normaliseUrl(uri: string | null | undefined): string | null {
   if (!uri) return null
-  if (uri.startsWith('ipfs://')) return `https://ipfs.io/ipfs/${uri.slice(7)}`
   if (/^https:\/\//i.test(uri)) return uri
   return null
 }
@@ -46,7 +45,7 @@ export { toHex }
 
 const META_PREFIX = 'data:application/json;base64,'
 
-// Listing and bid metadata travel in the onchain `uri` as a data URI (small) or an https/ipfs link.
+// Listing and bid metadata travel in the onchain `uri` as a data URI (small) or an https link.
 export function encodeMeta(obj: unknown): string {
   const bytes = new TextEncoder().encode(JSON.stringify(obj))
   let bin = ''

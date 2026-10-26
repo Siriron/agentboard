@@ -14,6 +14,7 @@
   "dependencies": {
     "@circle-fin/developer-controlled-wallets": "^1.0.0",
     "@tanstack/react-query": "^5.104.5",
+    "@vercel/blob": "^2.8.2",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.0",
     "gsap": "^3.12.5",

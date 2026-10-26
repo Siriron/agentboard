@@ -501,13 +501,15 @@ export async function getDisputeRecord(jobId: bigint): Promise<DisputeEntry[]> {
   return out
 }
 
-// ───────────── file hosting (serverless /api/pin, IPFS) ─────────────
+// ───────────── file hosting (serverless /api/upload, Vercel Blob) ─────────────
 
 export type PinKind = 'deliverable' | 'evidence' | 'reason'
-export interface Pin { cid: string; kind?: string; keccak?: string; uploader?: string; name?: string; size?: number; date?: string }
+export interface HostedFile { url: string; kind?: string; keccak?: string; name?: string; size?: number; uploadedAt?: string }
 
-export const pinMessage = (p: { jobId: string; kind: string; hash: string; issuedAt: string }) =>
-  `AgentBoard pin\nJob: ${p.jobId}\nKind: ${p.kind}\nHash: ${p.hash}\nIssued: ${p.issuedAt}`
+export const MAX_HOSTED_BYTES = 4 * 1024 * 1024
+
+export const uploadMessage = (p: { jobId: string; kind: string; hash: string; issuedAt: string }) =>
+  `AgentBoard upload\nJob: ${p.jobId}\nKind: ${p.kind}\nHash: ${p.hash}\nIssued: ${p.issuedAt}`
 
 function b64(bytes: Uint8Array): string {
   let s = ''
@@ -516,29 +518,29 @@ function b64(bytes: Uint8Array): string {
   return btoa(s)
 }
 
-/** Host bytes on IPFS. Throws AppError with a plain message; callers may continue hash-only. */
-export async function hostFile(p: { jobId: bigint; kind: PinKind; bytes: Uint8Array; name: string; mime?: string }): Promise<{ uri: string; cid: string; hash: Hex }> {
-  if (p.bytes.length > 5 * 1024 * 1024) throw new AppError('Files must be 5 MB or smaller to host.')
+/** Host bytes. Throws AppError with a plain message; callers may continue hash-only. */
+export async function hostFile(p: { jobId: bigint; kind: PinKind; bytes: Uint8Array; name: string }): Promise<{ url: string; hash: Hex }> {
+  if (p.bytes.length > MAX_HOSTED_BYTES) throw new AppError('Files must be 4 MB or smaller to host.')
   const { account } = await signer()
   const hash = hashBytes(p.bytes)
   const issuedAt = String(Math.floor(Date.now() / 1000))
-  const signature = await env().signMessage(pinMessage({ jobId: p.jobId.toString(), kind: p.kind, hash, issuedAt }))
+  const signature = await env().signMessage(uploadMessage({ jobId: p.jobId.toString(), kind: p.kind, hash, issuedAt }))
   let res: Response
   try {
-    res = await fetch(`${env().apiBase}/api/pin`, {
+    res = await fetch(`${env().apiBase}/api/upload`, {
       method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ jobId: p.jobId.toString(), kind: p.kind, name: p.name, mime: p.mime, contentBase64: b64(p.bytes), hash, address: account, signature, issuedAt }),
+      body: JSON.stringify({ jobId: p.jobId.toString(), kind: p.kind, name: p.name, contentBase64: b64(p.bytes), hash, address: account, signature, issuedAt }),
     })
   } catch { throw new AppError('File hosting is unreachable right now.') }
-  const j = (await res.json().catch(() => ({}))) as { cid?: string; uri?: string; error?: string }
-  if (!res.ok || !j.cid || !j.uri) throw new AppError(j.error || 'File hosting failed.')
-  return { uri: j.uri, cid: j.cid, hash }
+  const j = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
+  if (!res.ok || !j.url) throw new AppError(j.error || 'File hosting failed.')
+  return { url: j.url, hash }
 }
 
-export async function listPins(jobId: bigint): Promise<{ configured: boolean; pins: Pin[] }> {
+export async function listFiles(jobId: bigint): Promise<{ configured: boolean; files: HostedFile[] }> {
   try {
-    const res = await fetch(`${env().apiBase}/api/pins?jobId=${jobId}`)
-    if (!res.ok) return { configured: false, pins: [] }
-    return (await res.json()) as { configured: boolean; pins: Pin[] }
-  } catch { return { configured: false, pins: [] } }
+    const res = await fetch(`${env().apiBase}/api/files?jobId=${jobId}`)
+    if (!res.ok) return { configured: false, files: [] }
+    return (await res.json()) as { configured: boolean; files: HostedFile[] }
+  } catch { return { configured: false, files: [] } }
 }

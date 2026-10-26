@@ -88,12 +88,12 @@ const KIND_LABEL: Record<string, string> = { reason: 'Buyer reason', evidence: '
 
 function Evidence({ job }: { job: v2.JobBundle }) {
   const rec = useQuery({ queryKey: ['v2', 'dispute', String(job.jobId)], queryFn: () => v2.getDisputeRecord(job.jobId), refetchInterval: 30_000 })
-  const pins = useQuery({ queryKey: ['v2', 'pins', String(job.jobId)], queryFn: () => v2.listPins(job.jobId), refetchInterval: 30_000 })
+  const pins = useQuery({ queryKey: ['v2', 'files', String(job.jobId)], queryFn: () => v2.listFiles(job.jobId), refetchInterval: 30_000 })
   const [checked, setChecked] = useState<Record<string, string>>({})
-  async function check(cid: string, hash: string) {
-    setChecked(p => ({ ...p, [cid]: 'Checking…' }))
-    const r = await verifyUrlHash(`ipfs://${cid}`, hash)
-    setChecked(p => ({ ...p, [cid]: r.ok ? 'File matches the onchain hash.' : r.actual ? 'File does NOT match the onchain hash.' : 'Could not fetch the file here. Download it and compare its keccak256.' }))
+  async function check(url: string, hash: string) {
+    setChecked(p => ({ ...p, [url]: 'Checking…' }))
+    const r = await verifyUrlHash(url, hash)
+    setChecked(p => ({ ...p, [url]: r.ok ? 'File matches the onchain hash.' : r.actual ? 'File does NOT match the onchain hash.' : 'Could not fetch the file here. Download it and compare its keccak256.' }))
   }
   const entries = rec.data ?? []
   return (
@@ -104,16 +104,16 @@ function Evidence({ job }: { job: v2.JobBundle }) {
         {job.rs.votes.length > 0 && <> ({job.rs.votes.map(v => `${v / 100}% to seller`).join(', ')})</>}.</p>
       {entries.length === 0 && rec.isSuccess && <p style={{ fontSize: 12 }}>No evidence hashes recorded yet.</p>}
       {entries.map((e, i) => {
-        const pin = pins.data?.pins.find(p => p.keccak?.toLowerCase() === e.hash.toLowerCase())
+        const pin = pins.data?.files.find(p => p.keccak?.toLowerCase() === e.hash.toLowerCase())
         return (
           <div key={i} style={{ borderTop: '1px solid var(--border)', padding: '8px 0', fontSize: 13 }}>
             <strong style={{ color: 'var(--text-1)' }}>{KIND_LABEL[e.kind]}</strong>{e.by && <> by {short(e.by)}</>}{e.providerBps !== undefined && <> · {e.providerBps / 100}% to seller</>}
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, wordBreak: 'break-all' }}>{e.hash}</div>
             {pin ? (
               <div>
-                <a href={`https://ipfs.io/ipfs/${pin.cid}`} target="_blank" rel="noopener noreferrer nofollow">{pin.name || 'hosted file'}</a>
-                {' '}<button className="btn btn-secondary btn-xs" onClick={() => check(pin.cid, e.hash)}>Verify against hash</button>
-                {checked[pin.cid] && <div role="status" style={{ fontSize: 12 }}>{checked[pin.cid]}</div>}
+                <a href={pin.url} target="_blank" rel="noopener noreferrer nofollow">{pin.name || 'hosted file'}</a>
+                {' '}<button className="btn btn-secondary btn-xs" onClick={() => check(pin.url, e.hash)}>Verify against hash</button>
+                {checked[pin.url] && <div role="status" style={{ fontSize: 12 }}>{checked[pin.url]}</div>}
               </div>
             ) : <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No hosted file for this hash. Ask the party to send it; you can check it against the hash above.</div>}
           </div>
@@ -138,7 +138,7 @@ function Evid({ label, onChange }: { label: string; onChange: (e: Ev | null) => 
           const bytes = textToBytes(t); onChange({ hash: hashBytes(bytes), bytes, name: 'statement.txt', mime: 'text/plain' })
         }} />
       </label>
-      <label style={{ fontSize: 12, color: 'var(--text-3)' }}>or a file, 5 MB max (its hash is committed)
+      <label style={{ fontSize: 12, color: 'var(--text-3)' }}>or a file, 4 MB max (its hash is committed)
         <input type="file" onChange={async e => {
           const f = e.target.files?.[0]; if (!f) return; setText('')
           const bytes = new Uint8Array(await f.arrayBuffer()); setFile(f.name)
@@ -160,7 +160,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
   const [hostIt, setHostIt] = useState(true)
   const [uri, setUri] = useState('')
   const [hostNote, setHostNote] = useState<string | null>(null)
-  const pins = useQuery({ queryKey: ['v2', 'pins', String(job.jobId)], queryFn: () => v2.listPins(job.jobId) })
+  const pins = useQuery({ queryKey: ['v2', 'files', String(job.jobId)], queryFn: () => v2.listFiles(job.jobId) })
   const canHost = !!pins.data?.configured
   const [bps, setBps] = useState(50)
   const [days, setDays] = useState('7')
@@ -171,7 +171,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
   /** Hosting is best effort: the hash is what counts onchain, so a hosting failure never blocks the action. */
   async function tryHost(e: Ev, kind: v2.PinKind) {
     if (!canHost) return null
-    try { return await v2.hostFile({ jobId: id, kind, bytes: e.bytes, name: e.name, mime: e.mime }) }
+    try { return await v2.hostFile({ jobId: id, kind, bytes: e.bytes, name: e.name }) }
     catch (err) { setHostNote(`${explainError(err)} Only the hash was committed; send the file to the other party directly.`); return null }
   }
 
@@ -212,10 +212,10 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
           onSubmit={() => act.run('submit', async () => {
             const d = need(deliv, 'Choose the deliverable file.')
             let link = uri.trim()
-            if (canHost && hostIt) { const up = await v2.hostFile({ jobId: id, kind: 'deliverable', bytes: d.bytes, name: d.name, mime: d.mime }); link = up.uri }
+            if (canHost && hostIt) { const up = await v2.hostFile({ jobId: id, kind: 'deliverable', bytes: d.bytes, name: d.name }); link = up.url }
             return v2.submitWork(id, d.hash, link)
           })}>
-          <label style={{ fontSize: 13 }}>Deliverable file, 5 MB max (hashed in your browser)
+          <label style={{ fontSize: 13 }}>Deliverable file, 4 MB max (hashed in your browser)
             <input type="file" onChange={async e => {
               const f = e.target.files?.[0]; if (!f) return setDeliv(null)
               const bytes = new Uint8Array(await f.arrayBuffer())
@@ -224,11 +224,11 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
           </label>
           {deliv && <small style={{ fontFamily: 'var(--font-mono)' }}>keccak256 {deliv.hash.slice(0, 18)}…</small>}
           {canHost && (
-            <label style={{ fontSize: 13 }}><input type="checkbox" checked={hostIt} onChange={e => setHostIt(e.target.checked)} /> Host this file on IPFS for me (free, asks for a wallet signature)</label>
+            <label style={{ fontSize: 13 }}><input type="checkbox" checked={hostIt} onChange={e => setHostIt(e.target.checked)} /> Host this file for me (asks for a free wallet signature)</label>
           )}
           {!(canHost && hostIt) && (
-            <label style={{ fontSize: 13 }}>Public link to the same file (https or ipfs://)
-              <input value={uri} onChange={e => setUri(e.target.value)} style={field} placeholder="https://… or ipfs://…" />
+            <label style={{ fontSize: 13 }}>Public https link to the same file
+              <input value={uri} onChange={e => setUri(e.target.value)} style={field} placeholder="https://…" />
             </label>
           )}
           <small style={{ color: 'var(--text-3)' }}>The buyer can re-fetch the file and check it against your committed hash. Submitting also moves your job deadline out to at least 30 days.</small>

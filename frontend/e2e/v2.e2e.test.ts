@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, inject, it } from 'vitest'
+import { beforeAll, describe, expect, inject, it, vi } from 'vitest'
 import { createPublicClient, createWalletClient, defineChain, http, type Address, type Hex } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
 import * as v2 from '../src/protocol/v2core'
@@ -8,42 +8,15 @@ import { hashText } from '../src/protocol/hashing'
 import { parseUsdc } from '../src/protocol/units'
 import { keccak256 } from 'viem'
 
-// Route the app's /api/pin and /api/pins calls to the real serverless handlers, and stub Pinata.
-process.env.PINATA_JWT = 'test-jwt'
-process.env.V2_KERNEL = dep0().kernel
-process.env.V2_ROUTER = dep0().router
-process.env.ARC_MAINNET_RPC = dep0().rpc
-process.env.PIN_ALLOWED_ORIGINS = 'http://app.local'
-function dep0() { return inject('deployment') }
-const pinned: { name: string; meta: Record<string, string>; size: number }[] = []
-const realFetch = globalThis.fetch
-globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
-  const url = String(input instanceof Request ? input.url : input)
-  const call = async (path: string) => {
-    const mod = (await import(`../api/${path}.js`)) as { default: (req: unknown, res: unknown) => Promise<void> }
-    let status = 200; let body: unknown = null
-    const res = { setHeader() {}, status(c: number) { status = c; return res }, json(b: unknown) { body = b; return res }, end() { return res } }
-    const u = new URL(url)
-    await mod.default({ method: init?.method ?? 'GET', headers: { origin: 'http://app.local' }, body: init?.body ? JSON.parse(String(init.body)) : undefined, query: Object.fromEntries(u.searchParams) }, res)
-    return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
+// Route the app's /api/upload and /api/files calls to the real serverless handlers.
+// Only the Vercel Blob SDK is mocked (in-memory store).
+vi.mock('@vercel/blob', () => {
+  const store = new Map<string, { size: number }>()
+  return {
+    put: async (path: string, body: Buffer) => { store.set(path, { size: body.length }); return { url: `https://blob.test/${path}` } },
+    list: async ({ prefix }: { prefix: string }) => ({ blobs: [...store.entries()].filter(([k]) => k.startsWith(prefix)).map(([k, v]) => ({ url: `https://blob.test/${k}`, pathname: k, size: v.size, uploadedAt: 'now' })) }),
   }
-  if (url.startsWith('http://api.local/api/pins?')) return call('pins')
-  if (url === 'http://api.local/api/pin') return call('pin')
-  if (url.startsWith('https://api.pinata.cloud/pinning/pinFileToIPFS')) {
-    const form = init!.body as FormData
-    const meta = JSON.parse(String(form.get('pinataMetadata')))
-    const file = form.get('file') as File
-    pinned.push({ name: meta.name, meta: meta.keyvalues, size: file.size })
-    return new Response(JSON.stringify({ IpfsHash: 'bafytestcid' + pinned.length }), { status: 200 })
-  }
-  if (url.startsWith('https://api.pinata.cloud/data/pinList')) {
-    const kv = JSON.parse(decodeURIComponent(url.split('metadata[keyvalues]=')[1]!))
-    const rows = pinned.filter(p => p.meta.jobId === kv.jobId.value).map((p, i) => ({ ipfs_pin_hash: 'bafytestcid' + (i + 1), size: p.size, date_pinned: 'now', metadata: { keyvalues: p.meta } }))
-    return new Response(JSON.stringify({ rows }), { status: 200 })
-  }
-  return realFetch(input as never, init)
-}) as typeof fetch
-
+})
 // localStorage shim: runHire uses it for resume bookkeeping.
 const store = new Map<string, string>()
 ;(globalThis as unknown as { localStorage: Storage }).localStorage = {
@@ -52,6 +25,25 @@ const store = new Map<string, string>()
 } as Storage
 
 const dep = inject('deployment')
+process.env.BLOB_READ_WRITE_TOKEN = 'test-token'
+process.env.V2_KERNEL = dep.kernel
+process.env.V2_ROUTER = dep.router
+process.env.ARC_MAINNET_RPC = dep.rpc
+const realFetch = globalThis.fetch
+globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  const url = String(input instanceof Request ? input.url : input)
+  const call = async (path: string) => {
+    const mod = (await import(`../api/${path}.js`)) as { default: (req: unknown, res: unknown) => Promise<void> }
+    let status = 200; let body: unknown = null
+    const res = { setHeader() {}, status(c: number) { status = c; return res }, json(b: unknown) { body = b; return res }, end() { return res } }
+    const u = new URL(url)
+    await mod.default({ method: init?.method ?? 'GET', headers: { origin: 'http://api.local', host: 'api.local' }, body: init?.body ? JSON.parse(String(init.body)) : undefined, query: Object.fromEntries(u.searchParams) }, res)
+    return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
+  }
+  if (url.startsWith('http://api.local/api/files?')) return call('files')
+  if (url === 'http://api.local/api/upload') return call('upload')
+  return realFetch(input as never, init)
+}) as typeof fetch
 const USDC = '0x3600000000000000000000000000000000000000' as Address
 const KEY = {
   owner: '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
@@ -272,15 +264,15 @@ describe('V2 adapter against the real contracts (local anvil, chain id 5042)', (
     await submit(jobId)
     const evidence = new TextEncoder().encode('screenshot bytes')
     actAs('buyer')
-    const up = await v2.hostFile({ jobId, kind: 'evidence', bytes: evidence, name: 'proof.txt', mime: 'text/plain' })
-    expect(up.uri).toMatch(/^ipfs:\/\/bafytestcid/)
+    const up = await v2.hostFile({ jobId, kind: 'evidence', bytes: evidence, name: 'proof.txt' })
+    expect(up.url).toContain(`/v2/${jobId}/evidence/`)
     expect(up.hash).toBe(keccak256(evidence))
     await v2.rejectWork(jobId, hashText('reason'), up.hash)
     actAs('stranger')
     await expect(v2.hostFile({ jobId, kind: 'evidence', bytes: evidence, name: 'x.txt' })).rejects.toThrow(/Only the buyer, seller or a decider/)
-    const pins = await v2.listPins(jobId)
-    expect(pins.configured).toBe(true)
-    expect(pins.pins.map(p => p.keccak)).toContain(up.hash.toLowerCase())
+    const files = await v2.listFiles(jobId)
+    expect(files.configured).toBe(true)
+    expect(files.files.map(f => f.keccak)).toContain(up.hash.toLowerCase())
     const record = await v2.getDisputeRecord(jobId)
     expect(record.map(r => r.hash)).toContain(up.hash)
     expect(record.some(r => r.kind === 'reason' && r.hash === hashText('reason'))).toBe(true)
