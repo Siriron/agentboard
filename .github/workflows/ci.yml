@@ -1,6 +1,7 @@
 name: ci
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
@@ -28,5 +29,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: bash ../contracts-v2/script/install-deps.sh
       - run: npm install --no-audit --no-fund
-      - run: npm run build
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run test:e2e
+      - run: VITE_MAINNET_V2=1 npm run build

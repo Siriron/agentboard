@@ -9,7 +9,7 @@ The AgentEscrow contract is already deployed on Arc Testnet. **Do not redeploy.*
 If you fork this project and need to deploy your own instance:
 
 1. Open [Remix IDE](https://remix.ethereum.org)
-2. Load `contracts/AgentEscrow.sol`
+2. Load `contracts-v1/AgentEscrow.sol`
 3. Compiler: `0.8.24`, optimization enabled (200 runs)
 4. Connect MetaMask to Arc Testnet (Chain ID: `5042002`)
 5. Deploy with constructor args:

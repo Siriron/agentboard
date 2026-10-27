@@ -1,6 +1,6 @@
 # AgentBoard contracts v2 (Arc mainnet)
 
-New contracts for Arc mainnet. The testnet contract in `../contracts/` is untouched and
+New contracts for Arc mainnet. The testnet contract in `../contracts-v1/` is untouched and
 must never be redeployed.
 
 | Contract | Holds funds | Role |

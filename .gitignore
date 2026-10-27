@@ -1,0 +1,17 @@
+# dependencies and builds
+node_modules/
+dist/
+.vercel/
+*.tsbuildinfo
+# secrets
+.env
+.env.*
+!.env.example
+# Foundry (contracts-v2 only)
+/contracts-v2/lib/
+/contracts-v2/cache/
+/contracts-v2/out/
+/contracts-v2/broadcast/
+# misc
+.DS_Store
+coverage/
