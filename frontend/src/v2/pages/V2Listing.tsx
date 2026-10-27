@@ -86,6 +86,7 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
   const [confirm, setConfirm] = useState(false)
   const [days, setDays] = useState('14')
   const [steps, setSteps] = useState<Partial<Record<HireStep['id'], 'start' | 'done'>>>({})
+  const [mode, setMode] = useState<'batch' | 'sequential' | null>(null)
   const expired = BigInt(now) > bid.validUntil
   const active = bid.status === BidStatus.Active && !expired
   const mine = me === bid.provider.toLowerCase()
@@ -96,9 +97,9 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
   const d = Number(days)
 
   async function hire() {
-    setConfirm(false); setSteps({})
+    setConfirm(false); setSteps({}); setMode(null)
     await act.run('hire', async () => {
-      const r = await runHire({ listing, bid, deadlineDays: d, onStep: (s, st) => setSteps(p => ({ ...p, [s]: st })) })
+      const r = await runHire({ listing, bid, deadlineDays: d, onStep: (s, st) => setSteps(p => ({ ...p, [s]: st })), onMode: setMode })
       nav(`/job/${toHex(r.jobId, { size: 32 })}`)
       return { hash: r.hash }
     })
@@ -121,7 +122,8 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
           <button className="btn btn-primary" disabled={!!act.busy || !(d >= 1 && d <= 180)} onClick={() => setConfirm(true)}>{act.busy ? 'Working…' : `Hire and fund ${formatUsdc(bid.price)} USDC`}</button>
         </>
       )}
-      {act.busy === 'hire' && (
+      {act.busy === 'hire' && mode === null && <div style={{ fontSize: 13, color: 'var(--text-2)' }}>Confirm in your wallet. This usually takes one confirmation.</div>}
+      {act.busy === 'hire' && mode === 'sequential' && (
         <ol style={{ fontSize: 13, paddingLeft: 18, margin: 0 }}>
           {HIRE_STEPS.map(s => <li key={s.id} style={{ color: steps[s.id] === 'done' ? 'var(--green)' : 'var(--text-2)' }}>{s.label}{steps[s.id] === 'start' ? ' (confirm in wallet)' : steps[s.id] === 'done' ? ' ✓' : ''}</li>)}
         </ol>
@@ -134,7 +136,7 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
             <>You pay <strong>{formatUsdc(bid.price)} USDC</strong> into escrow. That is the full amount; no fee is added on top.</>,
             <>When paid out, the {feeBps / 100}% platform fee ({formatUsdc(fee)} USDC) comes out of the seller&apos;s side: the seller receives {formatUsdc(net)} USDC.</>,
             'The funds are held by the contract. The platform cannot move them, invest them, or lend them.',
-            'This takes up to 5 wallet confirmations (allowance, create, terms, price, fund). If one fails, retry and it resumes where it stopped.',
+            'Usually one wallet confirmation (all steps in a single transaction). If batching is unavailable for your wallet it falls back to up to 5 confirmations, and resumes where it stopped if one fails.',
           ]} />
       )}
     </div>

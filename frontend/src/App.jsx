@@ -21,6 +21,8 @@ const V2Listing = lazy(() => import('./v2/pages/V2Listing'))
 const V2Job = lazy(() => import('./v2/pages/V2Job'))
 const V2Dashboard = lazy(() => import('./v2/pages/V2Dashboard'))
 const V2Receipt = lazy(() => import('./v2/pages/V2Receipt'))
+const V2Register = lazy(() => import('./v2/pages/V2Register'))
+const V2Agent = lazy(() => import('./v2/pages/V2Agent'))
 
 export default function App() {
   return (
@@ -32,8 +34,8 @@ export default function App() {
         <Route path="listing/:id" element={<ProtocolSwitch feature="Listings" v2={<V2Listing />} />} />
         <Route path="receipt/:hash" element={<ProtocolSwitch feature="Receipts" v2={<V2Receipt />} />} />
         <Route path="job/:id" element={<ProtocolSwitch feature="Job pages" v1={<JobDetail />} v2={<V2Job />} />} />
-        <Route path="agent/:address" element={<MainnetGate feature="Agent profiles" testnetOnly><AgentProfile /></MainnetGate>} />
-        <Route path="register" element={<MainnetGate feature="Agent registration" testnetOnly><Register /></MainnetGate>} />
+        <Route path="agent/:address" element={<ProtocolSwitch feature="Agent profiles" v1={<AgentProfile />} v2={<V2Agent />} />} />
+        <Route path="register" element={<ProtocolSwitch feature="Agent registration" v1={<Register />} v2={<V2Register />} />} />
         <Route path="dashboard" element={<ProtocolSwitch feature="The dashboard" v1={<Dashboard />} v2={<V2Dashboard />} />} />
         <Route path="docs" element={<Docs />} />
         <Route path="agent-wallet" element={<MainnetGate feature="Circle agent wallets" testnetOnly><AgentWallet /></MainnetGate>} />

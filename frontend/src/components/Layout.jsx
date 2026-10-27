@@ -97,8 +97,8 @@ export default function Layout() {
     { to: '/register', label: 'Register' },
     { to: '/docs', label: 'Docs' },
   ]
-  // Mainnet V2 has no leaderboard, registration or Circle agent wallet pages yet.
-  const hiddenOnMainnet = ['/agent-wallet', '/leaderboard', '/register']
+  // Mainnet V2 has no leaderboard or Circle agent wallet pages yet.
+  const hiddenOnMainnet = ['/agent-wallet', '/leaderboard']
   const navLinks = (network.features.circleAgentWallets
     ? allNavLinks
     : allNavLinks.filter(l => l.to !== '/agent-wallet'))

@@ -38,7 +38,12 @@ One step: in the Vercel project open Storage, create a Blob store and connect it
 ## Headers
 `vercel.json` sets a Content-Security-Policy and security headers. If you add an RPC provider or API host, add it to `connect-src`.
 
-## Not built / not verifiable here
-- Single-transaction hire through Multicall3From: needs the real ABI (`cast interface` against mainnet) and the CallFrom precompile, which a stock anvil does not have. Hire stays sequential and resumable.
-- Mainnet agent profile, registration and leaderboard (ERC-8004): need the mainnet registry ABIs checked. Those routes stay gated.
-- Anything on mainnet itself: not run. Test the deployed app, and send me anything that looks wrong.
+## Hire: one transaction, with fallback
+Hire first tries a single transaction through `Multicall3From.aggregate3` (allowance, create, terms, price, fund), which keeps the buyer's wallet as `msg.sender` via Arc's CallFrom precompile. The batch is simulated first. If the simulation or the transaction fails for any reason other than the user rejecting it, nothing was applied (the batch is atomic) and the older sequential, resumable flow runs instead. Contract wallets cannot use the batch (EOA-only) and always use the sequential flow. Interface source: `circlefin/arc-node`, `contracts/src/batch/IMulticall3From.sol`.
+
+## Agents (ERC-8004)
+`/register` mints an identity (`register(string)`) with a small onchain JSON profile; `/agent/<id>` shows identity and reputation (`getClients`, `getSummary`). Signatures come from Arc's ERC-8004 quickstart and the reference contracts. A leaderboard is not built.
+
+## Not verified here
+- Nothing has run against Arc mainnet. The batched hire path and the agent pages cannot run on a stock anvil (no CallFrom precompile, no ERC-8004 registries), so they are covered by typecheck and, for the batch, by the simulate-then-fallback design, not by tests.
+- Test the deployed app and send me anything that looks wrong.

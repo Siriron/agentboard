@@ -11,3 +11,15 @@ export const usdcAbi = [
   { type: 'function', name: 'decimals', stateMutability: 'view', inputs: [], outputs: [{ name: '', type: 'uint8' }] },
   { type: 'event', name: 'Transfer', inputs: [{ name: 'from', type: 'address', indexed: true }, { name: 'to', type: 'address', indexed: true }, { name: 'value', type: 'uint256', indexed: false }] },
 ] as const
+
+// Arc predeploy (same address on mainnet and testnet). EOA-only: routes each subcall through the
+// CallFrom precompile so every target sees the wallet as msg.sender. Source: circlefin/arc-node,
+// contracts/src/batch/IMulticall3From.sol.
+export const multicall3FromAbi = [
+  {
+    type: 'function', name: 'aggregate3', stateMutability: 'nonpayable',
+    inputs: [{ name: 'calls', type: 'tuple[]', components: [{ name: 'target', type: 'address' }, { name: 'allowFailure', type: 'bool' }, { name: 'callData', type: 'bytes' }] }],
+    outputs: [{ name: 'returnData', type: 'tuple[]', components: [{ name: 'success', type: 'bool' }, { name: 'returnData', type: 'bytes' }] }],
+  },
+] as const
+export const MULTICALL3_FROM = '0x522fAf9A91c41c443c66765030741e4AaCe147D0' as const

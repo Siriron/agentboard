@@ -3,10 +3,10 @@
 // explicit fee at or above Arc's 20 Gwei floor, and counted complete only when the receipt succeeded.
 
 import {
-  decodeEventLog, encodeAbiParameters, getAddress, isAddress, zeroAddress,
+  decodeEventLog, encodeFunctionData, encodeAbiParameters, getAddress, isAddress, zeroAddress,
   type Address, type Hex, type Log, type PublicClient,
 } from 'viem'
-import { boardAbi, kernelAbi, routerAbi, usdcAbi } from './abis'
+import { boardAbi, kernelAbi, MULTICALL3_FROM, multicall3FromAbi, routerAbi, usdcAbi } from './abis'
 import { feeOverrides } from './fees'
 import { AppError } from './errors'
 import { decodeMeta, decodeUri, encodeMeta, encodeUri, hashBytes, hashText } from './hashing'
@@ -39,6 +39,9 @@ function env(): V2Env {
 
 export const v2Addresses = (): V2Addresses => env().addresses()
 const client = (): PublicClient => env().client()
+export const v2Client = client
+/** Event history from the configured start block, with the same range fallback as the rest of the adapter. */
+export const getLogsFrom = (args: Record<string, unknown>, opts?: { from?: bigint; steps?: bigint[] }) => getLogsRange(client(), args, opts)
 const signer = () => env().signer()
 const MAX_META_CHARS = 4000
 
@@ -73,19 +76,22 @@ export const BidStatus = { None: 0, Active: 1, Withdrawn: 2, Accepted: 3 } as co
 
 // ───────────── logs ─────────────
 
-async function getLogsRange(pc: PublicClient, args: Record<string, unknown>): Promise<Log[]> {
+async function getLogsRange(pc: PublicClient, args: Record<string, unknown>, opts: { from?: bigint; steps?: bigint[] } = {}): Promise<Log[]> {
   const latest = await pc.getBlockNumber({ cacheTime: 0 }) // viem caches this for ~4s; a stale value hides logs from a just-confirmed transaction
+  const start = opts.from ?? env().fromBlock
   const attempt = async (step: bigint): Promise<Log[]> => {
     const out: Log[] = []
-    for (let from = env().fromBlock; from <= latest; from += step) {
+    for (let from = start; from <= latest; from += step) {
       const to = from + step - 1n > latest ? latest : from + step - 1n
       const part = await (pc.getLogs as (a: unknown) => Promise<Log[]>)({ ...args, fromBlock: from, toBlock: to })
       out.push(...part)
     }
     return out
   }
-  for (const step of [latest - env().fromBlock + 1n, 500_000n, 50_000n, 10_000n]) {
-    try { return await attempt(step > 0n ? step : 1n) } catch { /* provider range limit: try a smaller step */ }
+  const full = latest - start + 1n
+  for (const step of opts.steps ?? [full, 500_000n, 50_000n, 10_000n]) {
+    // A step of 0 means "the whole range in one request".
+    try { return await attempt(step === 0n ? (full > 0n ? full : 1n) : step) } catch { /* provider range limit: try a smaller step */ }
   }
   throw new AppError('The network could not return event history. Try again in a moment.')
 }
@@ -285,9 +291,9 @@ export async function usdcBalance(who: Address): Promise<bigint> {
 
 export interface TxResult { hash: Hex }
 
-type WriteArgs = { address: Address; abi: readonly unknown[]; functionName: string; args?: readonly unknown[] }
+export type WriteArgs = { address: Address; abi: readonly unknown[]; functionName: string; args?: readonly unknown[] }
 
-async function send(w: WriteArgs): Promise<TxResult> {
+export async function send(w: WriteArgs): Promise<TxResult> {
   const pc = client()
   const { wc, account } = await signer()
   const fees = await feeOverrides(pc)
@@ -341,7 +347,7 @@ export const HIRE_STEPS: HireStep[] = [
 
 const hireKey = (clientAddr: string, listingId: bigint, bidId: number) => `agentboard.hire.${clientAddr.toLowerCase()}.${listingId}.${bidId}`
 
-export async function runHire(p: { listing: Listing; bid: Bid; deadlineDays: number; onStep: (id: HireStep['id'], state: 'start' | 'done') => void }): Promise<{ jobId: bigint; hash: Hex }> {
+export async function runHire(p: { listing: Listing; bid: Bid; deadlineDays: number; onStep: (id: HireStep['id'], state: 'start' | 'done') => void; onMode?: (m: 'batch' | 'sequential') => void; allowBatch?: boolean }): Promise<{ jobId: bigint; hash: Hex }> {
   const pc = client(); const a = v2Addresses()
   const { account } = await signer()
   const { listing, bid } = p
@@ -354,6 +360,26 @@ export async function runHire(p: { listing: Listing; bid: Bid; deadlineDays: num
   const key = hireKey(account, listing.id, bid.id)
   let jobId: bigint | null = null
   try { const s = localStorage.getItem(key); if (s) jobId = BigInt(s) } catch { /* storage blocked: fine, resume is a convenience */ }
+
+  // Fast path: one wallet confirmation through Multicall3From (fresh hires only). Every call runs with
+  // the wallet as msg.sender, so the job's client is the buyer and the kernel pulls USDC from them.
+  // The batch is simulated first; if the simulation or the send fails for any reason other than the
+  // user rejecting it, nothing was applied (the batch is atomic) and the sequential flow takes over.
+  if (jobId === null && p.allowBatch !== false) {
+    try {
+      const batched = await tryBatchedHire({ pc, a, account, listing, bid, deadlineDays: p.deadlineDays, key })
+      if (batched) {
+        p.onMode?.('batch')
+        for (const s of HIRE_STEPS) p.onStep(s.id, 'done')
+        return batched
+      }
+    } catch (e) {
+      const c = (e as { code?: number | string })?.code
+      if (c === 4001 || c === 'ACTION_REJECTED' || /user rejected|user denied/i.test((e as Error)?.message || '')) throw e
+      // fall through to the sequential flow
+    }
+  }
+  p.onMode?.('sequential')
 
   let lastHash: Hex = '0x'
   const run = async (id: HireStep['id'], w: WriteArgs) => { p.onStep(id, 'start'); lastHash = (await send(w)).hash; p.onStep(id, 'done') }
@@ -396,6 +422,33 @@ export async function runHire(p: { listing: Listing; bid: Bid; deadlineDays: num
   await run('fund', { address: a.kernel, abi: kernelAbi, functionName: 'fund', args: [jobId, bid.price, optParams] })
   try { localStorage.removeItem(key) } catch { /* ignore */ }
   return { jobId, hash: lastHash }
+}
+
+async function tryBatchedHire(p: { pc: PublicClient; a: V2Addresses; account: Address; listing: Listing; bid: Bid; deadlineDays: number; key: string }): Promise<{ jobId: bigint; hash: Hex } | null> {
+  const { pc, a, account, listing, bid } = p
+  const code = await pc.getCode({ address: MULTICALL3_FROM })
+  if (!code || code === '0x') return null
+  const [allowance, jobId, chainNow] = await Promise.all([
+    pc.readContract({ address: a.usdc, abi: usdcAbi, functionName: 'allowance', args: [account, a.kernel] }),
+    pc.readContract({ address: a.kernel, abi: kernelAbi, functionName: 'predictJobId', args: [account] }),
+    pc.getBlock().then(b => b.timestamp),
+  ])
+  const expiredAt = chainNow + BigInt(p.deadlineDays * 86400)
+  const optParams = encodeAbiParameters([{ type: 'uint256' }, { type: 'uint256' }], [listing.id, BigInt(bid.id)])
+  const calls: { target: Address; allowFailure: boolean; callData: Hex }[] = []
+  if (allowance < bid.price) calls.push({ target: a.usdc, allowFailure: false, callData: encodeFunctionData({ abi: usdcAbi, functionName: 'approve', args: [a.kernel, bid.price] }) })
+  calls.push(
+    { target: a.kernel, allowFailure: false, callData: encodeFunctionData({ abi: kernelAbi, functionName: 'createJob', args: [bid.provider, a.router, expiredAt, `AgentBoard listing #${listing.id}`, a.board] }) },
+    { target: a.router, allowFailure: false, callData: encodeFunctionData({ abi: routerAbi, functionName: 'configure', args: [jobId, cfgArg(bid.config as EvalConfig)] }) },
+    { target: a.kernel, allowFailure: false, callData: encodeFunctionData({ abi: kernelAbi, functionName: 'setBudget', args: [jobId, bid.price, '0x'] }) },
+    { target: a.kernel, allowFailure: false, callData: encodeFunctionData({ abi: kernelAbi, functionName: 'fund', args: [jobId, bid.price, optParams] }) },
+  )
+  const { hash } = await send({ address: MULTICALL3_FROM, abi: multicall3FromAbi, functionName: 'aggregate3', args: [calls] })
+  // Confirm from chain state, not from the send result alone.
+  const j = (await pc.readContract({ address: a.kernel, abi: kernelAbi, functionName: 'getJob', args: [jobId] })) as unknown as Job
+  if (Number(j.status) !== 2) throw new AppError('The batched transaction did not fund the job.')
+  try { localStorage.removeItem(p.key) } catch { /* ignore */ }
+  return { jobId, hash }
 }
 
 export const submitWork = (jobId: bigint, deliverable: Hex, uri: string) =>
