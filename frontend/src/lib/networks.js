@@ -121,11 +121,12 @@ let active = readInitial()
 
 export function getActiveNetworkKey() { return active }
 export function getActiveNetwork() { return NETWORKS[active] }
-// Mainnet V2 (AgentKernel + EvaluatorRouter + JobBoard) opens only when VITE_MAINNET_V2=1 is set on the
-// host (Vercel preview first, production when ready). `contracts.mainnet.escrow` stays null on purpose:
-// it is the V1 slot, and a non-null value would point the V1 testnet ABI at V2 contracts.
+// Mainnet V2 (AgentKernel + EvaluatorRouter + JobBoard) is on by default. Set VITE_MAINNET_V2=0 on the
+// host to switch the mainnet side back to the "launch in progress" gate. `contracts.mainnet.escrow`
+// stays null on purpose: it is the V1 slot, and a non-null value would point the V1 testnet ABI at
+// V2 contracts.
 export function isV2Enabled() {
-  return import.meta.env?.VITE_MAINNET_V2 === '1'
+  return import.meta.env?.VITE_MAINNET_V2 !== '0'
 }
 
 /** Which protocol implementation serves a network: 'v1' (testnet escrow), 'v2' (mainnet), or null (gated). */

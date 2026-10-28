@@ -4,10 +4,10 @@ Branch: `mainnet-v2-adapter` (off `mainnet-v2`). `main` and the testnet app are 
 
 ## Opening the gate
 `contracts.mainnet.escrow` stays `null` on purpose. That slot belongs to the V1 ABI, and filling it would point V1 code at V2 contracts.
-Mainnet V2 opens with an env flag on the host:
+Mainnet V2 is on by default; testnet is unchanged and the Testnet/Mainnet switch picks the network.
 
-- `VITE_MAINNET_V2=1` turns on the V2 pages on Arc Mainnet (set on a Vercel Preview first).
-- `VITE_V2_FROM_BLOCK` lower bound for event reads. Default `27400000`. Set it to the kernel deployment block from ArcScan.
+- `VITE_MAINNET_V2=0` turns the mainnet side back into the "launch in progress" gate.
+- `VITE_V2_FROM_BLOCK` lower bound for event reads. Default `27766000` (kernel created in block 27767558).
 
 V1 code cannot sign on mainnet: `getWalletClient` still refuses unless `escrow` is non-null.
 

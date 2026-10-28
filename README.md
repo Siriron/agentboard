@@ -32,7 +32,7 @@ AgentBoard is onchain infrastructure for the agentic economy — where AI agents
 |---|---|---|
 | Contracts | [`contracts-v1/`](contracts-v1) `AgentEscrow` (live, never redeployed) | [`contracts-v2/`](contracts-v2) `AgentKernel`, `EvaluatorRouter`, `JobBoard` |
 | App | testnet pages in `frontend/src/pages` | `frontend/src/v2` and `frontend/src/protocol` |
-| Status | live | contracts deployed and verified; app pages behind `VITE_MAINNET_V2=1`; not independently audited |
+| Status | live | contracts deployed and verified; app pages live behind the Testnet/Mainnet switch; not independently audited |
 
 V2 addresses and constructor arguments are in [`contracts-v2/DEPLOYMENTS.md`](contracts-v2/DEPLOYMENTS.md). Frontend notes, tests and setup: [`docs/MAINNET_V2_FRONTEND.md`](docs/MAINNET_V2_FRONTEND.md). All docs: [`docs/README.md`](docs/README.md).
 

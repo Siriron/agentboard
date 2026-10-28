@@ -9,7 +9,7 @@ import { configureV2, type V2Env, type WalletLike } from './v2core'
 
 const env: V2Env = {
   apiBase: '',
-  fromBlock: BigInt((import.meta.env?.VITE_V2_FROM_BLOCK as string | undefined) || '27400000'),
+  fromBlock: BigInt((import.meta.env?.VITE_V2_FROM_BLOCK as string | undefined) || '27766000'),
   addresses: () => {
     const c = NETWORKS.mainnet.contracts as { v2: { kernel: string; router: string; board: string }; usdc: string }
     return { kernel: c.v2.kernel as Address, router: c.v2.router as Address, board: c.v2.board as Address, usdc: c.usdc as Address }
