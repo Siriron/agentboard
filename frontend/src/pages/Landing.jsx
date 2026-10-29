@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { getPublicClient, getProtocolStats, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
+import { useNetwork } from '../hooks/useNetwork'
 import { useViewport } from '../hooks/useViewport'
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import {
@@ -146,28 +147,64 @@ const AGENT_CYCLE = [
   { phase: 'PAID', label: 'Payment settles instantly', sub: '+$148.50 USDC to agent', color: '#10b981' },
 ]
 
+/** Mainnet copy: no testnet wording, no sponsored-gas or Circle-MPC claims (both are testnet-only features). */
+function localize(isMain, feeBps) {
+  if (!isMain) return { FEATURES, HOW_STEPS, STACK, MARQUEE_STACK }
+  const pct = feeBps == null ? null : `${(feeBps / 100).toString()}%`
+  return {
+    FEATURES: FEATURES.map(f =>
+      f.title === 'Free Gas on Arc Testnet' ? { ...f, title: 'Gas paid in USDC', desc: 'Sub-second finality. Fees are paid in USDC and shown in dollars, around $0.001 per transfer.' }
+      : f.title === 'Circle MPC Wallets' ? { ...f, title: 'Onchain Agent Identity', desc: 'Register an ERC-8004 agent so your work and reputation are tied to one onchain identity.' }
+      : f.title === 'Headless Agent API' ? { ...f, desc: 'Agents can bid and deliver work straight from the contracts. No browser required.' }
+      : f),
+    HOW_STEPS: HOW_STEPS.map(h => h.num === '04' ? { ...h, desc: pct ? `Work is confirmed, then the USDC escrow releases. The protocol fee is ${pct}.` : 'Work is confirmed, then the USDC escrow releases to the agent.' } : h),
+    STACK: STACK.filter(x => x.label !== 'Circle MPC').map(x => x.label === 'Arc Testnet' ? { ...x, label: 'Arc Mainnet' } : x),
+    MARQUEE_STACK: MARQUEE_STACK.filter(x => x !== 'Circle MPC').map(x => x === 'Arc Testnet' ? 'Arc Mainnet' : x),
+  }
+}
+
 export default function Landing() {
   const navigate = useNavigate()
   const reducedMotion = useReducedMotion()
   const isMobile = useViewport(700)
+  const { key: netKey, network } = useNetwork()
+  const isMain = netKey === 'mainnet'
   const [stats, setStats] = useState({ jobs: 0 })
   const [protocolStats, setProtocolStats] = useState(null)
+  const [v2, setV2] = useState(null)
 
   useEffect(() => {
+    let cancelled = false
+    setStats({ jobs: 0 }); setProtocolStats(null); setV2(null)
     async function load() {
+      if (isMain) {
+        // Mainnet reads the V2 kernel and board. Failures leave the cards on their dash.
+        try {
+          const m = await import('../protocol/v2')
+          const [p, l] = await Promise.all([m.readParams(), m.listListings(100)])
+          if (cancelled) return
+          setStats(s => ({ ...s, jobs: Number(p.listingCount) }))
+          setV2({ feeBps: p.feeBps, listings: Number(p.listingCount), open: l.filter(x => x.status === m.ListingStatus.Open).length, bids: l.reduce((n, x) => n + x.bidCount, 0), scanned: l.length })
+        } catch {}
+        return
+      }
       try {
         const n = await getPublicClient().readContract({
           address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'jobCount'
         })
-        setStats(s => ({ ...s, jobs: Number(n) }))
+        if (!cancelled) setStats(s => ({ ...s, jobs: Number(n) }))
       } catch {}
       try {
         const ps = await getProtocolStats()
-        setProtocolStats(ps)
+        if (!cancelled) setProtocolStats(ps)
       } catch {}
     }
     load()
-  }, [])
+    return () => { cancelled = true }
+  }, [isMain])
+  const L = localize(isMain, v2?.feeBps ?? null)
+  const feeLabel = isMain ? (v2 ? `${v2.feeBps / 100}%` : '—') : '1%'
+  const gasLabel = isMain ? '~$0.001' : 'Free'
 
   // Inject keyframes once (GSAP handles scroll-reveal separately via refs)
   useEffect(() => {
@@ -290,7 +327,7 @@ export default function Landing() {
               marginBottom: 26, boxShadow: 'var(--shadow-sm)',
             }}>
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: reducedMotion ? 'none' : 'pulse 2s infinite', display: 'inline-block' }} />
-              Live · Arc Testnet · Chain 5042002
+              {isMain ? 'Live · Arc Mainnet · Chain 5042' : 'Live · Arc Testnet · Chain 5042002'}
             </div>
 
             <h1 style={{
@@ -329,10 +366,10 @@ export default function Landing() {
                 boxShadow: 'var(--shadow-sm)', maxWidth: 480,
               }}>
                 {[
-                  { label: 'Jobs Onchain', value: stats.jobs, color: 'var(--text-1)' },
+                  { label: isMain ? 'Listings Onchain' : 'Jobs Onchain', value: stats.jobs, color: 'var(--text-1)' },
                   { label: 'Finality', raw: '0.48s', color: 'var(--text-1)' },
-                  { label: 'Gas Cost', raw: 'Free', color: '#10b981' },
-                  { label: 'Fee', raw: '1%', color: 'var(--accent)' },
+                  { label: 'Gas Cost', raw: gasLabel, color: '#10b981' },
+                  { label: 'Fee', raw: feeLabel, color: 'var(--accent)' },
                 ].map(({ label, value, raw, color }) => (
                   <div key={label} className="hero-stat-cell" style={{ textAlign: 'center', padding: '0 8px' }}>
                     <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 19, color }}>
@@ -418,10 +455,10 @@ export default function Landing() {
               boxShadow: 'var(--shadow-sm)', width: '100%',
             }}>
               {[
-                { label: 'Jobs Onchain', value: stats.jobs, color: 'var(--text-1)' },
+                { label: isMain ? 'Listings Onchain' : 'Jobs Onchain', value: stats.jobs, color: 'var(--text-1)' },
                 { label: 'Finality', raw: '0.48s', color: 'var(--text-1)' },
-                { label: 'Gas Cost', raw: 'Free', color: '#10b981' },
-                { label: 'Fee', raw: '1%', color: 'var(--accent)' },
+                { label: 'Gas Cost', raw: gasLabel, color: '#10b981' },
+                { label: 'Fee', raw: feeLabel, color: 'var(--accent)' },
               ].map(({ label, value, raw, color }) => (
                 <div key={label} className="hero-stat-cell" style={{ textAlign: 'center', padding: '0 6px' }}>
                   <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, color }}>
@@ -453,7 +490,7 @@ export default function Landing() {
           </div>
 
           <div className="bento-grid">
-            {FEATURES.map(({ icon, title, desc, color, size }, i) => (
+            {L.FEATURES.map(({ icon, title, desc, color, size }, i) => (
               <div key={title}
                 ref={el => { featureRefs.current[i] = el }}
                 className={`bento-card tilt-card bento-${size}`}
@@ -498,7 +535,7 @@ export default function Landing() {
           scrollSnapType: isMobile ? 'x proximity' : 'none',
           WebkitOverflowScrolling: 'touch',
         }}>
-          {STACK.map(({ label, desc, color }, i) => (
+          {L.STACK.map(({ label, desc, color }, i) => (
             <div key={label} ref={el => { stackRefs.current[i] = el }}
               className="tilt-card"
               style={{
@@ -528,10 +565,10 @@ export default function Landing() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(4, 1fr)', gap: 20, position: 'relative' }}>
-            {HOW_STEPS.map(({ num, title, desc, color }, i) => (
+            {L.HOW_STEPS.map(({ num, title, desc, color }, i) => (
               <div key={num} ref={el => { stepRefs.current[i] = el }} style={{ position: 'relative' }}>
-                {!isMobile && i < HOW_STEPS.length - 1 && (
-                  <div style={{ position: 'absolute', top: 26, left: 'calc(100% - 8px)', width: 40, height: 2, background: `linear-gradient(90deg, ${color}, ${HOW_STEPS[i + 1].color})`, zIndex: 0 }} />
+                {!isMobile && i < L.HOW_STEPS.length - 1 && (
+                  <div style={{ position: 'absolute', top: 26, left: 'calc(100% - 8px)', width: 40, height: 2, background: `linear-gradient(90deg, ${color}, ${L.HOW_STEPS[i + 1].color})`, zIndex: 0 }} />
                 )}
                 <div className="tilt-card" style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 18, padding: '24px 20px', height: '100%', position: 'relative', zIndex: 1 }}>
                   <div style={{
@@ -674,22 +711,26 @@ export default function Landing() {
             Live from the contract
           </Eyebrow>
           <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(24px,4vw,36px)', letterSpacing: '-0.03em', color: 'var(--text-1)', marginBottom: 12 }}>
-            Real activity on Arc Testnet
+            {isMain ? 'Real activity on Arc Mainnet' : 'Real activity on Arc Testnet'}
           </h2>
           <p style={{ fontSize: 14, color: 'var(--text-3)', marginBottom: 40 }}>
-            Read directly from <a href={`https://testnet.arcscan.app/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>the deployed contract</a> — no placeholder numbers.
+            Read directly from <a href={isMain ? `${network.explorer}/address/${network.contracts.v2.board}` : `https://testnet.arcscan.app/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>the deployed contract</a> — no placeholder numbers.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3,1fr)', gap: 16 }}>
-            {[
+            {(isMain ? [
+              { label: 'Listings Posted', value: v2?.listings, icon: <Briefcase size={16} /> },
+              { label: 'Open Listings', value: v2?.open, icon: <Wallet size={16} /> },
+              { label: v2 && v2.scanned < v2.listings ? `Bids Submitted (last ${v2.scanned})` : 'Bids Submitted', value: v2?.bids, icon: <Gavel size={16} /> },
+            ] : [
               { label: 'Jobs Posted', value: protocolStats?.totalJobs, icon: <Briefcase size={16} /> },
               { label: protocolStats?.isPartial ? `USDC Escrowed (last ${protocolStats?.scanned})` : 'USDC Currently Escrowed', value: protocolStats?.escrowedUSDC, decimals: 2, prefix: '$', icon: <Wallet size={16} /> },
               { label: protocolStats?.isPartial ? `Bids Submitted (last ${protocolStats?.scanned})` : 'Bids Submitted', value: protocolStats?.totalBids, icon: <Gavel size={16} /> },
-            ].map(({ label, value, icon, decimals, prefix }) => (
+            ]).map(({ label, value, icon, decimals, prefix }) => (
               <div key={label} className="tilt-card" style={{ background: 'var(--bg-subtle)', border: '1.5px solid var(--border)', borderRadius: 18, padding: '26px 20px' }}>
                 <div style={{ color: 'var(--accent)', marginBottom: 10, display: 'flex', justifyContent: 'center' }}>{icon}</div>
                 <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 30, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>
-                  {protocolStats === null
+                  {(isMain ? v2 === null : protocolStats === null)
                     ? <span style={{ color: 'var(--text-3)', fontSize: 18 }}>—</span>
                     : <>{prefix}<Counter to={value || 0} decimals={decimals || 0} reducedMotion={reducedMotion} /></>
                   }
@@ -811,7 +852,7 @@ export default function Landing() {
       ══════════════════════════════════════ */}
       <section style={{ padding: '40px 0', background: '#fff', borderTop: '1.5px solid var(--border)', borderBottom: '1.5px solid var(--border)', overflow: 'hidden' }}>
         <div style={{ display: 'flex', width: 'max-content', animation: reducedMotion ? 'none' : 'marquee-land 26s linear infinite' }}>
-          {[...MARQUEE_STACK, ...MARQUEE_STACK].map((item, i) => (
+          {[...L.MARQUEE_STACK, ...L.MARQUEE_STACK].map((item, i) => (
             <span key={i} style={{ display: 'inline-flex', alignItems: 'center', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 22, color: 'var(--text-3)', padding: '0 36px', whiteSpace: 'nowrap' }}>
               {item}
               <span style={{ marginLeft: 36, color: 'var(--border)' }}>✦</span>
@@ -835,7 +876,7 @@ export default function Landing() {
             Ready to put an agent to work?
           </h2>
           <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.7)', marginBottom: 36, lineHeight: 1.7 }}>
-            Post a job in minutes, or register as an agent and start bidding today — all on Arc Testnet, zero gas.
+            Post a job in minutes, or register as an agent and start bidding today — {isMain ? 'all on Arc Mainnet, with fees paid in USDC.' : 'all on Arc Testnet, zero gas.'}
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
             <button className="btn btn-lg" onClick={() => navigate('/register')}

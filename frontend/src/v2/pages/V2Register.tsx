@@ -1,17 +1,21 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Address } from 'viem'
 import { getMyAgents, registerAgent } from '../../protocol/agents'
-import { ErrorBox, Loading, Page, RealFundsBanner, TxStatus, useAction, useV2Wallet } from '../ui'
+import { Loading, Page, RealFundsBanner, TxStatus, useAction, useV2Wallet } from '../ui'
 
 const field = { display: 'block', width: '100%', marginTop: 6, padding: 10, borderRadius: 8, border: '1px solid var(--border)', font: 'inherit' } as const
 
 export default function V2Register() {
   const w = useV2Wallet(); const qc = useQueryClient()
   const me = w.account as Address | null
+  const nav = useNavigate()
+  const [lookup, setLookup] = useState('')
+  const [created, setCreated] = useState<bigint | null>(null)
   const mine = useQuery({ queryKey: ['v2', 'myagents', me], enabled: !!me, queryFn: () => getMyAgents(me as Address) })
   const act = useAction(() => qc.invalidateQueries({ queryKey: ['v2', 'myagents'] }))
+  const lookupOk = /^\d{1,30}$/.test(lookup.trim())
   const [f, setF] = useState({ name: '', description: '', capabilities: '', endpoint: '' })
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF(p => ({ ...p, [k]: e.target.value }))
   return (
@@ -26,15 +30,25 @@ export default function V2Register() {
         <label>Endpoint (https, optional)<input value={f.endpoint} onChange={set('endpoint')} style={field} placeholder="https://" /></label>
         {!me ? <button className="btn btn-primary" onClick={() => w.openPicker()}>Connect wallet</button>
           : w.wrongChain ? <button className="btn btn-primary" onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
-          : <button className="btn btn-primary" disabled={!f.name.trim() || !!act.busy} onClick={() => act.run('register', () => registerAgent(f))}>{act.busy ? 'Waiting for wallet…' : 'Register agent'}</button>}
+          : <button className="btn btn-primary" disabled={!f.name.trim() || !!act.busy} onClick={() => act.run('register', async () => { const r = await registerAgent(f); setCreated(r.agentId); return { hash: r.hash } })}>{act.busy ? 'Waiting for wallet…' : 'Register agent'}</button>}
         <TxStatus error={act.error} hash={act.hash} />
+        {created !== null && act.hash && (
+          <div role="status" style={{ fontSize: 14 }}>Your agent ID is <strong>#{String(created)}</strong>. <Link to={`/agent/${created}`}>Open the agent page</Link></div>
+        )}
       </div>
       {me && (
         <section style={{ marginTop: 22 }}>
           <h2 style={{ fontSize: 16, marginBottom: 8 }}>My agents</h2>
           {mine.isPending && <Loading what="your agents" />}
-          {mine.isError && <ErrorBox error={mine.error} retry={() => mine.refetch()} />}
-          {mine.data?.length === 0 && <div style={{ fontSize: 14, color: 'var(--text-2)' }}>None yet.</div>}
+          {(mine.isError || mine.data?.length === 0) && (
+            <div className="card" style={{ padding: 16, fontSize: 14, color: 'var(--text-2)', display: 'grid', gap: 10 }}>
+              <span>No agents found for this wallet yet. If you registered one, open it by its ID.</span>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <input value={lookup} onChange={e => setLookup(e.target.value)} inputMode="numeric" placeholder="Agent ID" aria-label="Agent ID" style={{ ...field, marginTop: 0, flex: 1 }} />
+                <button className="btn btn-secondary btn-sm" disabled={!lookupOk} onClick={() => nav(`/agent/${lookup.trim()}`)}>Open</button>
+              </div>
+            </div>
+          )}
           {mine.data?.map(a => <Link key={String(a.id)} to={`/agent/${a.id}`} className="card" style={{ display: 'block', padding: 14, marginBottom: 8, textDecoration: 'none', color: 'inherit' }}>{a.meta?.name ?? `Agent #${a.id}`} · #{String(a.id)}</Link>)}
         </section>
       )}

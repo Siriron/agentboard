@@ -140,6 +140,19 @@ describe('V2 adapter against the real contracts (local anvil, chain id 5042)', (
     expect(rc?.usdc.some(m => m.to === seller && m.amount === parseUsdc('99'))).toBe(true)
   })
 
+  it('leaderboard data: a completed board job shows up with its seller, buyer and budget', async () => {
+    const { jobId, seller, buyer } = await hireFlow('30', baseCfg())
+    await submit(jobId)
+    actAs('buyer'); await v2.approve(jobId)
+    const rows = await v2.listFilledJobs(200)
+    const row = rows.find(r => r.jobId === jobId)
+    expect(row).toBeDefined()
+    expect(row!.provider.toLowerCase()).toBe(seller.toLowerCase())
+    expect(row!.client.toLowerCase()).toBe(buyer.toLowerCase())
+    expect(row!.budget).toBe(parseUsdc('30'))
+    expect(row!.status).toBe(JobStatus.Completed)
+  })
+
   it('silent buyer: seller is paid by autoRelease after the review window', async () => {
     const { jobId, seller } = await hireFlow('20', baseCfg())
     await submit(jobId)

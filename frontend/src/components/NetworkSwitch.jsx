@@ -23,7 +23,7 @@ export default function NetworkSwitch({ compact = false }) {
   }
 
   return (
-    <div role="group" aria-label="Network" style={{
+    <div role="group" aria-label="Network" className="net-switch" style={{
       display: 'inline-flex', padding: 2, borderRadius: 99,
       background: 'var(--bg-subtle)', border: '1.5px solid var(--border)', flexShrink: 0,
     }}>
@@ -41,7 +41,7 @@ export default function NetworkSwitch({ compact = false }) {
               background: selected ? (net.realFunds ? '#0f766e' : 'var(--accent)') : 'transparent',
               transition: 'all 0.15s',
             }}>
-            <span aria-hidden style={{
+            <span aria-hidden className="net-dot" style={{
               width: 6, height: 6, borderRadius: 99,
               background: selected ? '#fff' : (net.realFunds ? '#0f766e' : 'var(--text-3)'),
             }} />

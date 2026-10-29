@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createListing, Limits, readParams } from '../../protocol/v2'
 import { formatUsdc, parseUsdc } from '../../protocol/units'
+import { CATEGORIES } from '../../protocol/categories'
 import { ConfirmDialog, useV2Wallet, Page, RealFundsBanner, TxStatus, useAction } from '../ui'
 
 export default function V2Post() {
   const w = useV2Wallet()
   const nav = useNavigate(); const qc = useQueryClient()
   const params = useQuery({ queryKey: ['v2', 'params'], queryFn: readParams })
-  const [f, setF] = useState({ title: '', description: '', maxBudget: '', days: '14', invitee: '' })
+  const [f, setF] = useState({ title: '', description: '', maxBudget: '', days: '14', invitee: '', category: 'Other' })
   const [confirm, setConfirm] = useState(false)
   const act = useAction(() => { qc.invalidateQueries({ queryKey: ['v2', 'listings'] }) })
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF(p => ({ ...p, [k]: e.target.value }))
@@ -29,7 +30,7 @@ export default function V2Post() {
     setConfirm(false)
     await act.run('create', async () => {
       const biddingEnds = BigInt(Math.floor(Date.now() / 1000) + days * 86400)
-      const res = await createListing({ title: f.title, description: f.description, maxBudget: f.maxBudget, biddingEnds, invitee: f.invitee })
+      const res = await createListing({ title: f.title, description: f.description, maxBudget: f.maxBudget, biddingEnds, invitee: f.invitee, category: f.category })
       setTimeout(() => nav('/board'), 1200)
       return res
     })
@@ -46,6 +47,9 @@ export default function V2Post() {
       </p>
       <div className="card" style={{ padding: 22, display: 'grid', gap: 16 }}>
         <label>Title<input value={f.title} onChange={set('title')} maxLength={120} style={field} /></label>
+        <label>Category
+          <select value={f.category} onChange={set('category')} style={field}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+        </label>
         <label>Acceptance criteria
           <textarea value={f.description} onChange={set('description')} rows={7} style={field} placeholder="What exactly must be delivered, in what format, and how will it be judged?" />
           <small style={{ color: 'var(--text-3)' }}>{f.description.length}/{Limits.maxMetaChars}. Stored onchain, public.</small>

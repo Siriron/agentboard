@@ -11,6 +11,7 @@ import { feeOverrides } from './fees'
 import { AppError } from './errors'
 import { decodeMeta, decodeUri, encodeMeta, encodeUri, hashBytes, hashText } from './hashing'
 import { parseUsdc } from './units'
+import { isCategory } from './categories'
 import type { WindowsCfg } from './state'
 
 // ───────────── environment (injected) ─────────────
@@ -138,6 +139,25 @@ async function listingUris(listingId?: bigint): Promise<Map<string, string>> {
     if (d.eventName === 'ListingCreated') m.set(String(d.args.listingId), d.args.uri)
   }
   return m
+}
+
+export async function getListingCount(): Promise<number> {
+  return Number(await client().readContract({ address: v2Addresses().board, abi: boardAbi, functionName: 'listingCount' }))
+}
+
+export interface FilledJob { listingId: bigint; jobId: bigint; client: Address; provider: Address; budget: bigint; status: number }
+/** Hired jobs from the most recent `scan` listings, read from the kernel. Board jobs only: jobs made straight on the kernel are not listed. */
+export async function listFilledJobs(scan = 200): Promise<FilledJob[]> {
+  const pc = client(); const a = v2Addresses()
+  const filled = (await listListings(scan)).filter(l => l.status === ListingStatus.Filled && l.jobId !== 0n)
+  const out: FilledJob[] = []
+  for (let i = 0; i < filled.length; i += 10) {
+    await Promise.all(filled.slice(i, i + 10).map(async l => {
+      const j = (await pc.readContract({ address: a.kernel, abi: kernelAbi, functionName: 'getJob', args: [l.jobId] })) as unknown as Job
+      out.push({ listingId: l.id, jobId: l.jobId, client: j.client, provider: j.provider, budget: j.budget, status: Number(j.status) })
+    }))
+  }
+  return out
 }
 
 export async function listListings(limit = 50): Promise<Listing[]> {
@@ -309,14 +329,14 @@ const k = () => v2Addresses().kernel
 const r = () => v2Addresses().router
 const b = () => v2Addresses().board
 
-export const createListing = (p: { title: string; description: string; maxBudget: string; biddingEnds: bigint; invitee: string }) => {
+export const createListing = (p: { title: string; description: string; maxBudget: string; biddingEnds: bigint; invitee: string; category?: string }) => {
   const description = p.description.trim()
   if (!p.title.trim() || !description) throw new AppError('Add a title and the acceptance criteria.')
   if (description.length > MAX_META_CHARS) throw new AppError(`Keep the acceptance criteria under ${MAX_META_CHARS} characters.`)
   const invitee = p.invitee.trim() ? p.invitee.trim() : zeroAddress
   if (!isAddress(invitee)) throw new AppError('The invited agent address is not valid.')
   const maxBudget = parseUsdc(p.maxBudget)
-  const uri = encodeMeta({ v: 1, title: p.title.trim(), description })
+  const uri = encodeMeta({ v: 1, title: p.title.trim(), description, ...(p.category && isCategory(p.category) ? { category: p.category } : {}) })
   return send({ address: b(), abi: boardAbi, functionName: 'createListing', args: [hashText(description), maxBudget, p.biddingEnds, invitee, uri] })
 }
 export const cancelListing = (id: bigint) => send({ address: b(), abi: boardAbi, functionName: 'cancelListing', args: [id] })

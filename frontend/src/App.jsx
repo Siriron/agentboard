@@ -23,6 +23,7 @@ const V2Dashboard = lazy(() => import('./v2/pages/V2Dashboard'))
 const V2Receipt = lazy(() => import('./v2/pages/V2Receipt'))
 const V2Register = lazy(() => import('./v2/pages/V2Register'))
 const V2Agent = lazy(() => import('./v2/pages/V2Agent'))
+const V2Leaderboard = lazy(() => import('./v2/pages/V2Leaderboard'))
 
 export default function App() {
   return (
@@ -39,7 +40,7 @@ export default function App() {
         <Route path="dashboard" element={<ProtocolSwitch feature="The dashboard" v1={<Dashboard />} v2={<V2Dashboard />} />} />
         <Route path="docs" element={<Docs />} />
         <Route path="agent-wallet" element={<MainnetGate feature="Circle agent wallets" testnetOnly><AgentWallet /></MainnetGate>} />
-        <Route path="leaderboard" element={<MainnetGate feature="The leaderboard" testnetOnly><Leaderboard /></MainnetGate>} />
+        <Route path="leaderboard" element={<ProtocolSwitch feature="The leaderboard" v1={<Leaderboard />} v2={<V2Leaderboard />} />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

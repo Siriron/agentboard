@@ -1,4 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { explainError } from '../protocol/errors'
 import { formatRemaining } from '../protocol/state'
 import { formatUsdc, requiresTypedConfirm } from '../protocol/units'
@@ -49,7 +50,10 @@ export function useAction(onDone?: () => void) {
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [hash, setHash] = useState<string | null>(null)
+  const inFlight = useRef(false)
   async function run(id: string, fn: () => Promise<{ hash: string } | void>) {
+    if (inFlight.current) return // double-submit guard: a second tap while a wallet action is pending is ignored
+    inFlight.current = true
     setBusy(id); setError(null); setHash(null)
     try {
       const res = await fn()
@@ -59,7 +63,7 @@ export function useAction(onDone?: () => void) {
       const m = explainError(e)
       setError(m)
       if (!(e instanceof Error && e.name === 'AppError')) console.error(e)
-    } finally { setBusy(null) }
+    } finally { inFlight.current = false; setBusy(null) }
   }
   return { busy, error, hash, run, clear: () => { setError(null); setHash(null) } }
 }
@@ -68,7 +72,7 @@ export function TxStatus({ error, hash }: { error: string | null; hash: string |
   if (!error && !hash) return null
   return (
     <div role={error ? 'alert' : 'status'} style={{ marginTop: 10, fontSize: 13, padding: '8px 12px', borderRadius: 'var(--r-sm)', background: error ? 'var(--red-dim)' : 'var(--green-dim)', color: error ? 'var(--red)' : 'var(--green)' }}>
-      {error ?? <>Confirmed. <a href={`/receipt/${hash}`} style={{ color: 'inherit', textDecoration: 'underline' }}>View receipt</a></>}
+      {error ?? <>Confirmed. <Link to={`/receipt/${hash}`} style={{ color: 'inherit', textDecoration: 'underline' }}>View receipt</Link></>}
     </div>
   )
 }
@@ -81,6 +85,11 @@ export function ConfirmDialog({ title, amount, lines, confirmLabel, onConfirm, o
   const needsTyping = amount !== undefined && requiresTypedConfirm(amount)
   const expected = amount !== undefined ? formatUsdc(amount) : ''
   const ok = !needsTyping || typed.trim() === expected || typed.trim() === expected.replace(/,/g, '')
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onCancel])
   return (
     <div role="dialog" aria-modal="true" aria-label={title} style={{ position: 'fixed', inset: 0, background: 'rgba(26,16,64,0.45)', display: 'grid', placeItems: 'center', zIndex: 200, padding: 16 }}>
       <div className="card" style={{ maxWidth: 440, width: '100%', padding: 24 }}>

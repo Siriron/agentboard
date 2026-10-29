@@ -6,7 +6,7 @@ import { useNetwork } from '../hooks/useNetwork'
 import { protocolFor } from '../lib/networks'
 import NetworkSwitch from './NetworkSwitch'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
-import { Zap, ExternalLink, Menu, X, BookOpen, Trophy, Bot, AlertTriangle } from 'lucide-react'
+import { Zap, ExternalLink, Menu, X, Wallet, ChevronDown, AlertTriangle } from 'lucide-react'
 
 export default function Layout() {
   const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError, wrongChain, switchChain } = useWallet()
@@ -16,11 +16,23 @@ export default function Layout() {
   const [scrolled, setScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [jobCount, setJobCount] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
   const lenisRef = useRef(null)
 
   const isLanding = location.pathname === '/'
 
-  useEffect(() => { setMobileOpen(false) }, [location.pathname])
+  useEffect(() => { setMobileOpen(false); setMenuOpen(false) }, [location.pathname])
+
+  // Wallet menu: close on outside tap or Escape.
+  useEffect(() => {
+    if (!menuOpen && !mobileOpen) return
+    const onDown = e => { if (menuOpen && menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false) }
+    const onKey = e => { if (e.key === 'Escape') { setMenuOpen(false); setMobileOpen(false) } }
+    document.addEventListener('pointerdown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('pointerdown', onDown); document.removeEventListener('keydown', onKey) }
+  }, [menuOpen, mobileOpen])
 
   // ── Lenis smooth scroll (mounted once at app root) ──
   // Skipped entirely for users who prefer reduced motion — native instant
@@ -62,30 +74,28 @@ export default function Layout() {
 
   useEffect(() => {
     setJobCount(null)
-    if (!protocolLive || protocolFor(netKey) !== 'v1') return
+    if (!protocolLive) return
+    const proto = protocolFor(netKey)
+    let cancelled = false
     async function load() {
       try {
-        const n = await getPublicClient().readContract({
-          address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'jobCount'
-        })
-        setJobCount(Number(n))
+        let n
+        if (proto === 'v1') {
+          n = Number(await getPublicClient().readContract({ address: CONTRACT_ADDRESS, abi: CONTRACT_ABI, functionName: 'jobCount' }))
+        } else {
+          // Mainnet: number of V2 listings. Loaded lazily so the V2 code stays out of the main bundle.
+          n = await (await import('../protocol/v2')).getListingCount()
+        }
+        if (!cancelled) setJobCount(n)
       } catch (e) {
-        // Non-fatal — the nav badge just keeps its last known value.
-        // Logged (not silent) so a stale badge is debuggable instead of
-        // an invisible mismatch against what other pages show.
-        console.warn('[Layout] jobCount poll failed:', e)
+        // Non-fatal: the badge keeps its last known value.
+        console.warn('[Layout] board count poll failed:', e)
       }
     }
-    // A 1.5s delay on the very first poll only (not the recurring
-    // interval) keeps this call from landing in the exact same instant
-    // as Board.jsx's own job-read batch, which fires immediately on
-    // that page's mount. Two separate near-simultaneous requests
-    // against a rate-limited endpoint is worse than one slightly later
-    // one — this trades a small nav-badge delay on first load for a
-    // better chance of both loads actually succeeding.
+    // First poll is delayed so it does not land in the same instant as the Board page's own reads.
     const initial = setTimeout(load, 1500)
     const t = setInterval(load, 30000)
-    return () => { clearTimeout(initial); clearInterval(t) }
+    return () => { cancelled = true; clearTimeout(initial); clearInterval(t) }
   }, [netKey, protocolLive])
 
   const allNavLinks = [
@@ -97,33 +107,31 @@ export default function Layout() {
     { to: '/register', label: 'Register' },
     { to: '/docs', label: 'Docs' },
   ]
-  // Mainnet V2 has no leaderboard or Circle agent wallet pages yet.
-  const hiddenOnMainnet = ['/agent-wallet', '/leaderboard']
-  const navLinks = (network.features.circleAgentWallets
-    ? allNavLinks
-    : allNavLinks.filter(l => l.to !== '/agent-wallet'))
-    .filter(l => !(netKey === 'mainnet' && hiddenOnMainnet.includes(l.to)))
+  // Agent Wallet is Circle-managed and testnet-only; every other link exists on both networks.
+  const navLinks = (network.features.circleAgentWallets ? allNavLinks : allNavLinks.filter(l => l.to !== '/agent-wallet'))
     .map(l => (netKey === 'mainnet' && l.to === '/post' ? { ...l, label: 'Post Listing' } : l))
+
+  const isTestnet = netKey === 'testnet'
+  const copyAddress = () => { try { navigator.clipboard?.writeText(activeAddress) } catch { /* clipboard blocked */ } setMenuOpen(false) }
+  const navStyle = ({ isActive }) => ({
+    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 9px', borderRadius: 8, fontSize: 13.5, fontWeight: 500,
+    textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
+    color: isActive ? 'var(--accent)' : 'var(--text-2)', background: isActive ? 'var(--accent-dim)' : 'transparent',
+  })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── NAVBAR ── */}
-      <header style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100, height: 64,
-        padding: '0 24px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
-        background: scrolled ? 'rgba(248,247,255,0.95)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(20px)' : 'none',
-        WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
-        borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
-        transition: 'all 0.3s ease',
+      <header className="hdr" style={{
+        background: scrolled || mobileOpen ? 'rgba(248,247,255,0.95)' : 'transparent',
+        backdropFilter: scrolled || mobileOpen ? 'blur(20px)' : 'none',
+        WebkitBackdropFilter: scrolled || mobileOpen ? 'blur(20px)' : 'none',
+        borderBottom: scrolled || mobileOpen ? '1px solid var(--border)' : '1px solid transparent',
+        transition: 'background 0.3s ease, border-color 0.3s ease',
       }}>
-
-        {/* Logo */}
-        <button onClick={() => navigate('/')} className="logo-btn" style={{
-          display: 'flex', alignItems: 'center', gap: 10,
-          cursor: 'pointer', background: 'none', border: 'none', flexShrink: 0, padding: 0,
+        <button onClick={() => navigate('/')} className="logo-btn" aria-label="AgentBoard home" style={{
+          display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', background: 'none', border: 'none', flexShrink: 0, padding: 0,
         }}>
           <svg width="34" height="34" viewBox="0 0 34 34" style={{ flexShrink: 0 }}>
             <defs>
@@ -133,101 +141,67 @@ export default function Layout() {
               </linearGradient>
             </defs>
             <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#logoGrad)" />
-            {/* Simple, legible mark: orbiting node — reads clearly at small size */}
             <circle cx="17" cy="17" r="6.5" fill="none" stroke="#fff" strokeWidth="2" strokeOpacity="0.9" />
             <circle cx="17" cy="10.5" r="2.6" fill="#fff" />
           </svg>
-          <span style={{
-            fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17,
-            letterSpacing: '-0.025em', color: 'var(--text-1)',
-          }}>
+          <span className="hdr-logo-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, letterSpacing: '-0.025em', color: 'var(--text-1)' }}>
             Agent<span style={{ color: 'var(--accent)' }}>Board</span>
           </span>
         </button>
 
-        {/* Desktop nav */}
-        <nav className="hide-mobile" style={{
-          display: 'flex', alignItems: 'center', gap: 2,
-          flex: 1, justifyContent: 'center',
-        }}>
+        <nav className="hdr-nav" aria-label="Main">
           {navLinks.map(({ to, label, badge }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 12px', borderRadius: 8,
-              fontSize: 13.5, fontWeight: 500,
-              textDecoration: 'none', whiteSpace: 'nowrap',
-              transition: 'all 0.15s',
-              color: isActive ? 'var(--accent)' : 'var(--text-2)',
-              background: isActive ? 'var(--accent-dim)' : 'transparent',
-            })}>
+            <NavLink key={to} to={to} style={navStyle}>
               {label}
-              {badge && (
-                <span style={{
-                  background: 'var(--accent)', color: '#fff',
-                  fontSize: 9, fontWeight: 700, padding: '1px 5px',
-                  borderRadius: 6, lineHeight: 1.6,
-                }}>{badge}</span>
-              )}
+              {badge && <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 6, lineHeight: 1.6 }}>{badge}</span>}
             </NavLink>
           ))}
         </nav>
 
-        {/* Right */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+        <div className="hdr-right">
           <NetworkSwitch compact />
           {activeAddress ? (
-            <>
-              {activeMode === 'browser' && wrongChain && (
-                <button onClick={switchChain} className="hide-tablet" style={{
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  background: 'var(--amber-dim)', border: '1.5px solid rgba(245,158,11,0.3)',
-                  color: 'var(--amber)', fontSize: 11.5, fontWeight: 700,
-                  padding: '6px 12px', borderRadius: 99, cursor: 'pointer',
-                  fontFamily: 'var(--font-body)',
-                }}>
-                  <AlertTriangle size={11} /> Switch to {network.short}
-                </button>
+            <div ref={menuRef} style={{ position: 'relative' }}>
+              <button className="address-pill" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(o => !o)}
+                style={{ padding: '6px 9px', minHeight: 34, ...(activeMode === 'agent' ? { borderColor: 'var(--pink-border)', color: 'var(--pink)' } : null) }}>
+                <Wallet size={13} />
+                <span className="addr-long">{formatAddress(activeAddress)}</span>
+                <span className="addr-short">…{activeAddress.slice(-4)}</span>
+                {activeMode === 'browser' && wrongChain ? <AlertTriangle size={12} color="var(--amber)" aria-label="Wrong network" /> : <ChevronDown size={12} />}
+              </button>
+              {menuOpen && (
+                <div className="hdr-menu" role="menu">
+                  {activeMode === 'browser' && wrongChain && (
+                    <button role="menuitem" onClick={() => { setMenuOpen(false); switchChain() }} style={{ color: 'var(--amber)', fontWeight: 700 }}>Switch to {network.label}</button>
+                  )}
+                  {isTestnet
+                    ? <button role="menuitem" onClick={() => { setMenuOpen(false); navigate(`/agent/${activeAddress}`) }}>Profile</button>
+                    : <>
+                        <button role="menuitem" onClick={() => { setMenuOpen(false); navigate('/dashboard') }}>My activity</button>
+                        <button role="menuitem" onClick={() => { setMenuOpen(false); navigate('/register') }}>My agents</button>
+                      </>}
+                  <button role="menuitem" onClick={copyAddress}>Copy address</button>
+                  <button role="menuitem" onClick={() => { setMenuOpen(false); disconnect() }}>Disconnect</button>
+                </div>
               )}
-              <button onClick={() => navigate(`/agent/${activeAddress}`)}
-                className="address-pill hide-tablet"
-                style={activeMode === 'agent' ? { borderColor: 'var(--pink-border)', color: 'var(--pink)' } : undefined}>
-                <Bot size={9} />
-                {formatAddress(activeAddress)}
-              </button>
-              <button className="btn btn-secondary btn-sm" onClick={disconnect}>
-                <span className="hide-tablet">Disconnect</span>
-                <span className="show-tablet-only">Exit</span>
-              </button>
-            </>
+            </div>
           ) : (
             <div style={{ position: 'relative' }}>
-              <button className="btn btn-primary btn-sm" onClick={openPicker} disabled={connecting}>
+              <button className="btn btn-primary btn-sm" onClick={openPicker} disabled={connecting} style={{ whiteSpace: 'nowrap', minHeight: 34 }}>
                 {connecting
-                  ? <><span className="spinner" style={{ width: 11, height: 11 }} />Connecting…</>
-                  : 'Connect Wallet'}
+                  ? <><span className="spinner" style={{ width: 11, height: 11 }} /><span className="lbl-long">Connecting…</span></>
+                  : <><Wallet size={13} /><span className="lbl-long">Connect Wallet</span><span className="lbl-short">Connect</span></>}
               </button>
               {walletError && (
-                <div style={{
-                  position: 'absolute', top: 'calc(100% + 6px)', right: 0,
-                  background: '#fff', border: '1.5px solid var(--border)',
-                  borderRadius: 10, padding: '8px 13px', fontSize: 12,
-                  color: 'var(--red)', whiteSpace: 'nowrap', zIndex: 200,
-                  boxShadow: 'var(--shadow)',
+                <div role="alert" style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1.5px solid var(--border)',
+                  borderRadius: 10, padding: '8px 13px', fontSize: 12, color: 'var(--red)', zIndex: 200, boxShadow: 'var(--shadow)',
+                  width: 'max-content', maxWidth: 'calc(100vw - 24px)',
                 }}>{walletError}</div>
               )}
             </div>
           )}
-
-          <button
-            onClick={() => setMobileOpen(o => !o)}
-            style={{
-              display: 'none', background: 'var(--bg-subtle)',
-              border: '1.5px solid var(--border)', cursor: 'pointer',
-              color: 'var(--text-1)', padding: '6px', lineHeight: 1,
-              borderRadius: 8,
-            }}
-            className="mobile-menu-btn"
-            aria-label="Toggle menu">
+          <button onClick={() => setMobileOpen(o => !o)} className="hdr-burger" aria-label="Toggle menu" aria-expanded={mobileOpen}>
             {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
@@ -244,50 +218,32 @@ export default function Layout() {
 
       {/* ── MOBILE NAV ── */}
       {mobileOpen && (
-        <div style={{
-          position: 'fixed', top: 64, left: 0, right: 0, zIndex: 99,
-          background: 'rgba(248,247,255,0.98)',
-          backdropFilter: 'blur(20px)',
-          borderBottom: '1px solid var(--border)',
-          padding: '12px 16px 20px',
+        <div className="mobile-panel" style={{
+          position: 'fixed', top: 64, left: 0, right: 0, zIndex: 99, background: 'rgba(248,247,255,0.98)',
+          backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)', padding: '12px 16px 20px',
           display: 'flex', flexDirection: 'column', gap: 3,
         }}>
-          {navLinks.map(({ to, label }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({
-              display: 'flex', alignItems: 'center',
-              padding: '11px 14px', borderRadius: 10,
-              fontSize: 15, fontWeight: 600, textDecoration: 'none',
-              color: isActive ? 'var(--accent)' : 'var(--text-2)',
-              background: isActive ? 'var(--accent-dim)' : 'transparent',
-            })}>
+          {navLinks.map(({ to, label, badge }) => (
+            <NavLink key={to} to={to} style={({ isActive }) => ({ ...navStyle({ isActive }), padding: '12px 14px', fontSize: 15, fontWeight: 600, borderRadius: 10 })}>
               {label}
+              {badge && <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6 }}>{badge}</span>}
             </NavLink>
           ))}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
             {activeMode === 'browser' && wrongChain && (
-              <button onClick={switchChain} style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                background: 'var(--amber-dim)', border: '1.5px solid rgba(245,158,11,0.3)',
-                color: 'var(--amber)', fontSize: 13, fontWeight: 700,
-                padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
-                fontFamily: 'var(--font-body)', marginBottom: 8,
-              }}>
-                <AlertTriangle size={12} /> Switch to {network.label}
-              </button>
+              <button onClick={() => { setMobileOpen(false); switchChain() }} style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--amber-dim)',
+                border: '1.5px solid rgba(245,158,11,0.3)', color: 'var(--amber)', fontSize: 13, fontWeight: 700, padding: '10px 14px',
+                borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 8,
+              }}><AlertTriangle size={12} /> Switch to {network.label}</button>
             )}
             {activeAddress ? (
-              <button onClick={disconnect} style={{
-                width: '100%', background: 'var(--bg-subtle)',
-                border: '1.5px solid var(--border)', borderRadius: 10,
-                padding: '11px 14px', color: 'var(--text-2)',
-                fontSize: 14, fontWeight: 600, cursor: 'pointer',
-                fontFamily: 'var(--font-body)', textAlign: 'left',
-              }}>Disconnect wallet</button>
+              <button onClick={() => { setMobileOpen(false); disconnect() }} style={{
+                width: '100%', background: 'var(--bg-subtle)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '11px 14px',
+                color: 'var(--text-2)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
+              }}>Disconnect {formatAddress(activeAddress)}</button>
             ) : (
-              <button onClick={() => { openPicker(); setMobileOpen(false) }}
-                className="btn btn-primary" style={{ width: '100%' }}>
-                Connect Wallet
-              </button>
+              <button onClick={() => { openPicker(); setMobileOpen(false) }} className="btn btn-primary" style={{ width: '100%' }}>Connect Wallet</button>
             )}
           </div>
         </div>
@@ -318,9 +274,9 @@ export default function Layout() {
               </p>
             </div>
             {[
-              { title: 'App', links: [{ label: 'Job Board', to: '/board' }, { label: 'Post a Job', to: '/post' }, { label: 'Agent Wallet', to: '/agent-wallet' }, { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register', to: '/register' }] },
+              { title: 'App', links: [{ label: 'Job Board', to: '/board' }, { label: 'Post a Job', to: '/post' }, ...(network.features.circleAgentWallets ? [{ label: 'Agent Wallet', to: '/agent-wallet' }] : []), { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register', to: '/register' }] },
               { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Architecture', to: '/docs#architecture' }, { label: 'Contract Reference', to: '/docs#contract' }, { label: 'REST API', to: '/docs#api' }] },
-              { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }, { label: 'Arc Docs', url: 'https://docs.arc.io' }, { label: 'Circle Developers', url: 'https://developers.circle.com' }] },
+              { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, network.realFunds ? { label: 'Job board contract', url: `${network.explorer}/address/${network.contracts.v2.board}` } : { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }, { label: 'Arc Docs', url: 'https://docs.arc.io' }, { label: 'Circle Developers', url: 'https://developers.circle.com' }] },
             ].map(({ title, links, external }) => (
               <div key={title}>
                 <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>{title}</div>
