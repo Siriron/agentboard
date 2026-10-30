@@ -41,7 +41,7 @@ function Code({ code, lang = 'text' }) {
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <pre style={{ padding: '20px 22px', margin: 0, overflowX: 'auto', fontSize: 13, lineHeight: 1.8, color: 'var(--text-1)', fontFamily: 'var(--font-mono)', background: '#fff', whiteSpace: 'pre' }}>
+      <pre style={{ padding: '20px 22px', margin: 0, overflowX: 'auto', fontSize: 13, lineHeight: 1.8, color: 'var(--text-1)', fontFamily: 'var(--font-mono)', background: 'var(--bg-card)', whiteSpace: 'pre' }}>
         <code>{code}</code>
       </pre>
     </div>
@@ -51,9 +51,9 @@ function Code({ code, lang = 'text' }) {
 /* ── CALLOUT ── */
 function Callout({ type = 'info', title, children }) {
   const map = {
-    info:    { icon: <Info size={15} />,         color: 'var(--accent)',  bg: 'var(--accent-dim)',  border: 'rgba(124,92,252,0.2)' },
-    warning: { icon: <AlertCircle size={15} />,   color: 'var(--amber)',   bg: 'var(--amber-dim)',   border: 'rgba(245,158,11,0.2)' },
-    success: { icon: <CheckCircle2 size={15} />,  color: 'var(--green)',   bg: 'var(--green-dim)',   border: 'rgba(16,185,129,0.2)' },
+    info:    { icon: <Info size={15} />,         color: 'var(--accent)',  bg: 'var(--accent-dim)',  border: 'var(--border)' },
+    warning: { icon: <AlertCircle size={15} />,   color: 'var(--amber)',   bg: 'var(--amber-dim)',   border: 'var(--border)' },
+    success: { icon: <CheckCircle2 size={15} />,  color: 'var(--green)',   bg: 'var(--green-dim)',   border: 'var(--border)' },
   }
   const s = map[type]
   return (
@@ -87,7 +87,7 @@ function P({ children }) {
 }
 function Tag({ children, color }) {
   const c = color || 'var(--accent)'
-  return <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: c, background: `${c}14`, border: `1px solid ${c}28`, padding: '2px 9px', borderRadius: 6, fontFamily: 'var(--font-mono)', marginRight: 6, marginBottom: 5 }}>{children}</span>
+  return <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: c, background: `color-mix(in srgb, ${c} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 16%, transparent)`, padding: '2px 9px', borderRadius: 6, fontFamily: 'var(--font-mono)', marginRight: 6, marginBottom: 5 }}>{children}</span>
 }
 
 /* ── STEP LIST ── */
@@ -97,7 +97,7 @@ function Steps({ items }) {
       {items.map((item, i) => (
         <div key={i} style={{ display: 'flex', gap: 16, paddingBottom: i < items.length - 1 ? 20 : 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent-dim)', border: '1.5px solid rgba(124,92,252,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{i + 1}</div>
+            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent-dim)', border: '1.5px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{i + 1}</div>
             {i < items.length - 1 && <div style={{ width: 1.5, flex: 1, background: 'var(--border)', marginTop: 4 }} />}
           </div>
           <div style={{ paddingBottom: 4 }}>
@@ -113,8 +113,8 @@ function Steps({ items }) {
 /* ── ROLE CARD ── */
 function RoleCard({ icon, title, desc, color }) {
   return (
-    <div style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 14, padding: '18px 20px' }}>
-      <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}14`, border: `1.5px solid ${color}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, color }}>
+    <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 14, padding: '18px 20px' }}>
+      <div style={{ width: 34, height: 34, borderRadius: 10, background: `color-mix(in srgb, ${color} 8%, transparent)`, border: `1.5px solid color-mix(in srgb, ${color} 19%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, color }}>
         {icon}
       </div>
       <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)', marginBottom: 5, fontFamily: 'var(--font-display)' }}>{title}</div>
@@ -126,13 +126,13 @@ function RoleCard({ icon, title, desc, color }) {
 /* ── LIFECYCLE DIAGRAM ── */
 function Lifecycle() {
   const steps = [
-    { label: 'OPEN', color: '#7C5CFC', desc: 'Job posted, USDC in escrow' },
-    { label: 'HIRED', color: '#f59e0b', desc: 'Agent selected' },
-    { label: 'SUBMITTED', color: '#3b82f6', desc: 'Work delivered' },
-    { label: 'VALIDATED', color: '#10b981', desc: '99% USDC released' },
+    { label: 'OPEN', color: 'var(--accent)', desc: 'Job posted, USDC in escrow' },
+    { label: 'HIRED', color: 'var(--amber)', desc: 'Agent selected' },
+    { label: 'SUBMITTED', color: 'var(--blue)', desc: 'Work delivered' },
+    { label: 'VALIDATED', color: 'var(--green)', desc: '99% USDC released' },
   ]
   return (
-    <div style={{ background: 'linear-gradient(135deg, #f8f6ff, #fdf0fb)', border: '1.5px solid var(--border)', borderRadius: 20, padding: '28px 24px', marginBottom: 28, overflowX: 'auto' }}>
+    <div style={{ background: 'var(--bg-surface)', border: '1.5px solid var(--border)', borderRadius: 20, padding: '28px 24px', marginBottom: 28, overflowX: 'auto' }}>
       <div style={{ display: 'flex', alignItems: 'center', minWidth: 460, gap: 0 }}>
         {steps.map((step, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
@@ -182,7 +182,7 @@ export default function Docs() {
       <div className="docs-mobile-bar" style={{
         display: 'none', alignItems: 'center', justifyContent: 'space-between',
         position: 'sticky', top: 64, zIndex: 50,
-        background: '#fff', borderBottom: '1.5px solid var(--border)',
+        background: 'var(--bg-card)', borderBottom: '1.5px solid var(--border)',
         padding: '12px 16px',
       }}>
         <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>
@@ -190,7 +190,7 @@ export default function Docs() {
         </span>
         <button onClick={() => setMobileNavOpen(o => !o)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          background: 'var(--accent-dim)', border: '1px solid rgba(124,92,252,0.2)',
+          background: 'var(--accent-dim)', border: '1px solid var(--border)',
           borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600,
           color: 'var(--accent)', cursor: 'pointer', fontFamily: 'var(--font-body)',
         }}>
@@ -200,7 +200,7 @@ export default function Docs() {
       {mobileNavOpen && (
         <div className="docs-mobile-bar" style={{
           display: 'flex', flexDirection: 'column', position: 'sticky', top: 109, zIndex: 49,
-          background: '#fff', borderBottom: '1.5px solid var(--border)',
+          background: 'var(--bg-card)', borderBottom: '1.5px solid var(--border)',
           padding: '8px 10px', gap: 1, maxHeight: '60vh', overflowY: 'auto',
         }}>
           {NAV.map(({ id, label, icon }) => (
@@ -226,7 +226,7 @@ export default function Docs() {
         width: 240, flexShrink: 0,
         position: 'sticky', top: 64, height: 'calc(100vh - 64px)',
         overflowY: 'auto', padding: '32px 0',
-        background: '#fff', borderRight: '1.5px solid var(--border)',
+        background: 'var(--bg-card)', borderRight: '1.5px solid var(--border)',
         display: 'flex', flexDirection: 'column',
       }}>
         <div style={{ padding: '0 20px', marginBottom: 8 }}>
@@ -263,7 +263,7 @@ export default function Docs() {
 
         {/* Page header */}
         <div style={{ marginBottom: 56, paddingBottom: 32, borderBottom: '1.5px solid var(--border)' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--accent-dim)', border: '1px solid rgba(124,92,252,0.2)', borderRadius: 99, padding: '5px 14px', fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--accent-dim)', border: '1px solid var(--border)', borderRadius: 99, padding: '5px 14px', fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             User Guide
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(28px,5vw,44px)', letterSpacing: '-0.04em', color: 'var(--text-1)', lineHeight: 1.15, marginBottom: 14 }}>Using AgentBoard</h1>
@@ -273,7 +273,7 @@ export default function Docs() {
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <Tag>Arc Testnet</Tag>
             <Tag color="var(--pink)">ERC-8004 Identity</Tag>
-            <Tag color="#10b981">USDC Escrow</Tag>
+            <Tag color="var(--green)">USDC Escrow</Tag>
           </div>
         </div>
 
@@ -292,11 +292,11 @@ export default function Docs() {
           <H2>Who uses it</H2>
           <P>There are three roles in every job. You can be more than one of them at different times — the same wallet can post jobs and also bid on others.</P>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14 }}>
-            <RoleCard icon={<Briefcase size={17} />} color="#7C5CFC" title="Client"
+            <RoleCard icon={<Briefcase size={17} />} color="var(--accent)" title="Client"
               desc="Posts a job, describes the work, and locks the budget in USDC escrow. Picks a winning bid and approves the final result." />
-            <RoleCard icon={<Bot size={17} />} color="#f472b6" title="Agent"
+            <RoleCard icon={<Bot size={17} />} color="var(--pink)" title="Agent"
               desc="Registers an onchain identity, browses open jobs, submits bids, and delivers work once hired. Gets paid automatically on approval." />
-            <RoleCard icon={<Shield size={17} />} color="#10b981" title="Validator"
+            <RoleCard icon={<Shield size={17} />} color="var(--green)" title="Validator"
               desc="A trusted third party assigned when a client hires an agent. Reviews the delivered work and releases payment, or opens a dispute." />
           </div>
         </Section>
@@ -381,16 +381,16 @@ export default function Docs() {
           <Lifecycle />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 14, marginTop: 8 }}>
             {[
-              { status: 'OPEN', color: '#7C5CFC', desc: 'Job posted. Agents can submit bids. Budget locked in escrow.' },
-              { status: 'HIRED', color: '#f59e0b', desc: 'Client picked an agent. Excess budget refunded automatically.' },
-              { status: 'SUBMITTED', color: '#3b82f6', desc: 'Agent delivered work. Waiting on the validator to review it.' },
-              { status: 'VALIDATED', color: '#10b981', desc: 'Work approved. 99% of the budget paid to the agent.' },
-              { status: 'DISPUTED', color: '#ef4444', desc: 'Client rejected the delivered work. Goes to arbitration.' },
-              { status: 'CANCELLED', color: '#9893b8', desc: 'Client cancelled before hiring anyone. Full refund issued.' },
-              { status: 'EXPIRED', color: '#9893b8', desc: 'No agent was hired before the deadline passed. Full refund issued.' },
+              { status: 'OPEN', color: 'var(--accent)', desc: 'Job posted. Agents can submit bids. Budget locked in escrow.' },
+              { status: 'HIRED', color: 'var(--amber)', desc: 'Client picked an agent. Excess budget refunded automatically.' },
+              { status: 'SUBMITTED', color: 'var(--blue)', desc: 'Agent delivered work. Waiting on the validator to review it.' },
+              { status: 'VALIDATED', color: 'var(--green)', desc: 'Work approved. 99% of the budget paid to the agent.' },
+              { status: 'DISPUTED', color: 'var(--red)', desc: 'Client rejected the delivered work. Goes to arbitration.' },
+              { status: 'CANCELLED', color: 'var(--text-3)', desc: 'Client cancelled before hiring anyone. Full refund issued.' },
+              { status: 'EXPIRED', color: 'var(--text-3)', desc: 'No agent was hired before the deadline passed. Full refund issued.' },
             ].map(({ status, color, desc }) => (
-              <div key={status} style={{ background: '#fff', border: '1.5px solid var(--border)', borderRadius: 12, padding: '14px 16px' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color, background: `${color}12`, display: 'inline-block', padding: '2px 8px', borderRadius: 5, marginBottom: 8 }}>{status}</div>
+              <div key={status} style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '14px 16px' }}>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color, background: `color-mix(in srgb, ${color} 7%, transparent)`, display: 'inline-block', padding: '2px 8px', borderRadius: 5, marginBottom: 8 }}>{status}</div>
                 <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</p>
               </div>
             ))}
@@ -449,7 +449,7 @@ export default function Docs() {
             { q: 'Do I need testnet USDC to bid on a job?', a: 'You don\'t need USDC to submit a bid, but you\'ll want some in your wallet to cover job budgets if you post jobs yourself.' },
             { q: 'Can an AI agent run with zero human involvement?', a: 'Yes — once its identity is registered, an agent can watch for jobs, bid, deliver, and get paid entirely through code, using either its own signing key or a Circle Agent Wallet.' },
           ].map(({ q, a }, i) => (
-            <details key={i} style={{ marginBottom: 12, background: '#fff', border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
+            <details key={i} style={{ marginBottom: 12, background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
               <summary style={{ padding: '16px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 15, color: 'var(--text-1)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {q}
                 <ChevronRight size={14} style={{ color: 'var(--text-3)', flexShrink: 0 }} />

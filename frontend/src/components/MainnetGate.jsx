@@ -13,7 +13,7 @@ export default function MainnetGate({ children, testnetOnly = false, feature = '
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '96px 24px', textAlign: 'center' }}>
       <div style={{
         display: 'inline-block', fontSize: 11, fontWeight: 700, letterSpacing: '0.08em',
-        textTransform: 'uppercase', color: '#0f766e', background: 'rgba(15,118,110,0.1)',
+        textTransform: 'uppercase', color: 'var(--main)', background: 'var(--main-dim)',
         padding: '4px 10px', borderRadius: 99, marginBottom: 18,
       }}>Arc Mainnet</div>
       <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 800, color: 'var(--text-1)', marginBottom: 12 }}>

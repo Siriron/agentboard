@@ -197,7 +197,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 500, height: 500, top: '-10%', right: '-5%', background: 'radial-gradient(circle, rgba(124,92,252,0.08) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 500, height: 500, top: '-10%', right: '-5%', background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       </div>
       <div className="max-w-xl mx-auto relative">
 
@@ -233,7 +233,7 @@ export default function Register() {
         {/* Main card */}
         <BlurFade delay={0.1} inView>
           <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
-            <BorderBeam size={220} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
+            <BorderBeam size={220} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
 
             {/* Active signer status — reflects whichever wallet is currently
                 selected (Browser or Agent), both of which can mint and
@@ -263,7 +263,7 @@ export default function Register() {
                   </p>
                   <button onClick={openPicker}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)]"
-                    style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+                    style={{ background: 'var(--accent)' }}>
                     <Wallet size={11} /> Connect Wallet
                   </button>
                 </div>
@@ -279,7 +279,7 @@ export default function Register() {
                 </div>
                 <button onClick={handleMintIdentity} disabled={!activeAddress || minting}
                   className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-1)] shrink-0 transition-all', (!activeAddress || minting) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]')}
-                  style={{ background: 'linear-gradient(135deg, #10b981, #0d9488)', boxShadow: '0 0 20px rgba(16,185,129,0.25)' }}>
+                  style={{ background: 'var(--green)', boxShadow: 'var(--shadow)' }}>
                   {minting ? <Loader size={13} className="animate-spin" /> : <Sparkles size={13} />}
                   {minting ? 'Minting…' : 'Mint Identity'}
                 </button>
@@ -382,7 +382,7 @@ export default function Register() {
                 onClick={handleRegister}
                 disabled={!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()}
                 className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                 {loadingExisting ? (
                   <><Loader size={14} className="animate-spin" /> Checking your registration…</>
                 ) : registering ? (

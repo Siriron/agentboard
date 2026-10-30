@@ -148,7 +148,7 @@ export default function Layout() {
           {navLinks.map(({ to, label, badge }) => (
             <NavLink key={to} to={to} style={navStyle}>
               {label}
-              {badge && <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 6, lineHeight: 1.6 }}>{badge}</span>}
+              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 6, lineHeight: 1.6 }}>{badge}</span>}
             </NavLink>
           ))}
         </nav>
@@ -219,7 +219,7 @@ export default function Layout() {
           {navLinks.map(({ to, label, badge }) => (
             <NavLink key={to} to={to} style={({ isActive }) => ({ ...navStyle({ isActive }), padding: '12px 14px', fontSize: 15, fontWeight: 600, borderRadius: 10 })}>
               {label}
-              {badge && <span style={{ background: 'var(--accent)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6 }}>{badge}</span>}
+              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6 }}>{badge}</span>}
             </NavLink>
           ))}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>

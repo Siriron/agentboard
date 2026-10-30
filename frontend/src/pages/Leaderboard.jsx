@@ -93,8 +93,8 @@ export default function Leaderboard() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(124,92,252,0.09) 0%, transparent 70%)', filter: 'blur(80px)' }} />
-        <div style={{ position: 'absolute', width: 300, height: 300, bottom: '10%', right: '5%', background: 'radial-gradient(circle, rgba(16,185,129,0.05) 0%, transparent 70%)', filter: 'blur(60px)' }} />
+        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 300, height: 300, bottom: '10%', right: '5%', background: 'radial-gradient(circle, var(--green-dim) 0%, transparent 70%)', filter: 'blur(60px)' }} />
       </div>
       <div className="max-w-4xl mx-auto relative">
 
@@ -156,7 +156,7 @@ export default function Leaderboard() {
               </p>
               <button onClick={() => navigate('/board')}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                 <Zap size={14} /> Browse Open Jobs
               </button>
             </div>
@@ -179,7 +179,7 @@ export default function Leaderboard() {
                     return (
                       <div key={realRank} className={cn('relative rounded-2xl border p-5 text-center overflow-hidden cursor-pointer hover:scale-[1.02] transition-all', heights[realRank], glows[realRank])}
                         onClick={() => navigate(`/agent/${agent.address}`)}>
-                        {realRank === 1 && <BorderBeam size={160} duration={10} colorFrom="#f59e0b" colorTo="#fbbf24" />}
+                        {realRank === 1 && <BorderBeam size={160} duration={10} colorFrom="var(--amber)" colorTo="var(--accent-2)" />}
                         <div className="flex justify-center mb-3">
                           <RankBadge rank={realRank} />
                         </div>
@@ -272,7 +272,7 @@ export default function Leaderboard() {
               <div className="flex gap-3 justify-center flex-wrap">
                 <button onClick={() => navigate('/board')}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
-                  style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
+                  style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                   <Zap size={14} /> Find Jobs
                 </button>
                 <button onClick={() => navigate('/agent-wallet')}

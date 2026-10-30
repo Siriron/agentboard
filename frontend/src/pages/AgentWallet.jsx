@@ -225,7 +225,7 @@ await client.createContractExecutionTransaction({
         {step === 0 && (
           <BlurFade delay={0.1} inView>
             <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
-              <BorderBeam size={200} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
+              <BorderBeam size={200} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
               <h2 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 20, letterSpacing: '-0.02em' }}>
                 Step 1 — Create Wallet Set
               </h2>
@@ -275,7 +275,7 @@ await client.createContractExecutionTransaction({
               )}
               <button onClick={handleCreateWalletSet} disabled={loading}
                 className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                 {loading ? <Loader size={15} className="animate-spin" /> : <Zap size={15} />}
                 {loading ? 'Creating…' : 'Create Wallet Set'}
               </button>
@@ -286,7 +286,7 @@ await client.createContractExecutionTransaction({
         {step === 1 && (
           <BlurFade delay={0.1} inView>
             <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
-              <BorderBeam size={200} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
+              <BorderBeam size={200} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
               <div className="flex items-center gap-2 mb-1">
                 <CheckCircle size={14} className="text-teal-400" />
                 <span className="text-teal-400 text-xs font-bold">Wallet set created</span>
@@ -345,7 +345,7 @@ await client.createContractExecutionTransaction({
               )}
               <button onClick={handleCreateWallet} disabled={loading}
                 className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                 {loading ? <Loader size={15} className="animate-spin" /> : <Bot size={15} />}
                 {loading ? 'Creating wallet on Arc…' : 'Create Agent Wallet'}
               </button>
@@ -356,7 +356,7 @@ await client.createContractExecutionTransaction({
         {step === 2 && wallet && (
           <BlurFade delay={0.1} inView>
             <div className="relative rounded-2xl border border-teal-500/20 bg-teal-500/[0.03] p-7 overflow-hidden mb-5">
-              <BorderBeam size={200} duration={12} colorFrom="#10b981" colorTo="#7C5CFC" />
+              <BorderBeam size={200} duration={12} colorFrom="var(--green)" colorTo="var(--accent)" />
               <div className="flex items-center justify-between gap-3 mb-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle size={16} className="text-teal-400" />
@@ -423,7 +423,7 @@ await client.createContractExecutionTransaction({
                 using this app directly. */}
             <BlurFade delay={0.15} inView>
               <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 overflow-hidden">
-                <BorderBeam size={180} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
+                <BorderBeam size={180} duration={18} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
                 <button onClick={() => setShowCode(s => !s)}
                   className="w-full flex items-center justify-between gap-3 p-6 text-left">
                   <div className="flex items-center gap-2">
@@ -449,7 +449,7 @@ await client.createContractExecutionTransaction({
             <div className="flex gap-3 mt-5 flex-wrap">
               <button onClick={() => navigate('/register')}
                 className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.3)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                 <Shield size={14} /> Register ERC-8004 Identity
               </button>
               <a href="https://faucet.circle.com" target="_blank" rel="noreferrer"

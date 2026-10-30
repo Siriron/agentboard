@@ -4,7 +4,7 @@ export function BorderBeam({
   duration = 15,
   anchor = 90,
   borderWidth = 1.5,
-  colorFrom = '#7C5CFC',
+  colorFrom = '#c4331d',
   colorTo = '#10b981',
   delay = 0,
 }) {

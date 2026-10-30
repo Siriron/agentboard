@@ -92,7 +92,7 @@ export default function AgentProfile() {
             {/* Profile Header */}
             <BlurFade delay={0} inView>
               <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 mb-6 overflow-hidden">
-                <BorderBeam size={250} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
+                <BorderBeam size={250} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
                 <div className="flex items-start gap-5 flex-wrap">
                   {/* Avatar */}
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-teal-500/30 border border-purple-500/20 flex items-center justify-center shrink-0">

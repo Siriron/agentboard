@@ -187,7 +187,7 @@ export default function JobDetail() {
       <p className="font-bold text-[var(--text-1)] text-2xl" style={{ fontFamily: 'var(--font-display)' }}>Job not found</p>
       <button onClick={() => navigate('/board')}
         className="px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)]"
-        style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+        style={{ background: 'var(--accent)' }}>
         Back to Board
       </button>
     </div>
@@ -233,7 +233,7 @@ await client.createContractExecutionTransaction({
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, rgba(124,92,252,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       </div>
       <div className="max-w-6xl mx-auto relative">
 
@@ -288,7 +288,7 @@ await client.createContractExecutionTransaction({
             {/* Job header */}
             <BlurFade delay={0} inView>
               <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
-                <BorderBeam size={200} duration={20} colorFrom="#7C5CFC" colorTo="#10b981" />
+                <BorderBeam size={200} duration={20} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
                 <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
                   <span className={cn('inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border', sc.text, sc.bg)}>
                     <span className={cn('w-1.5 h-1.5 rounded-full', sc.dot)} />
@@ -360,7 +360,7 @@ await client.createContractExecutionTransaction({
                             {isClient && sn === 0 && (
                               <button onClick={() => handleHire(idx)} disabled={submitting === 'hire'}
                                 className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
-                                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+                                style={{ background: 'var(--accent)' }}>
                                 {submitting === 'hire' ? <Loader size={10} className="animate-spin"/> : <UserCheck size={10}/>} Hire
                               </button>
                             )}
@@ -397,7 +397,7 @@ await client.createContractExecutionTransaction({
             {sn === 0 && (
               <BlurFade delay={0.1} inView>
                 <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-5 overflow-hidden">
-                  <BorderBeam size={180} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
+                  <BorderBeam size={180} duration={18} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
                   {/* Tabs */}
                   <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-subtle)]/4 mb-5">
                     {[['wallet', <Wallet size={11}/>, 'Submit Bid'], ['headless', <Terminal size={11}/>, 'Copy Code']].map(([key, icon, label]) => (
@@ -417,7 +417,7 @@ await client.createContractExecutionTransaction({
                             {activeMode === 'agent' ? <Bot size={9}/> : <Wallet size={9}/>}{activeMode === 'agent' ? 'Agent Wallet' : 'Browser'}
                           </span>
                         ) : (
-                          <button onClick={openPicker} className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)]" style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+                          <button onClick={openPicker} className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)]" style={{ background: 'var(--accent)' }}>
                             <Wallet size={9}/> Connect
                           </button>
                         )}
@@ -443,7 +443,7 @@ await client.createContractExecutionTransaction({
                         </div>
                         <button onClick={activeAddress ? handleBid : openPicker} disabled={submitting === 'bid'}
                           className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                          style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 20px rgba(124,92,252,0.25)' }}>
+                          style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                           {submitting === 'bid' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                           {submitting === 'bid' ? 'Submitting…' : activeAddress ? 'Submit Bid' : 'Connect Wallet to Bid'}
                         </button>
@@ -469,7 +469,7 @@ await client.createContractExecutionTransaction({
             {isAgent && sn === 1 && (
               <BlurFade delay={0.1} inView>
                 <div className="relative rounded-2xl border border-blue-500/15 bg-blue-500/[0.03] p-5 overflow-hidden">
-                  <BorderBeam size={160} duration={16} colorFrom="#60a5fa" colorTo="#7C5CFC" />
+                  <BorderBeam size={160} duration={16} colorFrom="var(--blue)" colorTo="var(--accent)" />
                   <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit Work</h3>
                   <div className="flex flex-col gap-3">
                     <div>
@@ -488,7 +488,7 @@ await client.createContractExecutionTransaction({
                     </label>
                     <button onClick={handleSubmitWork} disabled={submitting === 'submit' || !workUri.trim()}
                       className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (submitting === 'submit' || !workUri.trim()) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                      style={{ background: 'linear-gradient(135deg, #60a5fa, #3b82f6)' }}>
+                      style={{ background: 'var(--blue)' }}>
                       {submitting === 'submit' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                       Submit Work
                     </button>
@@ -501,7 +501,7 @@ await client.createContractExecutionTransaction({
             {isValidator && sn === 2 && (
               <BlurFade delay={0.1} inView>
                 <div className="relative rounded-2xl border border-teal-500/15 bg-teal-500/[0.03] p-5 overflow-hidden">
-                  <BorderBeam size={160} duration={14} colorFrom="#10b981" colorTo="#7C5CFC" />
+                  <BorderBeam size={160} duration={14} colorFrom="var(--green)" colorTo="var(--accent)" />
                   <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Validate & Release</h3>
                   <div className="flex flex-col gap-3">
                     <div>
@@ -511,7 +511,7 @@ await client.createContractExecutionTransaction({
                     </div>
                     <button onClick={handleValidate} disabled={submitting === 'validate'}
                       className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'validate' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                      style={{ background: 'linear-gradient(135deg, #10b981, #0ea572)', color: '#000' }}>
+                      style={{ background: 'var(--green)', color: '#000' }}>
                       {submitting === 'validate' ? <Loader size={14} className="animate-spin"/> : <CheckCircle size={14}/>}
                       Release Payment
                     </button>

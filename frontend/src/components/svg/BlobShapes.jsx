@@ -1,7 +1,7 @@
 /* Original organic blob shapes — inspired by bu.finance's irregular-card
    pattern but drawn from scratch, no copied assets. */
 
-export function BlobCard({ color = '#7C5CFC', opacity = 1, style }) {
+export function BlobCard({ color = '#c4331d', opacity = 1, style }) {
   return (
     <svg viewBox="0 0 400 320" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', ...style }} preserveAspectRatio="none">
       <path
@@ -24,7 +24,7 @@ export function BlobCardReverse({ color = '#f472b6', opacity = 1, style }) {
 }
 
 /* Soft organic blob for ambient backgrounds — replaces hard-edged radial circles */
-export function AmbientBlob({ color = 'rgba(124,92,252,0.18)', style }) {
+export function AmbientBlob({ color = 'rgba(196,51,29,0.18)', style }) {
   return (
     <svg viewBox="0 0 600 600" style={{ position: 'absolute', ...style }}>
       <path

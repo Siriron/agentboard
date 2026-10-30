@@ -41,16 +41,16 @@ export default function WalletPickerModal() {
       onClick={closePicker}
       style={{
         position: 'fixed', inset: 0, zIndex: 999,
-        background: 'rgba(20,15,40,0.45)', backdropFilter: 'blur(4px)',
+        background: 'var(--overlay)', backdropFilter: 'blur(4px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 20,
       }}>
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          width: '100%', maxWidth: 420, background: '#fff',
+          width: '100%', maxWidth: 420, background: 'var(--bg-card)',
           border: '1.5px solid var(--border)', borderRadius: 20,
-          boxShadow: '0 20px 60px rgba(20,15,40,0.25)',
+          boxShadow: 'var(--shadow-lg)',
           overflow: 'hidden',
         }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 22px 14px' }}>
@@ -81,13 +81,13 @@ export default function WalletPickerModal() {
               <button key={info.uuid} onClick={() => pickBrowser(info.uuid)} disabled={connecting} style={{
                 display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
                 width: '100%', padding: '15px 16px', borderRadius: 14,
-                border: providerUuid === info.uuid && activeMode === 'browser' ? '1.5px solid rgba(124,92,252,0.5)' : '1.5px solid var(--border)',
-                background: providerUuid === info.uuid && activeMode === 'browser' ? 'var(--accent-dim)' : '#fff',
+                border: providerUuid === info.uuid && activeMode === 'browser' ? '1.5px solid var(--accent)' : '1.5px solid var(--border)',
+                background: providerUuid === info.uuid && activeMode === 'browser' ? 'var(--accent-dim)' : 'var(--bg-card)',
                 cursor: connecting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
               }}>
                 <div style={{
                   width: 40, height: 40, borderRadius: 11, flexShrink: 0,
-                  background: 'var(--accent-dim)', border: '1.5px solid rgba(124,92,252,0.25)',
+                  background: 'var(--accent-dim)', border: '1.5px solid var(--accent-dim)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
                 }}>
                   {info.icon
@@ -109,13 +109,13 @@ export default function WalletPickerModal() {
             <button onClick={() => pickBrowser(availableProviders[0]?.info.uuid)} disabled={connecting} style={{
               display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
               width: '100%', padding: '15px 16px', borderRadius: 14,
-              border: activeMode === 'browser' ? '1.5px solid rgba(124,92,252,0.5)' : '1.5px solid var(--border)',
-              background: activeMode === 'browser' ? 'var(--accent-dim)' : '#fff',
+              border: activeMode === 'browser' ? '1.5px solid var(--accent)' : '1.5px solid var(--border)',
+              background: activeMode === 'browser' ? 'var(--accent-dim)' : 'var(--bg-card)',
               cursor: connecting ? 'default' : 'pointer', fontFamily: 'var(--font-body)',
             }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 11, flexShrink: 0,
-                background: 'var(--accent-dim)', border: '1.5px solid rgba(124,92,252,0.25)',
+                background: 'var(--accent-dim)', border: '1.5px solid var(--accent-dim)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent)',
               }}>
                 <Wallet size={18} />
@@ -139,8 +139,8 @@ export default function WalletPickerModal() {
             <button onClick={pickAgent} style={{
               display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
               width: '100%', padding: '15px 16px', borderRadius: 14,
-              border: activeMode === 'agent' ? '1.5px solid rgba(244,114,182,0.5)' : '1.5px solid var(--border)',
-              background: activeMode === 'agent' ? 'var(--pink-dim)' : '#fff',
+              border: activeMode === 'agent' ? '1.5px solid var(--pink-border)' : '1.5px solid var(--border)',
+              background: activeMode === 'agent' ? 'var(--pink-dim)' : 'var(--bg-card)',
               cursor: 'pointer', fontFamily: 'var(--font-body)',
             }}>
               <div style={{
@@ -167,7 +167,7 @@ export default function WalletPickerModal() {
             }}>
               <div style={{
                 width: 40, height: 40, borderRadius: 11, flexShrink: 0,
-                background: '#fff', border: '1.5px solid var(--border)',
+                background: 'var(--bg-card)', border: '1.5px solid var(--border)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-1)', opacity: 0.4,
               }}>
                 <Bot size={18} />

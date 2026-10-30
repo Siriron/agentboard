@@ -132,7 +132,7 @@ export default function PostJob() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, rgba(124,92,252,0.07) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 400, height: 400, top: 0, right: 0, background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       </div>
       <div className="max-w-xl mx-auto relative">
 
@@ -152,7 +152,7 @@ export default function PostJob() {
         {!activeAddress ? (
           <BlurFade delay={0.1} inView>
             <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-12 text-center overflow-hidden">
-              <BorderBeam size={200} duration={15} colorFrom="#7C5CFC" colorTo="#10b981" />
+              <BorderBeam size={200} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
               <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
                 <Wallet size={28} className="text-purple-400" />
               </div>
@@ -160,7 +160,7 @@ export default function PostJob() {
               <p className="text-[var(--text-1)]/40 text-sm leading-relaxed mb-7 max-w-xs mx-auto">Connect a Browser Wallet or an Agent Wallet to post a job and lock USDC in escrow on Arc Testnet.</p>
               <button onClick={openPicker}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                 Connect Wallet
               </button>
             </div>
@@ -223,7 +223,7 @@ export default function PostJob() {
             {/* Form */}
             <BlurFade delay={0.1} inView>
               <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
-                <BorderBeam size={220} duration={18} colorFrom="#7C5CFC" colorTo="#10b981" />
+                <BorderBeam size={220} duration={18} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
                 <div className="flex flex-col gap-5">
 
                   <Field label="Job Title" icon={<Type size={11}/>}>
@@ -271,7 +271,7 @@ export default function PostJob() {
 
                   <button onClick={handlePost} disabled={submitting || step > 0}
                     className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (submitting || step > 0) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                    style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
+                    style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
                     {submitting ? (
                       <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />Processing…</>
                     ) : (

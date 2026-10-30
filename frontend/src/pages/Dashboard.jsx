@@ -27,7 +27,7 @@ const STATUS_COLORS = {
 function StatCard({ label, value, sub, icon, color, trend, ticker }) {
   return (
     <div className="relative rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2 p-5 overflow-hidden">
-      <BorderBeam size={120} duration={20} colorFrom="#7C5CFC" colorTo="#10b981" />
+      <BorderBeam size={120} duration={20} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
       <div className="flex items-start justify-between mb-3">
         <div className="text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-widest">{label}</div>
         <div className="w-8 h-8 rounded-xl bg-[var(--bg-subtle)]/4 flex items-center justify-center shrink-0">{icon}</div>
@@ -57,7 +57,7 @@ function EmptyState({ icon, title, desc, action, actionLabel }) {
       <p className="text-[var(--text-1)]/35 text-sm max-w-xs leading-relaxed mb-6">{desc}</p>
       <button onClick={action}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
-        style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+        style={{ background: 'var(--accent)' }}>
         <Plus size={13}/>{actionLabel}
       </button>
     </div>
@@ -113,7 +113,7 @@ export default function Dashboard() {
   if (!activeAddress) return (
     <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-6 text-center px-6 relative">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 500, height: 500, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, rgba(124,92,252,0.1) 0%, transparent 65%)', filter: 'blur(60px)' }} />
+        <div style={{ position: 'absolute', width: 500, height: 500, top: '50%', left: '50%', transform: 'translate(-50%,-50%)', background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 65%)', filter: 'blur(60px)' }} />
       </div>
       <div className="relative w-20 h-20 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
         <Wallet size={36} className="text-purple-400" />
@@ -128,7 +128,7 @@ export default function Dashboard() {
       </div>
       <button onClick={openPicker}
         className="relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
-        style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 24px rgba(124,92,252,0.3)' }}>
+        style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
         Connect Wallet
       </button>
     </div>
@@ -147,7 +147,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="absolute inset-0 pointer-events-none">
-        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, rgba(124,92,252,0.06) 0%, transparent 70%)', filter: 'blur(80px)' }} />
+        <div style={{ position: 'absolute', width: 600, height: 400, top: 0, left: '50%', transform: 'translateX(-50%)', background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)', filter: 'blur(80px)' }} />
       </div>
       <div className="max-w-6xl mx-auto relative">
 
@@ -183,7 +183,7 @@ export default function Dashboard() {
               </button>
               <button onClick={() => navigate('/post')}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.01]"
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)' }}>
+                style={{ background: 'var(--accent)' }}>
                 <Plus size={12}/> Post Job
               </button>
             </div>

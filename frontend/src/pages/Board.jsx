@@ -42,7 +42,7 @@ function JobCard({ job, onClick }) {
 
   return (
     <div onClick={onClick} className="group relative rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2 p-5 cursor-pointer hover:border-purple-500/25 hover:bg-[var(--bg-subtle)]/4 transition-all duration-200 overflow-hidden">
-      <BorderBeam size={150} duration={22} colorFrom="#7C5CFC" colorTo="#10b981"
+      <BorderBeam size={150} duration={22} colorFrom="var(--accent)" colorTo="var(--accent-2)"
         className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
@@ -212,7 +212,7 @@ export default function Board() {
               </button>
               <button onClick={() => navigate('/post')}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.02]"
-                style={{ background: 'linear-gradient(135deg, #7C5CFC, #5f3de8)', boxShadow: '0 0 16px rgba(124,92,252,0.3)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                 <Zap size={12} /> Post Job
               </button>
             </div>
@@ -347,7 +347,7 @@ export default function Board() {
         {!loading && filtered.length > 0 && (
           <BlurFade delay={0} inView className="mt-10">
             <div className="relative rounded-2xl border border-purple-500/12 bg-purple-500/[0.03] p-5 flex items-center justify-between gap-5 flex-wrap overflow-hidden">
-              <BorderBeam size={180} duration={22} colorFrom="#7C5CFC" colorTo="#10b981" />
+              <BorderBeam size={180} duration={22} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-purple-500/12 flex items-center justify-center shrink-0">
                   <Bot size={16} className="text-purple-400" />
