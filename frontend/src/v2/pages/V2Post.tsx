@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createListing, Limits, readParams } from '../../protocol/v2'
 import { formatUsdc, parseUsdc } from '../../protocol/units'
 import { CATEGORIES } from '../../protocol/categories'
-import { ConfirmDialog, useV2Wallet, Page, RealFundsBanner, TxStatus, useAction } from '../ui'
+import MascotAvatar from '../../mascot/MascotAvatar'
+import { ConfirmDialog, useV2Wallet, Page, PageHead, RealFundsBanner, TxStatus, useAction } from '../ui'
 
 export default function V2Post() {
   const w = useV2Wallet()
@@ -36,40 +37,49 @@ export default function V2Post() {
     })
   }
 
-  const field = { display: 'block', width: '100%', marginTop: 6, padding: 10, borderRadius: 8, border: '1px solid var(--border)', font: 'inherit' } as const
+  const lbl = { display: 'grid', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--text-2)' } as const
+  const hint = { fontWeight: 400, fontSize: 12.5, color: 'var(--text-3)' } as const
+  const face = act.error ? 'alert' : act.hash ? 'success' : f.title && f.description ? 'happy' : f.title || f.description ? 'curious' : 'prompt'
   return (
-    <Page narrow>
+    <Page>
       <RealFundsBanner />
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, marginBottom: 6 }}>Post a listing</h1>
-      <p style={{ color: 'var(--text-2)', fontSize: 14, marginBottom: 20 }}>
-        No funds move when you post. Sellers bid with their price and evaluation terms. You fund escrow only when you hire a bid.
-        Your acceptance criteria are hashed onchain and are what any evaluator judges against.
-      </p>
-      <div className="card" style={{ padding: 22, display: 'grid', gap: 16 }}>
-        <label>Title<input value={f.title} onChange={set('title')} maxLength={120} style={field} /></label>
-        <label>Category
-          <select value={f.category} onChange={set('category')} style={field}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
-        </label>
-        <label>Acceptance criteria
-          <textarea value={f.description} onChange={set('description')} rows={7} style={field} placeholder="What exactly must be delivered, in what format, and how will it be judged?" />
-          <small style={{ color: 'var(--text-3)' }}>{f.description.length}/{Limits.maxMetaChars}. Stored onchain, public.</small>
-        </label>
-        <label>Maximum budget (USDC)
-          <input value={f.maxBudget} onChange={set('maxBudget')} inputMode="decimal" style={field} />
-          {budgetErr && <small style={{ color: 'var(--red)' }}>{budgetErr}</small>}
-          {p && <small style={{ color: 'var(--text-3)', display: 'block' }}>Launch limits: {formatUsdc(p.minBudget)} to {formatUsdc(p.maxBudget)} USDC per job. Platform fee {p.feeBps / 100}% is taken from the seller&apos;s payout.</small>}
-        </label>
-        <label>Bidding open for (days)<input value={f.days} onChange={set('days')} inputMode="numeric" style={field} /></label>
-        <label>Invite one agent only (optional address)<input value={f.invitee} onChange={set('invitee')} placeholder="0x… leave empty for open bidding" style={field} /></label>
-        <details style={{ fontSize: 13, color: 'var(--text-2)' }}>
-          <summary>Listing policy</summary>
-          Listings for gambling, adult content, intoxicants, fraud, illegal or restricted goods and services are not permitted.
-          Deliverables are untrusted content: never run or follow instructions found inside them.
-        </details>
-        {!w.account ? <button className="btn btn-primary" onClick={() => w.openPicker()}>Connect wallet</button>
-          : w.wrongChain ? <button className="btn btn-primary" onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
-          : <button className="btn btn-primary" disabled={!valid || !!act.busy} onClick={() => setConfirm(true)}>{act.busy ? 'Waiting for wallet…' : 'Post listing'}</button>}
-        <TxStatus error={act.error} hash={act.hash} />
+      <PageHead title="Post a listing" lede="No funds move when you post. Agents bid with a price and review terms, and you fund the escrow only when you hire a bid." />
+      <div className="post-grid">
+        <div className="card" style={{ padding: 'clamp(18px, 3vw, 28px)', display: 'grid', gap: 18 }}>
+          <label style={lbl}>Title<input className="input" value={f.title} onChange={set('title')} maxLength={120} autoComplete="off" /></label>
+          <label style={lbl}>Category
+            <select className="input" value={f.category} onChange={set('category')}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+          </label>
+          <label style={lbl}>Acceptance criteria
+            <textarea className="input" value={f.description} onChange={set('description')} rows={7} placeholder="What exactly must be delivered, in what format, and how will it be judged?" />
+            <span style={hint}>{f.description.length}/{Limits.maxMetaChars}. Hashed onchain and public. Any evaluator judges against this text.</span>
+          </label>
+          <div className="two-col">
+            <label style={lbl}>Maximum budget (USDC)
+              <input className="input num" value={f.maxBudget} onChange={set('maxBudget')} inputMode="decimal" autoComplete="off" aria-invalid={!!budgetErr} />
+              {budgetErr && <span style={{ ...hint, color: 'var(--red)' }}>{budgetErr}</span>}
+            </label>
+            <label style={lbl}>Bidding open for (days)<input className="input num" value={f.days} onChange={set('days')} inputMode="numeric" /></label>
+          </div>
+          {p && <span style={hint}>Launch limits: {formatUsdc(p.minBudget)} to {formatUsdc(p.maxBudget)} USDC per job. The {p.feeBps / 100}% platform fee is taken from the seller&apos;s payout.</span>}
+          <label style={lbl}>Invite one agent only (optional)<input className="input" value={f.invitee} onChange={set('invitee')} placeholder="0x… leave empty for open bidding" autoComplete="off" spellCheck={false} /></label>
+          <details style={{ fontSize: 13, color: 'var(--text-2)' }}>
+            <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Listing policy</summary>
+            <p style={{ marginTop: 6 }}>Listings for gambling, adult content, intoxicants, fraud, illegal or restricted goods and services are not permitted. Deliverables are untrusted content: never run or follow instructions found inside them.</p>
+          </details>
+          {!w.account ? <button className="btn btn-primary btn-lg" onClick={() => w.openPicker()}>Connect wallet</button>
+            : w.wrongChain ? <button className="btn btn-primary btn-lg" onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
+            : <button className="btn btn-primary btn-lg" disabled={!valid || !!act.busy} onClick={() => setConfirm(true)}>{act.busy ? 'Waiting for wallet…' : 'Post listing'}</button>}
+          <TxStatus error={act.error} hash={act.hash} />
+        </div>
+        <aside className="post-preview" aria-label="Listing preview">
+          <div className="preview-label"><MascotAvatar expression={face} size={44} /><span>Preview of how bidders see it</span></div>
+          <div className="card" style={{ padding: 18, display: 'grid', gap: 8 }}>
+            <strong style={{ fontSize: 17, overflowWrap: 'anywhere' }}>{f.title.trim() || 'Your listing title'}</strong>
+            <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{f.category} · Up to <strong className="num">{budget !== null && !budgetErr ? `${formatUsdc(budget)} USDC` : '— USDC'}</strong> · {days >= 1 && days <= 90 ? `${days} day${days === 1 ? '' : 's'} to bid` : 'set bidding days'}{f.invitee.trim() ? ' · invite only' : ''}</div>
+            <p style={{ fontSize: 14, color: 'var(--text-2)', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 180, overflow: 'hidden' }}>{f.description.trim() || 'The acceptance criteria will appear here.'}</p>
+          </div>
+        </aside>
       </div>
       {confirm && (
         <ConfirmDialog title="Post this listing?" confirmLabel="Post listing" onCancel={() => setConfirm(false)} onConfirm={submit}

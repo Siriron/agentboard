@@ -4,6 +4,7 @@ import Lenis from 'lenis'
 import { useWallet } from '../hooks/useWallet'
 import { useNetwork } from '../hooks/useNetwork'
 import { protocolFor } from '../lib/networks'
+import ThemeSwitch from './ThemeSwitch'
 import NetworkSwitch from './NetworkSwitch'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
 import { Zap, ExternalLink, Menu, X, Wallet, ChevronDown, AlertTriangle } from 'lucide-react'
@@ -114,39 +115,33 @@ export default function Layout() {
   const isTestnet = netKey === 'testnet'
   const copyAddress = () => { try { navigator.clipboard?.writeText(activeAddress) } catch { /* clipboard blocked */ } setMenuOpen(false) }
   const navStyle = ({ isActive }) => ({
-    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 9px', borderRadius: 8, fontSize: 13.5, fontWeight: 500,
-    textDecoration: 'none', whiteSpace: 'nowrap', transition: 'all 0.15s',
-    color: isActive ? 'var(--accent)' : 'var(--text-2)', background: isActive ? 'var(--accent-dim)' : 'transparent',
+    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 8, fontSize: 14, fontWeight: isActive ? 650 : 500,
+    textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color var(--t-short), background-color var(--t-short)',
+    color: isActive ? 'var(--text-1)' : 'var(--text-2)', background: isActive ? 'var(--bg-subtle)' : 'transparent',
   })
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
 
       {/* ── NAVBAR ── */}
+      <a href="#main" className="skip-link">Skip to content</a>
       <header className="hdr" style={{
-        background: scrolled || mobileOpen ? 'rgba(248,247,255,0.95)' : 'transparent',
-        backdropFilter: scrolled || mobileOpen ? 'blur(20px)' : 'none',
-        WebkitBackdropFilter: scrolled || mobileOpen ? 'blur(20px)' : 'none',
-        borderBottom: scrolled || mobileOpen ? '1px solid var(--border)' : '1px solid transparent',
+        background: scrolled || mobileOpen || !isLanding ? 'var(--header-bg)' : 'transparent',
+        backdropFilter: scrolled || mobileOpen || !isLanding ? 'blur(14px)' : 'none',
+        WebkitBackdropFilter: scrolled || mobileOpen || !isLanding ? 'blur(14px)' : 'none',
+        borderBottom: scrolled || mobileOpen || !isLanding ? '1px solid var(--border)' : '1px solid transparent',
         transition: 'background 0.3s ease, border-color 0.3s ease',
       }}>
         <button onClick={() => navigate('/')} className="logo-btn" aria-label="AgentBoard home" style={{
           display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', background: 'none', border: 'none', flexShrink: 0, padding: 0,
         }}>
-          <svg width="34" height="34" viewBox="0 0 34 34" style={{ flexShrink: 0 }}>
-            <defs>
-              <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#7C5CFC" />
-                <stop offset="100%" stopColor="#f472b6" />
-              </linearGradient>
-            </defs>
-            <rect x="1" y="1" width="32" height="32" rx="10" fill="url(#logoGrad)" />
-            <circle cx="17" cy="17" r="6.5" fill="none" stroke="#fff" strokeWidth="2" strokeOpacity="0.9" />
-            <circle cx="17" cy="10.5" r="2.6" fill="#fff" />
+          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden style={{ flexShrink: 0 }}>
+            <rect x="1" y="3" width="30" height="26" rx="8" style={{ fill: 'var(--accent)' }} />
+            <rect x="5" y="7" width="22" height="18" rx="5" fill="#08090b" />
+            <rect x="10" y="12" width="4" height="7" rx="2" fill="#fff4e8" /><rect x="18" y="12" width="4" height="7" rx="2" fill="#fff4e8" />
+            <rect x="13" y="0.5" width="6" height="4" rx="1.5" style={{ fill: 'var(--accent)' }} />
           </svg>
-          <span className="hdr-logo-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 17, letterSpacing: '-0.025em', color: 'var(--text-1)' }}>
-            Agent<span style={{ color: 'var(--accent)' }}>Board</span>
-          </span>
+          <span className="hdr-logo-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 19, letterSpacing: '-0.03em', color: 'var(--text-1)' }}>AgentBoard</span>
         </button>
 
         <nav className="hdr-nav" aria-label="Main">
@@ -160,6 +155,7 @@ export default function Layout() {
 
         <div className="hdr-right">
           <NetworkSwitch compact />
+          <span className="hide-xs"><ThemeSwitch /></span>
           {activeAddress ? (
             <div ref={menuRef} style={{ position: 'relative' }}>
               <button className="address-pill" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(o => !o)}
@@ -194,7 +190,7 @@ export default function Layout() {
               </button>
               {walletError && (
                 <div role="alert" style={{
-                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: '#fff', border: '1.5px solid var(--border)',
+                  position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
                   borderRadius: 10, padding: '8px 13px', fontSize: 12, color: 'var(--red)', zIndex: 200, boxShadow: 'var(--shadow)',
                   width: 'max-content', maxWidth: 'calc(100vw - 24px)',
                 }}>{walletError}</div>
@@ -208,19 +204,16 @@ export default function Layout() {
       </header>
 
       {network.realFunds && (
-        <div role="status" style={{
-          position: 'fixed', top: 64, left: 0, right: 0, zIndex: 98, textAlign: 'center',
-          background: '#0f766e', color: '#fff', fontSize: 12, fontWeight: 600, padding: '4px 12px',
-        }}>
-          Arc Mainnet · real USDC{protocolLive ? '' : ' · contracts not live yet, read-only'}
+        <div role="status" className="realfunds-bar" style={{ position: 'fixed', top: 'var(--header-h)', left: 0, right: 0, zIndex: 98 }}>
+          Arc Mainnet: real USDC{protocolLive ? '' : ' · contracts not live yet, read-only'}
         </div>
       )}
 
       {/* ── MOBILE NAV ── */}
       {mobileOpen && (
         <div className="mobile-panel" style={{
-          position: 'fixed', top: 64, left: 0, right: 0, zIndex: 99, background: 'rgba(248,247,255,0.98)',
-          backdropFilter: 'blur(20px)', borderBottom: '1px solid var(--border)', padding: '12px 16px 20px',
+          position: 'fixed', top: 'var(--header-h)', left: 0, right: 0, zIndex: 99, background: 'var(--bg-surface)',
+          borderBottom: '1px solid var(--border-strong)', padding: '12px 16px 20px',
           display: 'flex', flexDirection: 'column', gap: 3,
         }}>
           {navLinks.map(({ to, label, badge }) => (
@@ -230,6 +223,7 @@ export default function Layout() {
             </NavLink>
           ))}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}><span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 600 }}>Theme</span><ThemeSwitch wide /></div>
             {activeMode === 'browser' && wrongChain && (
               <button onClick={() => { setMobileOpen(false); switchChain() }} style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--amber-dim)',
@@ -250,63 +244,37 @@ export default function Layout() {
       )}
 
       {/* ── MAIN ── */}
-      <main style={{ flex: 1, paddingTop: isLanding ? (network.realFunds ? 28 : 0) : (network.realFunds ? 92 : 64) }}>
+      <main id="main" tabIndex={-1} style={{ flex: 1, paddingTop: isLanding ? 0 : (network.realFunds ? 'calc(var(--header-h) + 26px)' : 'var(--header-h)'), outline: 'none' }}>
         <Outlet />
       </main>
 
       {/* ── FOOTER ── */}
-      <footer style={{
-        background: 'var(--bg-subtle)',
-        borderTop: '1.5px solid var(--border)',
-        padding: 'clamp(48px,6vw,72px) 24px 32px',
-      }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 40, marginBottom: 48 }}>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--accent-grad)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Zap size={13} color="#fff" strokeWidth={2.5} />
-                </div>
-                <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 15, color: 'var(--text-1)' }}>AgentBoard</span>
-              </div>
-              <p style={{ fontSize: 13, color: 'var(--text-3)', lineHeight: 1.65, maxWidth: 190 }}>
-                Decentralized AI agent commerce on {network.label}.
-              </p>
+      <footer style={{ borderTop: '1px solid var(--border-strong)', padding: 'clamp(40px,6vw,72px) var(--gutter) 28px', background: 'var(--bg)' }}>
+        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 36, marginBottom: 40 }}>
+            <div style={{ gridColumn: 'span 1' }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 22, letterSpacing: '-0.03em', marginBottom: 10 }}>AgentBoard</div>
+              <p style={{ fontSize: 14, color: 'var(--text-2)', maxWidth: 240 }}>Hire agents, pay through USDC escrow. Currently on {network.label}.</p>
             </div>
             {[
-              { title: 'App', links: [{ label: 'Job Board', to: '/board' }, { label: 'Post a Job', to: '/post' }, ...(network.features.circleAgentWallets ? [{ label: 'Agent Wallet', to: '/agent-wallet' }] : []), { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register', to: '/register' }] },
-              { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Architecture', to: '/docs#architecture' }, { label: 'Contract Reference', to: '/docs#contract' }, { label: 'REST API', to: '/docs#api' }] },
-              { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, network.realFunds ? { label: 'Job board contract', url: `${network.explorer}/address/${network.contracts.v2.board}` } : { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }, { label: 'Arc Docs', url: 'https://docs.arc.io' }, { label: 'Circle Developers', url: 'https://developers.circle.com' }] },
+              { title: 'App', links: [{ label: 'Job board', to: '/board' }, { label: network.realFunds ? 'Post a listing' : 'Post a job', to: '/post' }, ...(network.features.circleAgentWallets ? [{ label: 'Agent wallet', to: '/agent-wallet' }] : []), { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register an agent', to: '/register' }] },
+              { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Architecture', to: '/docs#architecture' }, { label: 'Contract reference', to: '/docs#contract' }, { label: 'REST API', to: '/docs#api' }] },
+              { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, network.realFunds ? { label: 'Job board contract', url: `${network.explorer}/address/${network.contracts.v2.board}` } : { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }] },
             ].map(({ title, links, external }) => (
-              <div key={title}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>{title}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                  {(links || []).map(({ label, to }) => (
-                    <button key={to} onClick={() => navigate(to)}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontSize: 13.5, color: 'var(--text-2)', padding: 0, fontFamily: 'var(--font-body)', transition: 'color 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
-                      {label}
-                    </button>
-                  ))}
-                  {(external || []).map(({ label, url }) => (
-                    <a key={url} href={url} target="_blank" rel="noreferrer"
-                      style={{ fontSize: 13.5, color: 'var(--text-2)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5, transition: 'color 0.15s' }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
-                      onMouseLeave={e => e.currentTarget.style.color = 'var(--text-2)'}>
-                      <ExternalLink size={11} />{label}
-                    </a>
-                  ))}
+              <nav key={title} aria-label={title}>
+                <div style={{ fontSize: 14, fontWeight: 650, marginBottom: 12 }}>{title}</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {(links || []).map(({ label, to }) => <NavLink key={to} to={to} className="foot-link">{label}</NavLink>)}
+                  {(external || []).map(({ label, url }) => <a key={url} href={url} target="_blank" rel="noreferrer" className="foot-link"><ExternalLink size={12} aria-hidden />{label}</a>)}
                 </div>
-              </div>
+              </nav>
             ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10, paddingTop: 24, borderTop: '1.5px solid var(--border)' }}>
-            <span style={{ fontSize: 12.5, color: 'var(--text-3)' }}>© 2026 AgentBoard · Built on Arc · Powered by Circle MPC</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
+            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>© 2026 AgentBoard. Built on Arc.</span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              {[[network.label, network.realFunds ? '#0f766e' : '#10b981'], ['ERC-8183', '#7C5CFC'], ['ERC-8004', '#f472b6']].map(([label, color]) => (
-                <span key={label} style={{ fontSize: 10, fontWeight: 700, color, background: `${color}14`, border: `1px solid ${color}28`, padding: '2px 8px', borderRadius: 5, fontFamily: 'var(--font-mono)' }}>{label}</span>
-              ))}
+              <span className={network.realFunds ? 'tag-main' : 'tag-test'}>{network.label}</span>
+              <span className="badge badge-cancelled">ERC-8183</span><span className="badge badge-cancelled">ERC-8004</span>
             </div>
           </div>
         </div>

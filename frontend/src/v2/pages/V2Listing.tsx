@@ -157,7 +157,7 @@ function BidForm({ listing, params, onDone }: { listing: Listing; params?: Param
   const act = useAction(onDone)
   const [f, setF] = useState({ price: '', proposal: '', validDays: '7', mode: '0', review: '3', response: '3', decision: '7', timeout: '50', validators: '' })
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF(p => ({ ...p, [k]: e.target.value }))
-  const field = { display: 'block', width: '100%', marginTop: 4, padding: 8, borderRadius: 8, border: '1px solid var(--border)', font: 'inherit' } as const
+  const field = { display: 'block', width: '100%', marginTop: 4, padding: '10px 12px', borderRadius: 'var(--r)', border: '1px solid var(--border-strong)', background: 'var(--bg-surface)', color: 'var(--text-1)', font: 'inherit' } as const
   async function submit() {
     await act.run('bid', async () => {
       const validators = f.validators.split(/[\s,]+/).filter(Boolean) as Address[]

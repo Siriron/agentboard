@@ -6,6 +6,8 @@ import { formatUsdc, requiresTypedConfirm } from '../protocol/units'
 import { useToast } from '../components/Toast'
 import { NETWORKS } from '../lib/networks'
 import { useWallet } from '../hooks/useWallet'
+import MascotAvatar from '../mascot/MascotAvatar'
+import { STATUS_LABEL } from '../protocol/state'
 
 export interface WalletLike { account: string | null; wrongChain: boolean; openPicker: () => void; switchChain: () => Promise<boolean> }
 /** Browser-wallet account only. Mainnet V2 never uses the Circle agent wallet. */
@@ -25,9 +27,9 @@ export function useNow(intervalMs = 15_000) {
 
 export function RealFundsBanner() {
   return (
-    <div role="note" style={{ padding: '10px 14px', borderRadius: 'var(--r-sm)', background: 'var(--amber-dim)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 13, color: 'var(--text-1)', marginBottom: 16 }}>
-      <strong>Real USDC.</strong> This is Arc Mainnet. Transactions move real money, are final within a second, and cannot be reversed.
-      The contracts have not had an independent security review.
+    <div role="note" className="notice notice-main">
+      <span className="tag-main">Real USDC</span>
+      <span>This is Arc Mainnet. Transactions move real money, are final within a second, and cannot be reversed. The contracts have not had an independent security review.</span>
     </div>
   )
 }
@@ -70,9 +72,11 @@ export function useAction(onDone?: () => void) {
 
 export function TxStatus({ error, hash }: { error: string | null; hash: string | null }) {
   if (!error && !hash) return null
+  // The avatar only reflects real state: success once a hash was returned, alert on a real error.
   return (
-    <div role={error ? 'alert' : 'status'} style={{ marginTop: 10, fontSize: 13, padding: '8px 12px', borderRadius: 'var(--r-sm)', background: error ? 'var(--red-dim)' : 'var(--green-dim)', color: error ? 'var(--red)' : 'var(--green)' }}>
-      {error ?? <>Confirmed. <Link to={`/receipt/${hash}`} style={{ color: 'inherit', textDecoration: 'underline' }}>View receipt</Link></>}
+    <div role={error ? 'alert' : 'status'} className={`txstatus ${error ? 'is-error' : 'is-ok'}`}>
+      <MascotAvatar expression={error ? 'alert' : 'success'} size={40} />
+      <span>{error ?? <>Confirmed on Arc. <Link to={`/receipt/${hash}`}>View receipt</Link></>}</span>
     </div>
   )
 }
@@ -91,17 +95,17 @@ export function ConfirmDialog({ title, amount, lines, confirmLabel, onConfirm, o
     return () => window.removeEventListener('keydown', onKey)
   }, [onCancel])
   return (
-    <div role="dialog" aria-modal="true" aria-label={title} style={{ position: 'fixed', inset: 0, background: 'rgba(26,16,64,0.45)', display: 'grid', placeItems: 'center', zIndex: 200, padding: 16 }}>
-      <div className="card" style={{ maxWidth: 440, width: '100%', padding: 24 }}>
-        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, marginBottom: 12 }}>{title}</h3>
-        <ul style={{ paddingLeft: 18, margin: '0 0 14px', fontSize: 14, lineHeight: 1.6, color: 'var(--text-2)' }}>{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
+    <div className="mc-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onCancel() }}>
+      <div role="dialog" aria-modal="true" aria-label={title} className="mc-dialog" style={{ width: 'min(460px, 100%)' }}>
+        <h3 style={{ fontSize: 22 }}>{title}</h3>
+        <ul style={{ paddingLeft: 18, margin: '0 0 6px', fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2)' }}>{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
         {needsTyping && (
-          <label style={{ display: 'block', fontSize: 13, marginBottom: 14 }}>
-            Type <strong>{expected}</strong> to confirm this large amount.
-            <input autoFocus value={typed} onChange={e => setTyped(e.target.value)} inputMode="decimal" style={{ width: '100%', marginTop: 6, padding: 10, borderRadius: 8, border: '1px solid var(--border)' }} />
+          <label style={{ display: 'block', fontSize: 14 }}>
+            Type <strong className="num">{expected}</strong> to confirm this large amount.
+            <input autoFocus value={typed} onChange={e => setTyped(e.target.value)} inputMode="decimal" autoComplete="off" spellCheck={false} className="input" style={{ marginTop: 6 }} />
           </label>
         )}
-        <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+        <div className="mc-actions" style={{ justifyContent: 'flex-end' }}>
           <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
           <button className="btn btn-primary" disabled={!ok} onClick={onConfirm}>{confirmLabel}</button>
         </div>
@@ -110,19 +114,55 @@ export function ConfirmDialog({ title, amount, lines, confirmLabel, onConfirm, o
   )
 }
 
-export function Empty({ children }: { children: ReactNode }) {
-  return <div className="card" style={{ padding: 32, textAlign: 'center', color: 'var(--text-2)', fontSize: 14 }}>{children}</div>
+export function Empty({ children, title, expression = 'curious' }: { children: ReactNode; title?: string; expression?: 'idle' | 'curious' | 'prompt' | 'happy' }) {
+  return (
+    <div className="empty">
+      <MascotAvatar expression={expression} size={88} />
+      <div>{title && <h3 style={{ fontSize: 20, marginBottom: 4 }}>{title}</h3>}<div style={{ color: 'var(--text-2)' }}>{children}</div></div>
+    </div>
+  )
 }
 export function Loading({ what }: { what: string }) {
-  return <div className="card" style={{ padding: 32, textAlign: 'center', color: 'var(--text-3)', fontSize: 14 }} aria-busy="true">Loading {what}…</div>
+  return (
+    <div className="empty" aria-busy="true" role="status">
+      <MascotAvatar expression="working" size={64} />
+      <div style={{ color: 'var(--text-2)' }}>Loading {what}…</div>
+    </div>
+  )
 }
 export function ErrorBox({ error, retry }: { error: unknown; retry?: () => void }) {
   return (
-    <div className="card" role="alert" style={{ padding: 24, color: 'var(--red)', fontSize: 14 }}>
-      {explainError(error)} {retry && <button className="btn btn-secondary btn-xs" onClick={retry} style={{ marginLeft: 8 }}>Retry</button>}
+    <div className="empty is-error" role="alert">
+      <MascotAvatar expression="alert" size={64} />
+      <div>{explainError(error)} {retry && <button className="btn btn-secondary btn-xs" onClick={retry} style={{ marginLeft: 8 }}>Try again</button>}</div>
     </div>
   )
 }
 export const Page = ({ children, narrow }: { children: ReactNode; narrow?: boolean }) => (
-  <main style={{ maxWidth: narrow ? 720 : 1040, margin: '0 auto', padding: '96px 20px 64px' }}>{children}</main>
+  <div className={`page${narrow ? ' page-narrow' : ''}`}>{children}</div>
 )
+
+/** Page title block shared by every app route. */
+export function PageHead({ title, lede, children }: { title: string; lede?: ReactNode; children?: ReactNode }) {
+  return (
+    <div className="page-head">
+      <div><h1>{title}</h1>{lede && <p>{lede}</p>}</div>
+      {children && <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{children}</div>}
+    </div>
+  )
+}
+
+/** Escrow progress for a job, driven only by the job's real onchain status (1 awaiting funding ... 7 split). */
+export function EscrowPath({ status }: { status: number }) {
+  const active = status <= 1 ? -1 : status === 2 ? 0 : status === 3 ? 1 : 2
+  const steps = ['Funded', 'Work submitted', status >= 4 ? STATUS_LABEL[status] : 'Settled']
+  const face = status === 4 ? 'success' : status === 3 ? 'curious' : status === 2 ? 'working' : 'idle'
+  return (
+    <div className="escrow-path" role="group" aria-label={`Escrow progress: ${STATUS_LABEL[status] ?? 'unknown'}`}>
+      <MascotAvatar expression={face} size={52} />
+      <ol>
+        {steps.map((t, i) => <li key={t} className={i < active ? 'done' : i === active ? 'now' : ''} aria-current={i === active ? 'step' : undefined}><span className="dot" aria-hidden />{t}</li>)}
+      </ol>
+    </div>
+  )
+}

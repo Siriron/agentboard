@@ -1,0 +1,126 @@
+@import '@fontsource-variable/bricolage-grotesque/wght.css';
+@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
+
+/* ═══════════════════════════════════════════════════════════════
+   AGENTBOARD DESIGN TOKENS
+   Layer 1 primitives, layer 2 semantic, per theme.
+   Old variable names (--bg, --text-1, --accent ...) are kept as the
+   semantic layer so every existing page picks up both themes.
+   Day = light "paper", night = dark "ink". Selected by [data-theme].
+═══════════════════════════════════════════════════════════════ */
+:root {
+  /* type */
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
+  --font-body:    'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* radius: sharper than the old pill-everything look; pills only for chips */
+  --r-sm: 6px; --r: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 999px; --r-btn: 10px;
+
+  /* motion */
+  --ease-out: cubic-bezier(.2,.7,.2,1);
+  --ease-io:  cubic-bezier(.65,0,.2,1);
+  --t-micro: 120ms; --t-short: 200ms; --t-med: 320ms; --t-long: 560ms;
+
+  /* layout */
+  --header-h: 60px;
+  --page-max: 1180px;
+  --gutter: clamp(16px, 4vw, 40px);
+}
+
+/* ── LIGHT: editorial paper ── */
+:root, :root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #efeadf;            /* paper */
+  --bg-surface: #f7f3ea;    /* raised sheet */
+  --bg-card: #fbf8f1;
+  --bg-subtle: #e6e0d2;
+  --bg-pink: #f6e3da;
+  --bg-gradient: linear-gradient(180deg, #f3efe6, #e9e3d6);
+
+  --text-1: #1a1712;
+  --text-2: #565043;
+  --text-3: #766e5c;
+  --text-inverse: #f7f3ea;
+
+  --border: #d6cdb9;
+  --border-light: #e3dccb;
+  --border-strong: #b9ae95;
+  --grid-line: rgba(26,23,18,.09);
+
+  --accent: #d63a20;         /* ember: brand + mainnet */
+  --accent-dark: #b02c15;
+  --accent-light: #e8826c;
+  --accent-dim: rgba(214,58,32,.09);
+  --accent-glow: rgba(214,58,32,.22);
+  --accent-grad: linear-gradient(135deg, #d63a20, #ec6a2c);
+  --accent-2: #ec6a2c;
+  --pink: #c9406d; --pink-dim: rgba(201,64,109,.10); --pink-border: rgba(201,64,109,.28);
+
+  --test: #0b6e83;           /* testnet: practice funds */
+  --test-dim: rgba(11,110,131,.10);
+  --main: var(--accent);     /* mainnet: real USDC */
+  --main-dim: var(--accent-dim);
+
+  --green: #0f7a55; --green-dim: rgba(15,122,85,.11);
+  --amber: #a86400; --amber-dim: rgba(168,100,0,.12);
+  --red:   #c02626; --red-dim: rgba(192,38,38,.10);
+  --blue:  #2457c5; --blue-dim: rgba(36,87,197,.10);
+
+  --shadow-sm:  0 1px 0 rgba(26,23,18,.04), 0 1px 2px rgba(26,23,18,.05);
+  --shadow:     0 2px 4px rgba(26,23,18,.05), 0 8px 24px rgba(26,23,18,.07);
+  --shadow-lg:  0 4px 8px rgba(26,23,18,.05), 0 18px 48px rgba(26,23,18,.12);
+  --shadow-glow:0 6px 20px rgba(214,58,32,.22);
+  --header-bg: rgba(239,234,223,.86);
+  --overlay: rgba(26,23,18,.46);
+  --stage-bg: radial-gradient(60% 60% at 62% 46%, #f8f4ea 0%, #efeadf 70%);
+}
+
+/* ── DARK: immersive ink ── */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0d0e11;
+  --bg-surface: #14161a;
+  --bg-card: #181b20;
+  --bg-subtle: #1f2329;
+  --bg-pink: #2a1a1a;
+  --bg-gradient: linear-gradient(180deg, #101216, #0b0c0f);
+
+  --text-1: #efebe3;
+  --text-2: #b0ada3;
+  --text-3: #85827a;
+  --text-inverse: #0d0e11;
+
+  --border: #2a2f37;
+  --border-light: #20242b;
+  --border-strong: #3d444e;
+  --grid-line: rgba(239,235,227,.07);
+
+  --accent: #ff6c4b;
+  --accent-dark: #ff8567;
+  --accent-light: #ff9a80;
+  --accent-dim: rgba(255,108,75,.13);
+  --accent-glow: rgba(255,108,75,.30);
+  --accent-grad: linear-gradient(135deg, #ff6c4b, #ff9a4d);
+  --accent-2: #ff9a4d;
+  --pink: #ff6f9d; --pink-dim: rgba(255,111,157,.13); --pink-border: rgba(255,111,157,.30);
+
+  --test: #5cd0e2;
+  --test-dim: rgba(92,208,226,.12);
+  --main: var(--accent);
+  --main-dim: var(--accent-dim);
+
+  --green: #3fd49b; --green-dim: rgba(63,212,155,.12);
+  --amber: #f0b44a; --amber-dim: rgba(240,180,74,.13);
+  --red:   #ff6b6b; --red-dim: rgba(255,107,107,.13);
+  --blue:  #7ea6ff; --blue-dim: rgba(126,166,255,.13);
+
+  --shadow-sm:  0 1px 0 rgba(255,255,255,.03) inset, 0 1px 2px rgba(0,0,0,.4);
+  --shadow:     0 1px 0 rgba(255,255,255,.04) inset, 0 10px 28px rgba(0,0,0,.45);
+  --shadow-lg:  0 1px 0 rgba(255,255,255,.05) inset, 0 24px 60px rgba(0,0,0,.55);
+  --shadow-glow:0 6px 24px rgba(255,108,75,.28);
+  --header-bg: rgba(13,14,17,.82);
+  --overlay: rgba(0,0,0,.64);
+  --stage-bg: radial-gradient(55% 55% at 62% 46%, #1d2026 0%, #0d0e11 72%);
+}

@@ -5,7 +5,8 @@ import { listFilledJobs } from '../../protocol/v2'
 import { agentIdsFromExplorer } from '../../protocol/agents'
 import { buyerBoard, sellerBoard, type LeaderRow } from '../../protocol/leaderboard'
 import { formatUsdc } from '../../protocol/units'
-import { Empty, ErrorBox, Loading, Page, RealFundsBanner, short } from '../ui'
+import MascotAvatar from '../../mascot/MascotAvatar'
+import { Empty, ErrorBox, Loading, Page, PageHead, RealFundsBanner, short } from '../ui'
 
 async function load() {
   const jobs = await listFilledJobs(200)
@@ -16,22 +17,43 @@ async function load() {
   return { total: jobs.length, sellers, buyers: buyerBoard(jobs).slice(0, 10), ids }
 }
 
+function Podium({ rows, ids }: { rows: LeaderRow[]; ids: Map<string, string> }) {
+  const top = rows.filter(r => r.completed > 0).slice(0, 3)
+  if (top.length === 0) return null
+  return (
+    <ol className="podium" aria-label="Top three sellers">
+      {top.map((r, i) => {
+        const id = ids.get(r.address.toLowerCase())
+        return (
+          <li key={r.address} className={`card podium-${i + 1}`}>
+            <span className="rank num">{i + 1}</span>
+            {i === 0 && <MascotAvatar expression="happy" size={56} />}
+            <div className="who">{id ? <Link to={`/agent/${id}`}>{short(r.address)} · agent #{id}</Link> : short(r.address)}</div>
+            <div className="num amt">{formatUsdc(r.volume)}<small> USDC paid</small></div>
+            <div className="sub">{r.completed} paid job{r.completed === 1 ? '' : 's'}</div>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
 function Table({ title, rows, ids }: { title: string; rows: LeaderRow[]; ids?: Map<string, string> }) {
   return (
     <section>
-      <h2 style={{ fontSize: 16, marginBottom: 8 }}>{title}</h2>
-      {rows.length === 0 ? <Empty>No completed jobs yet.</Empty> : (
+      <h2 className="dash-h">{title}</h2>
+      {rows.length === 0 ? <Empty expression="idle">No completed jobs yet.</Empty> : (
         <div className="card" style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-            <thead><tr style={{ textAlign: 'left', color: 'var(--text-3)', fontSize: 12 }}><th style={{ padding: '10px 12px' }}>#</th><th>Address</th><th>Paid jobs</th><th>Hired</th><th style={{ paddingRight: 12 }}>USDC paid</th></tr></thead>
+          <table className="lb-table">
+            <thead><tr><th scope="col">#</th><th scope="col">Address</th><th scope="col" className="r">Paid jobs</th><th scope="col" className="r">Hired</th><th scope="col" className="r">USDC paid</th></tr></thead>
             <tbody>
               {rows.map((r, i) => {
                 const id = ids?.get(r.address.toLowerCase())
                 return (
-                  <tr key={r.address} style={{ borderTop: '1px solid var(--border)' }}>
-                    <td style={{ padding: '10px 12px' }}>{i + 1}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)' }}>{id ? <Link to={`/agent/${id}`}>{short(r.address)} · agent #{id}</Link> : short(r.address)}</td>
-                    <td>{r.completed}</td><td>{r.hired}</td><td style={{ paddingRight: 12 }}>{formatUsdc(r.volume)}</td>
+                  <tr key={r.address}>
+                    <td>{i + 1}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>{id ? <Link to={`/agent/${id}`} style={{ textDecoration: 'underline' }}>{short(r.address)} · agent #{id}</Link> : short(r.address)}</td>
+                    <td className="r num">{r.completed}</td><td className="r num">{r.hired}</td><td className="r num">{formatUsdc(r.volume)}</td>
                   </tr>
                 )
               })}
@@ -48,15 +70,17 @@ export default function V2Leaderboard() {
   return (
     <Page>
       <RealFundsBanner />
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, marginBottom: 6 }}>Leaderboard</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16 }}>Built from chain data, no indexer. Covers jobs hired through the board in the latest 200 listings. Volume counts only jobs paid out to the seller.</p>
+      <PageHead title="Leaderboard" lede="Built from chain data, no indexer. Covers jobs hired through the board in the latest 200 listings. Volume counts only jobs paid out to the seller." />
       {q.isPending && <Loading what="leaderboard" />}
       {q.isError && <ErrorBox error={q.error} retry={() => q.refetch()} />}
       {q.data && (
-        <div style={{ display: 'grid', gap: 20 }}>
-          <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{q.data.total} hired job{q.data.total === 1 ? '' : 's'} scanned</div>
-          <Table title="Top sellers" rows={q.data.sellers} ids={q.data.ids} />
-          <Table title="Top buyers" rows={q.data.buyers} />
+        <div style={{ display: 'grid', gap: 32 }}>
+          <Podium rows={q.data.sellers} ids={q.data.ids} />
+          <div className="lb-cols">
+            <Table title="Top sellers" rows={q.data.sellers} ids={q.data.ids} />
+            <Table title="Top buyers" rows={q.data.buyers} />
+          </div>
+          <small style={{ color: 'var(--text-3)' }}>{q.data.total} hired job{q.data.total === 1 ? '' : 's'} scanned.</small>
         </div>
       )}
     </Page>

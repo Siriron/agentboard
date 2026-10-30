@@ -7,9 +7,9 @@ import { describeJob, STATUS_LABEL, type ActionId, type JobAction } from '../../
 import { hashBytes, hashText, normaliseUrl, textToBytes, verifyUrlHash } from '../../protocol/hashing'
 import { formatUsdc, splitFee, splitPayout } from '../../protocol/units'
 import { AppError, explainError } from '../../protocol/errors'
-import { ConfirmDialog, Countdown, Empty, ErrorBox, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow, useV2Wallet } from '../ui'
+import { ConfirmDialog, Countdown, Empty, ErrorBox, EscrowPath, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow, useV2Wallet } from '../ui'
 
-const field = { display: 'block', width: '100%', marginTop: 4, padding: 8, borderRadius: 8, border: '1px solid var(--border)', font: 'inherit' } as const
+const field = { display: 'block', width: '100%', marginTop: 4, padding: '10px 12px', borderRadius: 'var(--r)', border: '1px solid var(--border-strong)', background: 'var(--bg-surface)', color: 'var(--text-1)', font: 'inherit' } as const
 
 export default function V2Job() {
   const { id } = useParams()
@@ -33,11 +33,12 @@ export default function V2Job() {
     <Page narrow>
       <RealFundsBanner />
       {b.listingId !== null && <Link to={`/listing/${b.listingId}`} style={{ fontSize: 13, color: 'var(--text-2)' }}>← Listing #{String(b.listingId)}</Link>}
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, margin: '8px 0 4px' }}>Job #{String(b.job.number)}</h1>
+      <h1 style={{ fontSize: 'clamp(28px, 5vw, 40px)', margin: '8px 0 6px', lineHeight: 1.05 }}>Job #{String(b.job.number)}</h1>
       <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16 }}>
         {STATUS_LABEL[b.job.status]} · buyer {short(b.job.client)} · seller {short(b.job.provider)} · you are: <strong>{view.role}</strong>
       </div>
 
+      <EscrowPath status={b.job.status} />
       <div className="card" style={{ padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Escrowed amount</span><strong>{formatUsdc(b.job.budget)} USDC</strong></div>
         <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 6, lineHeight: 1.6 }}>

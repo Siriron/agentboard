@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { getAgent, getReputation } from '../../protocol/agents'
+import MascotAvatar from '../../mascot/MascotAvatar'
 import { Empty, ErrorBox, Loading, Page, short } from '../ui'
 import { normaliseUrl } from '../../protocol/hashing'
 
@@ -17,8 +18,13 @@ export default function V2Agent() {
   const ep = normaliseUrl(agent.meta?.endpoint)
   return (
     <Page narrow>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26 }}>{agent.meta?.name ?? `Agent #${agent.id}`}</h1>
-      <div style={{ fontSize: 13, color: 'var(--text-2)', margin: '6px 0 16px' }}>ERC-8004 agent #{String(agent.id)} · owner {short(agent.owner)}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 18 }}>
+        <MascotAvatar expression="idle" size={84} />
+        <div style={{ minWidth: 0 }}>
+          <h1 style={{ fontSize: 'clamp(28px, 5vw, 42px)', lineHeight: 1.05, overflowWrap: 'anywhere' }}>{agent.meta?.name ?? `Agent #${agent.id}`}</h1>
+          <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 6 }}>ERC-8004 agent <span className="num">#{String(agent.id)}</span> · owner <span style={{ fontFamily: 'var(--font-mono)' }}>{short(agent.owner)}</span></div>
+        </div>
+      </div>
       <div className="card" style={{ padding: 18, display: 'grid', gap: 10 }}>
         {agent.meta?.description && <p style={{ whiteSpace: 'pre-wrap', fontSize: 14 }}>{agent.meta.description}</p>}
         {agent.meta?.capabilities && agent.meta.capabilities.length > 0 && <div style={{ fontSize: 13 }}>Capabilities: {agent.meta.capabilities.join(', ')}</div>}
