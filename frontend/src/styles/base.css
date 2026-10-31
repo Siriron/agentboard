@@ -3,11 +3,11 @@
 body {
   background: var(--bg); color: var(--text-1);
   font-family: var(--font-body); font-size: 15px; line-height: 1.6;
-  font-feature-settings: 'ss01', 'cv11';
+  font-feature-settings: 'cv11', 'ss03';
   text-rendering: optimizeLegibility;
   transition: background-color var(--t-med) var(--ease-out), color var(--t-med) var(--ease-out);
 }
-h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; text-wrap: balance; font-weight: 650; }
+h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.03em; text-wrap: balance; font-weight: 600; }
 p { text-wrap: pretty; }
 ::selection { background: var(--accent); color: var(--on-accent); }
 .num, table, .tnum { font-variant-numeric: tabular-nums; }
@@ -26,16 +26,23 @@ button, a, [role='button'], summary { touch-action: manipulation; -webkit-tap-hi
 /* ── BUTTONS ── */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; cursor: pointer; font-family: var(--font-body); font-weight: 600; text-decoration: none; white-space: nowrap; letter-spacing: -0.005em;
   transition: transform var(--t-short) var(--ease-out), background-color var(--t-short), border-color var(--t-short), color var(--t-short), box-shadow var(--t-short); }
-.btn-primary { background: var(--text-1); color: var(--text-inverse); padding: 11px 20px; border-radius: var(--r-btn); font-size: 14px; box-shadow: none; }
-.btn-primary:hover:not(:disabled) { transform: translateY(-1px); background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-glow); }
-.btn-primary:active:not(:disabled) { transform: translateY(0); }
-.btn-secondary { background: transparent; color: var(--text-1); padding: 11px 20px; border-radius: var(--r-btn); font-size: 14px; border: 1px solid var(--border-strong); box-shadow: none; }
-.btn-secondary:hover:not(:disabled) { border-color: var(--text-1); background: var(--bg-subtle); color: var(--text-1); }
+.btn-primary { background: var(--btn-bg); color: var(--btn-fg); padding: 0 16px; height: 40px; border-radius: var(--r-btn); font-size: 14px; }
+.btn-primary:hover:not(:disabled) { background: var(--btn-hover); }
+.btn-primary:active:not(:disabled) { transform: translateY(1px); }
+.btn-secondary { background: var(--bg-card); color: var(--text-1); padding: 0 16px; height: 40px; border-radius: var(--r-btn); font-size: 14px; border: 1px solid var(--border-strong); box-shadow: var(--shadow-sm); }
+.btn-secondary:hover:not(:disabled) { background: var(--bg-surface); border-color: var(--muted); }
+.btn-secondary:active:not(:disabled) { transform: translateY(1px); }
+.btn-test { background: var(--test-dim); color: var(--text-1); border: 1px solid color-mix(in srgb, var(--test) 45%, transparent); padding: 0 16px; height: 40px; border-radius: var(--r-btn); font-size: 14px; }
+.btn-test:hover:not(:disabled) { background: color-mix(in srgb, var(--test) 16%, transparent); }
+.btn-main { background: var(--main-dim); color: var(--text-1); border: 1px solid color-mix(in srgb, var(--main) 50%, transparent); padding: 0 16px; height: 40px; border-radius: var(--r-btn); font-size: 14px; }
+.btn-main:hover:not(:disabled) { background: color-mix(in srgb, var(--main) 16%, transparent); }
+.btn[aria-busy='true'] { position: relative; color: transparent !important; pointer-events: none; }
+.btn[aria-busy='true']::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--btn-fg); border-top-color: transparent; animation: spin .6s linear infinite; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
-.btn-xs { padding: 5px 11px !important; font-size: 12px !important; border-radius: var(--r-sm) !important; gap: 5px !important; }
-.btn-sm { padding: 8px 14px !important; font-size: 13px !important; border-radius: var(--r) !important; }
-.btn-lg { padding: 15px 28px !important; font-size: 16px !important; border-radius: var(--r) !important; }
-.btn-icon { width: 40px; height: 40px; border-radius: var(--r); background: transparent; border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); transition: background-color var(--t-short), border-color var(--t-short), color var(--t-short); }
+.btn-xs { height: 28px !important; padding: 0 10px !important; font-size: 12px !important; border-radius: 8px !important; gap: 5px !important; }
+.btn-sm { height: 34px !important; padding: 0 13px !important; font-size: 13px !important; border-radius: var(--r) !important; }
+.btn-lg { height: 46px !important; padding: 0 22px !important; font-size: 15px !important; border-radius: 12px !important; }
+.btn-icon { width: 36px; height: 36px; border-radius: var(--r); background: transparent; border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-2); transition: background-color var(--t-short), border-color var(--t-short), color var(--t-short); }
 .btn-icon:hover { background: var(--bg-subtle); border-color: var(--border-strong); color: var(--text-1); }
 
 /* ── SURFACES ── */
@@ -86,39 +93,38 @@ select.input, select.field { appearance: none; background-image: linear-gradient
 
 /* ── NETWORK: shared semantics (switch, launch buttons, tags, banners) ── */
 .net-switch { display: inline-flex; padding: 2px; border: 1px solid var(--border-strong); border-radius: var(--r); background: var(--bg-surface); flex-shrink: 0; }
-.net-switch button { border: none; cursor: pointer; border-radius: calc(var(--r) - 3px); font-family: var(--font-body); font-weight: 700; display: flex; align-items: center; gap: 6px; background: transparent; color: var(--text-2); transition: background-color var(--t-short), color var(--t-short); }
+.net-switch button { border: none; cursor: pointer; border-radius: calc(var(--r) - 3px); font-family: var(--font-body); font-weight: 600; display: flex; align-items: center; gap: 6px; background: transparent; color: var(--text-2); transition: background-color var(--t-short), color var(--t-short); }
 .net-switch button[aria-pressed='true'].is-test { background: var(--test); color: var(--on-test); }
 .net-switch button[aria-pressed='true'].is-main { background: var(--main); color: var(--on-accent); }
 .net-switch button:not([aria-pressed='true']):hover { background: var(--bg-subtle); color: var(--text-1); }
 .net-dot { border-radius: 99px; width: 6px; height: 6px; background: currentColor; }
-.tag-test, .tag-main { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; padding: 2px 9px; border-radius: var(--r-pill); }
+.tag-test, .tag-main { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 6px; white-space: nowrap; }
 .tag-test { color: var(--test); background: var(--test-dim); border: 1px solid color-mix(in srgb, var(--test) 35%, transparent); }
-.tag-main { color: var(--main); background: var(--main-dim); border: 1px solid color-mix(in srgb, var(--main) 38%, transparent); }
+.tag-main { color: var(--accent-text); background: var(--main-dim); border: 1px solid color-mix(in srgb, var(--main) 38%, transparent); }
 
-/* Launch pair */
-.launch-pair { display: grid; grid-template-columns: 1fr; gap: 12px; width: 100%; }
-@media (min-width: 640px) { .launch-pair { grid-template-columns: 1fr 1fr; } }
-.launch-btn { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; text-align: left; min-height: 72px; padding: 14px 18px; border-radius: var(--r-lg); border: 1.5px solid var(--lb-c); background: var(--lb-bg); color: var(--text-1); cursor: pointer; font: inherit; text-decoration: none;
-  transition: transform var(--t-short) var(--ease-out), box-shadow var(--t-short), background-color var(--t-short); }
-.launch-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px color-mix(in srgb, var(--lb-c) 28%, transparent); }
-.launch-btn:active { transform: translateY(0); }
-.launch-btn .lb-ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--lb-c); color: var(--lb-on); flex-shrink: 0; }
-.launch-btn .lb-title { font-family: var(--font-display); font-weight: 650; font-size: 17px; letter-spacing: -0.015em; line-height: 1.2; }
-.launch-btn .lb-sub { display: block; font-size: 12.5px; color: var(--text-2); font-weight: 500; line-height: 1.35; margin-top: 2px; }
-.launch-btn .lb-arrow { color: var(--lb-c); transition: transform var(--t-short) var(--ease-out); }
-.launch-btn:hover .lb-arrow { transform: translateX(3px); }
-.launch-btn.is-test { --lb-c: var(--test); --lb-on: var(--on-test); --lb-bg: transparent; }
-.launch-btn.is-main { --lb-c: var(--main); --lb-on: var(--on-accent); --lb-bg: var(--main-dim); }
-.launch-btn.is-main .lb-title::after { content: 'Real USDC'; margin-left: 8px; font: 700 11px/1 var(--font-body); padding: 3px 7px; border-radius: 99px; background: var(--main); color: var(--on-accent); vertical-align: 2px; letter-spacing: .01em; }
-.launch-btn.is-current::before { content: 'Selected'; position: absolute; top: -9px; left: 14px; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--lb-c); color: var(--lb-on); }
+/* Network selector (full size): a calm segmented control, not a promo button */
+.netsel { display: grid; grid-template-columns: 1fr; gap: 8px; width: 100%; }
+@media (min-width: 560px) { .netsel { grid-template-columns: 1fr 1fr; } }
+.netsel-opt { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; padding: 12px 14px; border-radius: var(--r-lg); border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text-1); cursor: pointer; font: inherit;
+  transition: border-color var(--t-short), background-color var(--t-short), box-shadow var(--t-short); }
+.netsel-opt:hover { border-color: var(--muted); background: var(--bg-surface); }
+.ns-body { display: grid; gap: 2px; min-width: 0; }
+.ns-title { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14.5px; letter-spacing: -0.01em; }
+.ns-title::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--nc); flex-shrink: 0; }
+.ns-line { font-size: 13px; color: var(--text-2); line-height: 1.4; }
+.ns-check { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: var(--nc); color: var(--nt); flex-shrink: 0; opacity: 0; transform: scale(.6); transition: opacity var(--t-short), transform var(--t-short) var(--ease-out); }
+.netsel-opt.is-test { --nc: var(--test); --nt: var(--on-test); --ntint: var(--test-dim); }
+.netsel-opt.is-main { --nc: var(--main); --nt: var(--on-accent); --ntint: var(--main-dim); }
+.netsel-opt[aria-checked='true'] { border-color: var(--nc); background: var(--ntint); box-shadow: 0 0 0 1px var(--nc); }
+.netsel-opt[aria-checked='true'] .ns-check { opacity: 1; transform: none; }
 
 /* Real-funds banner */
-.realfunds-bar { background: var(--main); color: var(--on-accent); font-size: 12.5px; font-weight: 600; text-align: center; padding: 5px 12px; }
+.realfunds-bar { background: var(--bg-surface); color: var(--text-2); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 500; text-align: center; padding: 4px 12px; border-top: 2px solid var(--main); }
 
 /* page scaffolding for app routes */
 .page { max-width: var(--page-max); margin: 0 auto; padding: 28px var(--gutter) 96px; }
 .page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
-.page-head h1 { font-size: clamp(30px, 5vw, 48px); line-height: 1.02; font-weight: 700; }
+.page-head h1 { font-size: clamp(30px, 4.6vw, 44px); line-height: 1.05; font-weight: 600; letter-spacing: -0.04em; }
 .page-head p { color: var(--text-2); max-width: 56ch; margin-top: 8px; }
 .rule { height: 1px; background: var(--border); border: 0; }
 
@@ -237,3 +243,7 @@ select.input, select.field { appearance: none; background-image: linear-gradient
 .escrow-path .dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--border-strong); }
 .escrow-path li.done { color: var(--text-2); } .escrow-path li.done .dot { background: var(--green); border-color: var(--green); }
 .escrow-path li.now { color: var(--text-1); } .escrow-path li.now .dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-dim); }
+
+/* Legacy testnet pages tint some primary buttons inline; keep every primary button on the one design-system look. */
+.btn-primary[style*='var(--accent)'], .btn-primary[style*='var(--accent-grad)'] { background: var(--btn-bg) !important; color: var(--btn-fg) !important; box-shadow: none !important; }
+.btn-primary[style*='var(--accent)']:hover:not(:disabled) { background: var(--btn-hover) !important; }

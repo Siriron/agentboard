@@ -14,8 +14,8 @@ interface PoseState { dist: number; camY: number; lookY: number; bodyYaw: number
 
 // Distances are expressed as "units to fit", converted with the live aspect ratio so the robot never crops on narrow screens.
 const POSES: Record<Exclude<Pose, 'hidden'>, { fitH: number; fitW: number; camY: number; lookY: number; bodyYaw: number; headYaw: number; headPitch: number; camX: number }> = {
-  hero: { fitH: 4.6, fitW: 4.2, camY: 0.95, lookY: 0.25, bodyYaw: -0.34, headYaw: -0.34, headPitch: 0.1, camX: 0 },
-  face: { fitH: 2.5, fitW: 2.5, camY: 1.25, lookY: 1.05, bodyYaw: -0.12, headYaw: -0.05, headPitch: 0.03, camX: 0 },
+  hero: { fitH: 4.9, fitW: 4.4, camY: 0.95, lookY: 0.25, bodyYaw: -0.34, headYaw: -0.34, headPitch: 0.1, camX: 0 },
+  face: { fitH: 3.2, fitW: 3.1, camY: 1.25, lookY: 1.05, bodyYaw: -0.12, headYaw: -0.05, headPitch: 0.03, camX: 0 },
   wide: { fitH: 5.2, fitW: 4.6, camY: 0.8, lookY: 0.2, bodyYaw: 0.05, headYaw: 0.04, headPitch: 0.06, camX: 0 },
 }
 const FOV = 30
@@ -137,9 +137,9 @@ export class MascotScene {
     }
 
     // hover pad + shadow catcher
-    const padGeo = this.geo(new TorusGeometry(1.0, 0.022, 10, 80)); const padMat = this.mat(this.halo.clone()); padMat.emissiveIntensity = 0.9
+    const padGeo = this.geo(new TorusGeometry(0.86, 0.014, 10, 96)); const padMat = this.mat(this.halo.clone()); padMat.emissiveIntensity = 0.4; padMat.transparent = true; padMat.opacity = 0.7
     this.pad = new Mesh(padGeo, padMat); this.pad.rotation.x = Math.PI / 2; this.pad.position.y = -1.7; this.scene.add(this.pad)
-    const ground = new Mesh(this.geo(new PlaneGeometry(10, 10)), this.mat(new ShadowMaterial({ opacity: 0.22 }))); ground.rotation.x = -Math.PI / 2; ground.position.y = -1.7; ground.receiveShadow = true; this.scene.add(ground)
+    const ground = new Mesh(this.geo(new PlaneGeometry(10, 10)), this.mat(new ShadowMaterial({ opacity: 0.16 }))); ground.rotation.x = -Math.PI / 2; ground.position.y = -1.7; ground.receiveShadow = true; this.scene.add(ground)
     this.robot.position.y = 0.1
   }
 
@@ -153,7 +153,26 @@ export class MascotScene {
     this.renderOnce()
   }
   setPose(p: Pose) { this.pose = p; if (p !== 'hidden') this.tgt = this.target(p); this.appearTarget = p === 'hidden' ? 0 : 1; this.renderOnce() }
+  /** Scroll-driven camera: 0 = hero framing, ~0.3 = close-up on the face, 1 = full-body wide shot. Continuous, smoothed in step(). */
+  setProgress(p: number) {
+    const k = Math.min(1, Math.max(0, p))
+    const ease = (t: number) => t * t * (3 - 2 * t)
+    const mix = (a: PoseState, b: PoseState, t: number): PoseState => {
+      const o = {} as PoseState
+      for (const key of Object.keys(a) as Array<keyof PoseState>) o[key] = a[key] + (b[key] - a[key]) * t
+      return o
+    }
+    const hero = this.target('hero'), face = this.target('face'), wide = this.target('wide')
+    this.tgt = k < 0.32 ? mix(hero, face, ease(k / 0.32)) : k < 0.62 ? face : mix(face, wide, ease((k - 0.62) / 0.38))
+    this.appearTarget = 1
+    if (!this.running) this.renderOnce()
+  }
   setPointer(nx: number, ny: number) { this.ptr.x = nx; this.ptr.y = ny }
+  /** Show an expression briefly, then return to the previous one. Used for taps. */
+  flash(e: Expression, ms = 1100) {
+    const back = this.expr; this.setExpression(e)
+    window.setTimeout(() => { if (this.expr === e) this.setExpression(back) }, ms)
+  }
   /** A short acknowledgement (head dip). Used for real events only, e.g. a launch button hover or a completed action. */
   react() { this.impulse = 1; this.renderOnce() }
   applyTheme(t: ThemeName) {
@@ -163,9 +182,11 @@ export class MascotScene {
     this.hemi.color.set(dark ? 0x7a8aa8 : 0xfff6ee); this.hemi.groundColor.set(dark ? 0x15161a : 0xd9d2c8); this.hemi.intensity = dark ? 0.35 : 0.7
     this.key.color.set(dark ? 0xdfe6ff : 0xfff3e6); this.key.intensity = dark ? 1.1 : 1.7; this.key.position.set(-3, 5, 4)
     this.rim.color.set(dark ? 0xff7a5a : 0xfff0e6); this.rim.intensity = dark ? 2.6 : 1.1; this.rim.position.set(4, 2.2, -4)
-    this.fill.color.set(0xff8a5c); this.fill.intensity = dark ? 6 : 3; this.fill.distance = 9; this.fill.position.set(-3, 1, 1.5)
+    this.fill.color.set(dark ? 0xffc9b8 : 0xffd9cc); this.fill.intensity = dark ? 3.2 : 2; this.fill.distance = 9; this.fill.position.set(-3, 1, 1.5)
     this.amb.intensity = dark ? 0.05 : 0.1
-    this.halo.emissiveIntensity = dark ? 1.1 : 0.55
+    const brand = dark ? 0xfb704f : 0xe54826; this.halo.color.set(brand); this.halo.emissive.set(brand)
+    this.halo.emissiveIntensity = dark ? 0.9 : 0.35
+    ;(this.pad.material as MeshStandardMaterial).color.set(brand); (this.pad.material as MeshStandardMaterial).emissive.set(brand)
     this.renderOnce()
   }
   resize(w: number, h: number, dpr: number) {
@@ -219,7 +240,7 @@ export class MascotScene {
     this.head.rotation.z = Math.sin(t * 0.7) * 0.02 * idle
     this.handL.position.y = -0.36 + Math.sin(t * 1.3 + 1) * 0.04 * idle; this.handR.position.y = -0.36 + Math.sin(t * 1.3 + 2.2) * 0.04 * idle
     this.handR.rotation.z = Math.sin(t * 1.1) * 0.06 * idle
-    ;(this.pad.material as MeshStandardMaterial).emissiveIntensity = (this.theme === 'dark' ? 1.1 : 0.8) + Math.sin(t * 1.6) * 0.25 * idle
+    ;(this.pad.material as MeshStandardMaterial).emissiveIntensity = (this.theme === 'dark' ? 0.55 : 0.3) + Math.sin(t * 1.6) * 0.12 * idle
     const s = 0.9 + 0.1 * this.appear; this.robot.scale.setScalar(s); this.robot.visible = this.appear > 0.01
     this.camera.position.set(this.cur.camX + this.ptr.sx * 0.22, this.cur.camY - this.ptr.sy * 0.08, this.cur.dist)
     this.camera.lookAt(new Vector3(0, this.cur.lookY, 0))

@@ -1,128 +1,130 @@
-@import '@fontsource-variable/bricolage-grotesque/wght.css';
-@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource-variable/geist/wght.css';
 @import '@fontsource-variable/geist-mono/wght.css';
 
 /* ═══════════════════════════════════════════════════════════════
    AGENTBOARD DESIGN TOKENS
-   Layer 1 primitives, layer 2 semantic, per theme.
-   Old variable names (--bg, --text-1, --accent ...) are kept as the
-   semantic layer so every existing page picks up both themes.
-   Day = light "paper", night = dark "ink". Selected by [data-theme].
+   Semantic layer per theme. Existing variable names are kept so every
+   page follows the theme. Colours are never hard-coded in components.
+   Network meaning is fixed in both themes: teal = Testnet (practice),
+   orange = Mainnet (real USDC).
 ═══════════════════════════════════════════════════════════════ */
 :root {
-  /* type */
-  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', ui-sans-serif, system-ui, sans-serif;
-  --font-body:    'Instrument Sans Variable', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body:    'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono:    'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  /* radius: sharper than the old pill-everything look; pills only for chips */
-  --r-sm: 6px; --r: 10px; --r-lg: 14px; --r-xl: 20px; --r-pill: 999px; --r-btn: 10px;
+  --r-sm: 6px; --r: 10px; --r-lg: 12px; --r-xl: 16px; --r-pill: 999px; --r-btn: 10px;
 
-  /* motion */
   --ease-out: cubic-bezier(.2,.7,.2,1);
   --ease-io:  cubic-bezier(.65,0,.2,1);
-  --t-micro: 120ms; --t-short: 200ms; --t-med: 320ms; --t-long: 560ms;
+  --t-micro: 120ms; --t-short: 180ms; --t-med: 280ms; --t-long: 520ms;
 
-  /* layout */
   --header-h: 60px;
-  --page-max: 1180px;
+  --page-max: 1200px;
   --gutter: clamp(16px, 4vw, 40px);
 }
 
-/* ── LIGHT: editorial paper ── */
+/* ── LIGHT ── */
 :root, :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #efeadf;            /* paper */
-  --bg-surface: #f7f3ea;    /* raised sheet */
-  --bg-card: #fbf8f1;
-  --bg-subtle: #e6e0d2;
-  --bg-pink: #f6e3da;
-  --bg-gradient: linear-gradient(180deg, #f3efe6, #e9e3d6);
+  --bg: #ffffff;
+  --bg-surface: #f8fafc;
+  --bg-subtle: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-pink: #fff1ed;
+  --bg-gradient: #ffffff;
 
-  --text-1: #1a1712;
-  --text-2: #565043;
-  --text-3: #6b6350;
-  --text-inverse: #f7f3ea;
+  --text-1: #111827;
+  --text-2: #64748b;
+  --text-3: #6b7788;         /* readable tertiary text (AA on white) */
+  --muted: #94a3b8;          /* placeholders, disabled, decorative */
+  --text-inverse: #ffffff;
 
-  --border: #d6cdb9;
-  --border-light: #e3dccb;
-  --border-strong: #b9ae95;
-  --grid-line: rgba(26,23,18,.09);
+  --border: #e5e7eb;
+  --border-light: #f1f5f9;
+  --border-strong: #d1d5db;
+  --grid-line: rgba(17,24,39,.06);
 
-  --accent: #c4331d;         /* ember: brand + mainnet */
-  --accent-dark: #a02a16;
-  --accent-light: #e8826c;
-  --accent-dim: rgba(196,51,29,.09);
-  --accent-glow: rgba(196,51,29,.22);
-  --accent-grad: linear-gradient(135deg, #c4331d, #e0602a);
-  --accent-2: #ec6a2c;
-  --pink: #c9406d; --pink-dim: rgba(201,64,109,.10); --pink-border: rgba(201,64,109,.28);
+  --accent: #e54826;         /* AgentBoard orange (brand + Mainnet) */
+  --accent-text: #c2381a;    /* orange as text on white (AA) */
+  --accent-dark: #c2381a;
+  --accent-light: #f08a72;
+  --accent-dim: rgba(229,72,38,.08);
+  --accent-glow: rgba(229,72,38,.18);
+  --accent-grad: var(--accent);
+  --accent-2: #f08a72;
+  --pink: #be185d; --pink-dim: rgba(190,24,93,.08); --pink-border: rgba(190,24,93,.25);
 
-  --on-accent: #ffffff; --on-test: #ffffff;
-  --test: #0b6e83;           /* testnet: practice funds */
-  --test-dim: rgba(11,110,131,.10);
-  --main: var(--accent);     /* mainnet: real USDC */
-  --main-dim: var(--accent-dim);
-
-  --green: #0d6e4c; --green-dim: rgba(13,110,76,.11);
-  --amber: #8f5400; --amber-dim: rgba(143,84,0,.12);
-  --red:   #c02626; --red-dim: rgba(192,38,38,.10);
-  --blue:  #2457c5; --blue-dim: rgba(36,87,197,.10);
-
-  --shadow-sm:  0 1px 0 rgba(26,23,18,.04), 0 1px 2px rgba(26,23,18,.05);
-  --shadow:     0 2px 4px rgba(26,23,18,.05), 0 8px 24px rgba(26,23,18,.07);
-  --shadow-lg:  0 4px 8px rgba(26,23,18,.05), 0 18px 48px rgba(26,23,18,.12);
-  --shadow-glow:0 6px 20px rgba(196,51,29,.22);
-  --header-bg: rgba(239,234,223,.86);
-  --overlay: rgba(26,23,18,.46);
-  --stage-bg: radial-gradient(60% 60% at 62% 46%, #f8f4ea 0%, #efeadf 70%);
-}
-
-/* ── DARK: immersive ink ── */
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #0d0e11;
-  --bg-surface: #14161a;
-  --bg-card: #181b20;
-  --bg-subtle: #1f2329;
-  --bg-pink: #2a1a1a;
-  --bg-gradient: linear-gradient(180deg, #101216, #0b0c0f);
-
-  --text-1: #efebe3;
-  --text-2: #b0ada3;
-  --text-3: #908d85;
-  --text-inverse: #0d0e11;
-
-  --border: #2a2f37;
-  --border-light: #20242b;
-  --border-strong: #3d444e;
-  --grid-line: rgba(239,235,227,.07);
-
-  --accent: #ff6c4b;
-  --accent-dark: #ff8567;
-  --accent-light: #ff9a80;
-  --accent-dim: rgba(255,108,75,.13);
-  --accent-glow: rgba(255,108,75,.30);
-  --accent-grad: linear-gradient(135deg, #ff6c4b, #ff9a4d);
-  --accent-2: #ff9a4d;
-  --pink: #ff6f9d; --pink-dim: rgba(255,111,157,.13); --pink-border: rgba(255,111,157,.30);
-
-  --on-accent: #16090a; --on-test: #04181c;
-  --test: #5cd0e2;
-  --test-dim: rgba(92,208,226,.12);
+  --test: #0f766e;           /* Testnet teal */
+  --test-dim: rgba(15,118,110,.08);
   --main: var(--accent);
   --main-dim: var(--accent-dim);
+  --on-accent: #ffffff; --on-test: #ffffff;
+  --btn-bg: #111827; --btn-fg: #ffffff; --btn-hover: #1f2937;
 
-  --green: #3fd49b; --green-dim: rgba(63,212,155,.12);
-  --amber: #f0b44a; --amber-dim: rgba(240,180,74,.13);
-  --red:   #ff6b6b; --red-dim: rgba(255,107,107,.13);
-  --blue:  #7ea6ff; --blue-dim: rgba(126,166,255,.13);
+  --green: #15803d; --green-dim: rgba(21,128,61,.09);
+  --amber: #a16207; --amber-dim: rgba(161,98,7,.10);
+  --red:   #b91c1c; --red-dim: rgba(185,28,28,.08);
+  --blue:  #1d4ed8; --blue-dim: rgba(29,78,216,.08);
 
-  --shadow-sm:  0 1px 0 rgba(255,255,255,.03) inset, 0 1px 2px rgba(0,0,0,.4);
-  --shadow:     0 1px 0 rgba(255,255,255,.04) inset, 0 10px 28px rgba(0,0,0,.45);
-  --shadow-lg:  0 1px 0 rgba(255,255,255,.05) inset, 0 24px 60px rgba(0,0,0,.55);
-  --shadow-glow:0 6px 24px rgba(255,108,75,.28);
-  --header-bg: rgba(13,14,17,.82);
-  --overlay: rgba(0,0,0,.64);
-  --stage-bg: radial-gradient(55% 55% at 62% 46%, #1d2026 0%, #0d0e11 72%);
+  --shadow-sm:  0 1px 2px rgba(17,24,39,.05);
+  --shadow:     0 1px 2px rgba(17,24,39,.04), 0 4px 12px rgba(17,24,39,.06);
+  --shadow-lg:  0 8px 30px rgba(17,24,39,.12);
+  --shadow-glow:none;
+  --header-bg: rgba(255,255,255,.82);
+  --overlay: rgba(17,24,39,.45);
+  --stage-bg: radial-gradient(60% 60% at 50% 48%, #f1f5f9 0%, rgba(255,255,255,0) 72%);
+}
+
+/* ── DARK ── */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #09090b;
+  --bg-surface: #111113;
+  --bg-subtle: #18181b;
+  --bg-card: #18181b;
+  --bg-elevated: #202024;
+  --bg-pink: #26130f;
+  --bg-gradient: #09090b;
+
+  --text-1: #fafafa;
+  --text-2: #a1a1aa;
+  --text-3: #8b8b94;
+  --muted: #71717a;
+  --text-inverse: #09090b;
+
+  --border: #27272a;
+  --border-light: #1f1f23;
+  --border-strong: #3a3a40;
+  --grid-line: rgba(250,250,250,.05);
+
+  --accent: #fb704f;
+  --accent-text: #fb704f;
+  --accent-dark: #ff8c70;
+  --accent-light: #ffa992;
+  --accent-dim: rgba(251,112,79,.12);
+  --accent-glow: rgba(251,112,79,.22);
+  --accent-grad: var(--accent);
+  --accent-2: #ffa992;
+  --pink: #f472b6; --pink-dim: rgba(244,114,182,.12); --pink-border: rgba(244,114,182,.28);
+
+  --test: #2dd4bf;
+  --test-dim: rgba(45,212,191,.11);
+  --main: var(--accent);
+  --main-dim: var(--accent-dim);
+  --on-accent: #09090b; --on-test: #09090b;
+  --btn-bg: #fafafa; --btn-fg: #09090b; --btn-hover: #e4e4e7;
+
+  --green: #4ade80; --green-dim: rgba(74,222,128,.11);
+  --amber: #fbbf24; --amber-dim: rgba(251,191,36,.11);
+  --red:   #f87171; --red-dim: rgba(248,113,113,.12);
+  --blue:  #7ea6ff; --blue-dim: rgba(126,166,255,.12);
+
+  --shadow-sm:  0 1px 2px rgba(0,0,0,.5);
+  --shadow:     0 1px 0 rgba(255,255,255,.03) inset, 0 6px 20px rgba(0,0,0,.45);
+  --shadow-lg:  0 1px 0 rgba(255,255,255,.04) inset, 0 20px 50px rgba(0,0,0,.6);
+  --shadow-glow:none;
+  --header-bg: rgba(9,9,11,.8);
+  --overlay: rgba(0,0,0,.66);
+  --stage-bg: radial-gradient(55% 55% at 50% 48%, #18181b 0%, rgba(9,9,11,0) 72%);
 }

@@ -11,13 +11,13 @@ export default {
     },
     extend: {
       colors: {
-        purple: { DEFAULT: '#9945ff', dark: '#7c35dd', light: '#b97aff' },
+        purple: { DEFAULT: '#e54826', dark: '#c2381a', light: '#f08a72', 100: '#fde4dd', 200: '#fbc7b9', 300: '#f6a592', 400: '#f08a72', 500: '#e54826', 600: '#c2381a', 700: '#a02e15' },
         teal: { DEFAULT: '#19fb9b' },
       },
       fontFamily: {
-        display: ['Sora', 'sans-serif'],
-        body: ['DM Sans', 'sans-serif'],
-        mono: ['DM Mono', 'monospace'],
+        display: ['Geist Variable', 'Geist', 'sans-serif'],
+        body: ['Geist Variable', 'Geist', 'sans-serif'],
+        mono: ['Geist Mono Variable', 'Geist Mono', 'monospace'],
       },
       animation: {
         marquee: 'marquee var(--duration,30s) linear infinite',
