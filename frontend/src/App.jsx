@@ -2,6 +2,7 @@ import { lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Landing from './pages/Landing'
+import NetworkHome from './pages/NetworkHome'
 import Board from './pages/Board'
 import PostJob from './pages/PostJob'
 import JobDetail from './pages/JobDetail'
@@ -30,6 +31,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Landing />} />
+        <Route path="testnet" element={<NetworkHome target="testnet" />} />
+        <Route path="mainnet" element={<NetworkHome target="mainnet" />} />
         <Route path="board" element={<ProtocolSwitch feature="The job board" v1={<Board />} v2={<V2Board />} />} />
         <Route path="post" element={<ProtocolSwitch feature="Posting jobs" v1={<PostJob />} v2={<V2Post />} />} />
         <Route path="listing/:id" element={<ProtocolSwitch feature="Listings" v2={<V2Listing />} />} />

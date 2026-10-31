@@ -42,7 +42,7 @@ export class MascotScene {
   private pose: Pose = 'hero'; private appear = 0; private appearTarget = 1
   private ptr = { x: 0, y: 0, sx: 0, sy: 0 }
   private impulse = 0
-  private raf = 0; private running = false; private last = 0; private time = 0
+  private frame = 0; private raf = 0; private running = false; private last = 0; private time = 0
   private reduced: boolean; private theme: ThemeName; private lowPower: boolean
   private disposables: Array<{ dispose(): void }> = []
   private w = 1; private h = 1
@@ -58,6 +58,7 @@ export class MascotScene {
     this.renderer.outputColorSpace = SRGBColorSpace
     this.renderer.shadowMap.enabled = !o.lowPower
     this.renderer.shadowMap.type = PCFSoftShadowMap
+    this.renderer.shadowMap.autoUpdate = false; this.renderer.shadowMap.needsUpdate = true
     this.onLost = e => { e.preventDefault(); this.stop(); o.onContextLost?.() }
     o.canvas.addEventListener('webglcontextlost', this.onLost)
 
@@ -87,11 +88,11 @@ export class MascotScene {
   }
 
   private build() {
-    const ceramic = this.mat(new MeshPhysicalMaterial({ color: 0xebe6dc, roughness: 0.34, clearcoat: 0.5, clearcoatRoughness: 0.28 }))
-    const ceramicHi = this.mat(new MeshPhysicalMaterial({ color: 0xf6f2ea, roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.25 }))
-    const graphite = this.mat(new MeshStandardMaterial({ color: 0x1a1c20, roughness: 0.5, metalness: 0.35 }))
-    const deep = this.mat(new MeshStandardMaterial({ color: 0x0a0b0d, roughness: 0.4, metalness: 0.1 }))
-    this.halo = this.mat(new MeshStandardMaterial({ color: 0xff6c4b, emissive: 0xff6c4b, emissiveIntensity: 0.6, roughness: 0.4 }))
+    const ceramic = this.mat(new MeshPhysicalMaterial({ color: 0xf1f5f9, roughness: 0.34, clearcoat: 0.5, clearcoatRoughness: 0.28 }))
+    const ceramicHi = this.mat(new MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 0.5, clearcoatRoughness: 0.25 }))
+    const graphite = this.mat(new MeshStandardMaterial({ color: 0x111827, roughness: 0.5, metalness: 0.3 }))
+    const deep = this.mat(new MeshStandardMaterial({ color: 0x09090b, roughness: 0.4, metalness: 0.1 }))
+    this.halo = this.mat(new MeshStandardMaterial({ color: 0xe54826, emissive: 0xe54826, emissiveIntensity: 0.4, roughness: 0.4 }))
 
     // head: wide square-screen shell, floating above the body (no neck)
     this.head.position.set(0, 1.12, 0)
@@ -120,7 +121,7 @@ export class MascotScene {
     this.add(this.robot, new CylinderGeometry(0.2, 0.26, 0.2, 24), graphite, 0, 0.26, 0)
     this.add(this.robot, new RoundedBoxGeometry(1.3, 1.04, 0.82, 6, 0.3), ceramic, 0, -0.3, 0)
     this.add(this.robot, new RoundedBoxGeometry(0.86, 0.34, 0.06, 3, 0.1), graphite, 0, -0.14, 0.42, false)
-    const ledColors = [0xffb347, 0xff6c4b, 0x5ee0b0]
+    const ledColors = [0x2dd4bf, 0xe54826, 0x94a3b8]
     ledColors.forEach((c, i) => {
       const m = this.mat(new MeshStandardMaterial({ color: c, emissive: c, emissiveIntensity: 0.15, roughness: 0.4 })); this.leds.push(m)
       this.add(this.robot, new RoundedBoxGeometry(0.2, 0.08, 0.04, 2, 0.03), m, -0.26 + i * 0.26, -0.14, 0.46, false)
@@ -147,7 +148,7 @@ export class MascotScene {
   setExpression(e: Expression) {
     if (e === this.expr) return
     const pc = this.prevFace.getContext('2d')!; pc.clearRect(0, 0, FACE_W, FACE_H); pc.drawImage(this.faceCanvas, 0, 0)
-    this.expr = e; this.fade = 0
+    this.expr = e; this.fade = 0; this.faceDirty = true
     const led = e === 'prompt' ? 0 : e === 'working' ? 1 : e === 'success' || e === 'happy' ? 2 : -1
     this.leds.forEach((m, i) => { m.emissiveIntensity = i === led ? 1.4 : 0.15 })
     this.renderOnce()
@@ -191,7 +192,7 @@ export class MascotScene {
   }
   resize(w: number, h: number, dpr: number) {
     this.w = Math.max(1, w); this.h = Math.max(1, h)
-    this.renderer.setPixelRatio(Math.min(dpr, this.lowPower ? 1.5 : 2)); this.renderer.setSize(this.w, this.h, false)
+    this.renderer.setPixelRatio(Math.min(dpr, this.lowPower ? 1.25 : 1.5)); this.renderer.setSize(this.w, this.h, false)
     this.camera.aspect = this.w / this.h; this.camera.updateProjectionMatrix()
     if (this.pose !== 'hidden') { this.tgt = this.target(this.pose); if (this.reduced || !this.running) this.cur = { ...this.tgt } }
     this.renderOnce()
@@ -217,7 +218,12 @@ export class MascotScene {
     this.step(dt); this.raf = requestAnimationFrame(this.tick)
   }
   private renderOnce() { if (this.running) return; this.step(0.016, true) }
+  private faceAcc = 0; private faceDirty = true
   private paintFace(dt: number) {
+    const animated = this.fade < 1 || this.blinkT >= 0 || this.expr === 'working' || this.expr === 'prompt' || this.time > this.blinkAt
+    this.faceAcc += dt
+    if (!this.faceDirty && !(animated && this.faceAcc >= 1 / 30)) return // idle face: no canvas redraw, no texture upload
+    this.faceAcc = 0; this.faceDirty = false
     if (this.blinkT >= 0) { this.blinkT += dt; if (this.blinkT > 0.18) this.blinkT = -1 }
     else if (this.time > this.blinkAt) { this.blinkT = 0; this.blinkAt = this.time + 2.5 + Math.random() * 3 }
     const blink = this.blinkT < 0 ? 0 : Math.sin((this.blinkT / 0.18) * Math.PI)
@@ -245,6 +251,7 @@ export class MascotScene {
     this.camera.position.set(this.cur.camX + this.ptr.sx * 0.22, this.cur.camY - this.ptr.sy * 0.08, this.cur.dist)
     this.camera.lookAt(new Vector3(0, this.cur.lookY, 0))
     this.paintFace(dt)
+    if ((this.frame++ % 6) === 0) this.renderer.shadowMap.needsUpdate = true
     this.renderer.render(this.scene, this.camera)
   }
 }

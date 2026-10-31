@@ -6,7 +6,7 @@ export const FACE_W = 512
 export const FACE_H = 410
 
 /** Draw one expression frame. `t` is seconds, `blink` 0..1 (1 = eyes closed). Pure canvas, no three.js, so it is testable. */
-export function drawFace(ctx: CanvasRenderingContext2D, expr: Expression, t: number, blink: number, ink = '#fff4e8', glow = '#ff6c4b') {
+export function drawFace(ctx: CanvasRenderingContext2D, expr: Expression, t: number, blink: number, ink = '#fff4e8', glow = '#e54826') {
   const w = FACE_W, h = FACE_H
   ctx.clearRect(0, 0, w, h)
   ctx.fillStyle = '#08090b'

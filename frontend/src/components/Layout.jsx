@@ -271,7 +271,7 @@ export default function Layout() {
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>© 2026 AgentBoard. Built on Arc.</span>
+            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>© 2026 AgentBoard. Built on Arc. <span className="num" style={{ color: 'var(--text-3)' }}>build {__BUILD_ID__}</span></span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <span className={network.realFunds ? 'tag-main' : 'tag-test'}>{network.label}</span>
               <span className="badge badge-cancelled">ERC-8183</span><span className="badge badge-cancelled">ERC-8004</span>

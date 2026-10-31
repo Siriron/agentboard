@@ -27,7 +27,7 @@ button, a, [role='button'], summary { touch-action: manipulation; -webkit-tap-hi
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid transparent; cursor: pointer; font-family: var(--font-body); font-weight: 600; text-decoration: none; white-space: nowrap; letter-spacing: -0.005em;
   transition: transform var(--t-short) var(--ease-out), background-color var(--t-short), border-color var(--t-short), color var(--t-short), box-shadow var(--t-short); }
 .btn-primary { background: var(--btn-bg); color: var(--btn-fg); padding: 0 16px; height: 40px; border-radius: var(--r-btn); font-size: 14px; }
-.btn-primary:hover:not(:disabled) { background: var(--btn-hover); }
+.btn-primary:hover:not(:disabled) { opacity: .88; }
 .btn-primary:active:not(:disabled) { transform: translateY(1px); }
 .btn-secondary { background: var(--bg-card); color: var(--text-1); padding: 0 16px; height: 40px; border-radius: var(--r-btn); font-size: 14px; border: 1px solid var(--border-strong); box-shadow: var(--shadow-sm); }
 .btn-secondary:hover:not(:disabled) { background: var(--bg-surface); border-color: var(--muted); }
@@ -246,4 +246,4 @@ select.input, select.field { appearance: none; background-image: linear-gradient
 
 /* Legacy testnet pages tint some primary buttons inline; keep every primary button on the one design-system look. */
 .btn-primary[style*='var(--accent)'], .btn-primary[style*='var(--accent-grad)'] { background: var(--btn-bg) !important; color: var(--btn-fg) !important; box-shadow: none !important; }
-.btn-primary[style*='var(--accent)']:hover:not(:disabled) { background: var(--btn-hover) !important; }
+.btn-primary[style*='var(--accent)']:hover:not(:disabled) { opacity: .88; }

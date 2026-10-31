@@ -9,17 +9,17 @@ export default function MascotAvatar({ expression = 'idle', size = 96, label = u
     <svg className={`mascot-avatar ${className}`} width={size} height={size} viewBox="0 0 120 120" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true} focusable="false">
       <ellipse cx="60" cy="112" rx="30" ry="4.5" fill="var(--text-1)" opacity=".12" />
       {/* body */}
-      <rect x="36" y="74" width="48" height="32" rx="12" fill="#ebe6dc" stroke="rgba(0,0,0,.18)" />
-      <rect x="44" y="82" width="32" height="10" rx="4" fill="#1a1c20" />
-      <rect x="47" y="85" width="7" height="4" rx="2" fill="#ffb347" /><rect x="56.5" y="85" width="7" height="4" rx="2" fill="#ff6c4b" /><rect x="66" y="85" width="7" height="4" rx="2" fill="#5ee0b0" />
-      <rect x="26" y="84" width="9" height="12" rx="4.5" fill="#f6f2ea" stroke="rgba(0,0,0,.15)" /><rect x="85" y="84" width="9" height="12" rx="4.5" fill="#f6f2ea" stroke="rgba(0,0,0,.15)" />
+      <rect x="36" y="74" width="48" height="32" rx="12" fill="#f1f5f9" stroke="rgba(17,24,39,.18)" />
+      <rect x="44" y="82" width="32" height="10" rx="4" fill="#111827" />
+      <rect x="47" y="85" width="7" height="4" rx="2" fill="#2dd4bf" /><rect x="56.5" y="85" width="7" height="4" rx="2" fill="#e54826" /><rect x="66" y="85" width="7" height="4" rx="2" fill="#94a3b8" />
+      <rect x="26" y="84" width="9" height="12" rx="4.5" fill="#ffffff" stroke="rgba(17,24,39,.15)" /><rect x="85" y="84" width="9" height="12" rx="4.5" fill="#ffffff" stroke="rgba(17,24,39,.15)" />
       {/* head */}
-      <rect x="53" y="6" width="14" height="9" rx="3" fill="#ff6c4b" /><circle cx="60" cy="10.5" r="1.7" fill="#0a0b0d" />
-      <rect x="22" y="14" width="76" height="58" rx="16" fill="#ebe6dc" stroke="rgba(0,0,0,.18)" />
-      <rect x="15" y="36" width="9" height="14" rx="4" fill="#1a1c20" /><rect x="96" y="36" width="9" height="14" rx="4" fill="#1a1c20" />
-      <rect x="29" y="21" width="62" height="44" rx="11" fill="#ff6c4b" />
-      <rect x="32.5" y="24.5" width="55" height="37" rx="8.5" fill="#08090b" />
-      <g className={`mascot-face mascot-${expression}`} fill="#fff4e8" stroke="#fff4e8" strokeLinecap="round" strokeLinejoin="round" style={{ filter: `drop-shadow(0 0 3px #ff6c4b)` }} id={uid}>
+      <rect x="53" y="6" width="14" height="9" rx="3" fill="#e54826" /><circle cx="60" cy="10.5" r="1.7" fill="#09090b" />
+      <rect x="22" y="14" width="76" height="58" rx="16" fill="#f1f5f9" stroke="rgba(17,24,39,.18)" />
+      <rect x="15" y="36" width="9" height="14" rx="4" fill="#111827" /><rect x="96" y="36" width="9" height="14" rx="4" fill="#111827" />
+      <rect x="29" y="21" width="62" height="44" rx="11" fill="#e54826" />
+      <rect x="32.5" y="24.5" width="55" height="37" rx="8.5" fill="#09090b" />
+      <g className={`mascot-face mascot-${expression}`} fill="#fff4e8" stroke="#fff4e8" strokeLinecap="round" strokeLinejoin="round" style={{ filter: `drop-shadow(0 0 3px #e54826)` }} id={uid}>
         {face}
       </g>
     </svg>

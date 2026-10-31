@@ -10,8 +10,9 @@ export default function NetworkSwitch({ compact = false }) {
   const confirmMainnet = useConfirmMainnet()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  // Switching network from an inner page lands on the homepage for that network, never on an arbitrary inner page.
-  const choose = async k => { const ok = await selectNetwork(k, key, setNetwork, confirmMainnet); if (ok && k !== key && pathname !== '/') navigate('/') }
+  // The two header buttons are the only network control. Each opens that network's own homepage (/testnet or /mainnet),
+  // never an arbitrary inner page. Mainnet asks for the one-time real-USDC confirmation first.
+  const choose = async k => { const ok = await selectNetwork(k, key, setNetwork, confirmMainnet); if (ok && pathname !== `/${k}`) navigate(`/${k}`) }
   return (
     <div role="group" aria-label="Network" className="net-switch">
       {NETWORK_KEYS.map(k => {
