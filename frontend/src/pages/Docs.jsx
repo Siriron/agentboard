@@ -249,13 +249,6 @@ export default function Docs() {
             </button>
           ))}
         </nav>
-        <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <a href="https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4"
-            target="_blank" rel="noreferrer"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-xs)', color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500 }}>
-            <ExternalLink size={11} /> View Contract on ArcScan
-          </a>
-        </div>
       </aside>
 
       {/* ── CONTENT ── */}

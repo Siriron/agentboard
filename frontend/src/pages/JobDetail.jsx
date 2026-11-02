@@ -294,10 +294,6 @@ await client.createContractExecutionTransaction({
                     <span className={cn('w-1.5 h-1.5 rounded-full', sc.dot)} />
                     {STATUS_LABEL_ARR[sn] || 'UNKNOWN'}
                   </span>
-                  <a href={`https://testnet.arcscan.app/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1.5 text-[var(--text-1)]/25 text-xs hover:text-purple-400 transition-colors">
-                    <ExternalLink size={10}/> ArcScan
-                  </a>
                 </div>
                 <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-3 leading-tight"
                   style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px,3vw,28px)', letterSpacing: '-0.03em' }}>
@@ -547,7 +543,6 @@ await client.createContractExecutionTransaction({
                 <div className="flex flex-col gap-3">
                   {[
                     { label: 'Job ID', value: `#${id}`, mono: true },
-                    { label: 'Contract', value: formatAddress(CONTRACT_ADDRESS), link: `https://testnet.arcscan.app/address/${CONTRACT_ADDRESS}` },
                     { label: 'Client', value: formatAddress(core.client), link: `https://testnet.arcscan.app/address/${core.client}` },
                     { label: 'Network', value: 'Arc Testnet · 5042002', mono: true },
                     { label: 'Memo', value: buildMemo('job', id), mono: true },

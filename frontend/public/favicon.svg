@@ -1,17 +1,13 @@
-<svg width="64" height="64" viewBox="0 0 64 64" role="img" xmlns="http://www.w3.org/2000/svg">
+<svg width="64" height="64" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" role="img">
   <title>AgentBoard</title>
-  <desc>AgentBoard — orbiting agent node mark, purple to pink gradient</desc>
-
+  <desc>AgentBoard agent: ceramic head, orange-framed dark screen, two glowing eyes</desc>
   <defs>
-    <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7C5CFC"/>
-      <stop offset="100%" stop-color="#f472b6"/>
-    </linearGradient>
+    <linearGradient id="shell" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#f1f5f9"/><stop offset="1" stop-color="#d9e0ea"/></linearGradient>
   </defs>
-
-  <rect x="2" y="2" width="60" height="60" rx="18" fill="url(#logoGrad)"/>
-
-  <!-- Agent node: orbiting satellite around a core, matching the in-app header mark -->
-  <circle cx="32" cy="32" r="12" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-opacity="0.92"/>
-  <circle cx="32" cy="20" r="4.6" fill="#ffffff"/>
+  <rect x="12.4" y="0.8" width="7.2" height="4.6" rx="1.8" fill="#E54826"/>
+  <rect x="0.6" y="13" width="3" height="8" rx="1.5" fill="#111827"/><rect x="28.4" y="13" width="3" height="8" rx="1.5" fill="#111827"/>
+  <rect x="2" y="4.6" width="28" height="24" rx="8.5" fill="url(#shell)" stroke="rgba(17,24,39,.3)"/>
+  <rect x="5.6" y="8.2" width="20.8" height="16.8" rx="5.6" fill="#E54826"/>
+  <rect x="7.2" y="9.8" width="17.6" height="13.6" rx="4.2" fill="#08090b"/>
+  <rect x="11" y="13.4" width="3.4" height="5.6" rx="1.7" fill="#fff4e8"/><rect x="17.6" y="13.4" width="3.4" height="5.6" rx="1.7" fill="#fff4e8"/>
 </svg>

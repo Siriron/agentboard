@@ -327,11 +327,6 @@ export default function Register() {
                     Check
                   </button>
                 </div>
-                <a href="https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e" target="_blank" rel="noreferrer"
-                  className="flex items-center gap-1.5 mt-2 text-[var(--text-1)]/25 text-[11px] hover:text-purple-400 transition-colors"
-                  style={{ fontFamily: 'var(--font-mono)' }}>
-                  <ExternalLink size={9} /> Identity Registry: 0x8004A818…BD9e
-                </a>
               </div>
 
               {/* Registration status — shown whether `registered` came

@@ -48,5 +48,3 @@
 .mascot-stage::before { content: ''; position: absolute; inset: 0; background: var(--stage-bg); pointer-events: none; }
 .mascot-stage > div { position: relative; }
 .mascot-stage-fb { display: grid; place-items: center; height: 100%; }
-.mascot-hint { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); font-size: 12px; font-weight: 500; color: var(--text-3); padding: 3px 10px; border-radius: var(--r-pill); background: var(--bg-card); border: 1px solid var(--border); pointer-events: none; transition: opacity var(--t-med) var(--ease-out); }
-.mascot-hint[data-gone] { opacity: 0; }

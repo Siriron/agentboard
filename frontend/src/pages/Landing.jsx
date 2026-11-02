@@ -1,5 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { selectNetwork } from '../lib/selectNetwork'
+import { useConfirmMainnet } from '../components/MainnetConfirm'
 import { ArrowRight, Bot, Fingerprint, Gavel, Globe, PackageCheck, Shield, Users, Wallet, Zap, Briefcase } from 'lucide-react'
 import MascotAvatar from '../mascot/MascotAvatar'
 import { useNetwork } from '../hooks/useNetwork'
@@ -58,7 +60,7 @@ function useReveal() {
 }
 
 export default function Landing() {
-  const { key: netKey, network } = useNetwork()
+  const { key: netKey, network, setNetwork } = useNetwork()
   const isMain = netKey === 'mainnet'
   const [phase, setPhase] = useState(0)
   const [role, setRole] = useState('client')
@@ -66,6 +68,10 @@ export default function Landing() {
   const heroRef = useRef(null)
   const mascotRef = useRef(null)
   const stageRef = useRef(null)
+  const navigate = useNavigate()
+  const confirmMainnet = useConfirmMainnet()
+  // The launch buttons are the way into an app network; the header switch only changes the network while the landing stays open.
+  const openNetwork = async k => { if (await selectNetwork(k, netKey, setNetwork, confirmMainnet)) navigate(`/${k}`) }
   useReveal()
 
   // Live count straight from the chain; hidden until it loads.
@@ -129,13 +135,16 @@ export default function Landing() {
             <a className="btn btn-primary btn-lg" href="#flow">See how it works</a>
             <Link className="btn btn-secondary btn-lg" to="/docs">Read the docs</Link>
           </div>
-          <p className="lp-hint">Choose <b className="h-test">Testnet</b> or <b className="h-main">Mainnet</b> in the header to open that network.</p>
+          <div className="lp-launch" role="group" aria-label="Open the app">
+            <button type="button" className="btn btn-test" onClick={() => openNetwork('testnet')}><span className="net-dot" aria-hidden /> Open Testnet</button>
+            <button type="button" className="btn btn-main" onClick={() => openNetwork('mainnet')}><span className="net-dot" aria-hidden /> Open Mainnet</button>
+          </div>
         </div>
         <div className="lp-stage-wrap">
           <div className="lp-stage" ref={stageRef} aria-label="AgentBoard agent">
             <div className="lp-canvas">
               <Suspense fallback={<div style={{ display: 'grid', placeItems: 'center', height: '100%' }}><MascotAvatar size={150} /></div>}>
-                <Mascot3D ref={mascotRef} expression="idle" pose="hero" hint />
+                <Mascot3D ref={mascotRef} expression="idle" pose="hero" />
               </Suspense>
             </div>
             {/* restored floating elements: pointer-events none, so they never block the mascot, buttons or scrolling */}

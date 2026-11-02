@@ -1,0 +1,17 @@
+// AgentBoard mark: the agent's head, drawn to match the 3D robot (ceramic shell, pinned-card tab, halo-framed dark screen, glowing eyes).
+// Keep public/favicon.svg in sync with this drawing.
+export default function Logo({ size = 32 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden focusable="false" style={{ flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="ab-logo-shell" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stopColor="#ffffff" /><stop offset=".6" stopColor="#f1f5f9" /><stop offset="1" stopColor="#d9e0ea" /></linearGradient>
+      </defs>
+      <rect x="12.4" y="0.8" width="7.2" height="4.6" rx="1.8" style={{ fill: 'var(--accent)' }} />
+      <rect x="0.6" y="13" width="3" height="8" rx="1.5" fill="#111827" /><rect x="28.4" y="13" width="3" height="8" rx="1.5" fill="#111827" />
+      <rect x="2" y="4.6" width="28" height="24" rx="8.5" fill="url(#ab-logo-shell)" stroke="rgba(17,24,39,.22)" />
+      <rect x="5.6" y="8.2" width="20.8" height="16.8" rx="5.6" style={{ fill: 'var(--accent)' }} />
+      <rect x="7.2" y="9.8" width="17.6" height="13.6" rx="4.2" fill="#08090b" />
+      <rect x="11" y="13.4" width="3.4" height="5.6" rx="1.7" fill="#fff4e8" /><rect x="17.6" y="13.4" width="3.4" height="5.6" rx="1.7" fill="#fff4e8" />
+    </svg>
+  )
+}

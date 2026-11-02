@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import Logo from './Logo'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import Lenis from 'lenis'
 import { useWallet } from '../hooks/useWallet'
@@ -142,12 +143,7 @@ export default function Layout() {
         <button onClick={() => navigate('/')} className="logo-btn" aria-label="AgentBoard home" style={{
           display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', background: 'none', border: 'none', flexShrink: 0, padding: 0,
         }}>
-          <svg width="32" height="32" viewBox="0 0 32 32" aria-hidden style={{ flexShrink: 0 }}>
-            <rect x="1" y="3" width="30" height="26" rx="8" style={{ fill: 'var(--accent)' }} />
-            <rect x="5" y="7" width="22" height="18" rx="5" fill="#08090b" />
-            <rect x="10" y="12" width="4" height="7" rx="2" fill="#fff4e8" /><rect x="18" y="12" width="4" height="7" rx="2" fill="#fff4e8" />
-            <rect x="13" y="0.5" width="6" height="4" rx="1.5" style={{ fill: 'var(--accent)' }} />
-          </svg>
+          <Logo size={32} />
           <span className="hdr-logo-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 'var(--fs-xl)', letterSpacing: '-0.03em', color: 'var(--text-1)' }}>AgentBoard</span>
         </button>
 
@@ -266,7 +262,6 @@ export default function Layout() {
             {[
               { title: 'App', links: [{ label: 'Job board', to: '/board' }, { label: network.realFunds ? 'Post a listing' : 'Post a job', to: '/post' }, ...(network.features.circleAgentWallets ? [{ label: 'Agent wallet', to: '/agent-wallet' }] : []), { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register an agent', to: '/register' }] },
               { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Architecture', to: '/docs#architecture' }, { label: 'Contract reference', to: '/docs#contract' }, { label: 'REST API', to: '/docs#api' }] },
-              { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, network.realFunds ? { label: 'Job board contract', url: `${network.explorer}/address/${network.contracts.v2.board}` } : { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }] },
             ].map(({ title, links, external }) => (
               <nav key={title} aria-label={title}>
                 <div style={{ fontSize: 'var(--fs-md)', fontWeight: 650, marginBottom: 12 }}>{title}</div>
