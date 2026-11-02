@@ -8,7 +8,7 @@ import { protocolFor } from '../lib/networks'
 import ThemeSwitch from './ThemeSwitch'
 import NetworkSwitch from './NetworkSwitch'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
-import { Zap, ExternalLink, Menu, X, Wallet, ChevronDown, AlertTriangle } from 'lucide-react'
+import { Menu, X, Wallet, ChevronDown, AlertTriangle } from 'lucide-react'
 
 export default function Layout() {
   const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError, wrongChain, switchChain } = useWallet()
@@ -158,7 +158,7 @@ export default function Layout() {
 
         <div className="hdr-right">
           <NetworkSwitch compact />
-          <span className="hide-xs"><ThemeSwitch /></span>
+          <span className="hdr-theme"><ThemeSwitch compact /></span>
           {activeAddress ? (
             <div ref={menuRef} style={{ position: 'relative' }}>
               <button className="address-pill" aria-haspopup="menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(o => !o)}
@@ -252,32 +252,28 @@ export default function Layout() {
       </main>
 
       {/* ── FOOTER ── */}
-      <footer style={{ borderTop: '1px solid var(--border-strong)', padding: 'clamp(40px,6vw,72px) var(--gutter) 28px', background: 'var(--bg)' }}>
-        <div style={{ maxWidth: 1180, margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 36, marginBottom: 40 }}>
-            <div style={{ gridColumn: 'span 1' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 'var(--fs-3xl)', letterSpacing: '-0.03em', marginBottom: 10 }}>AgentBoard</div>
-              <p style={{ fontSize: 'var(--fs-md)', color: 'var(--text-2)', maxWidth: 240 }}>Hire agents, pay through USDC escrow. Currently on {network.label}.</p>
+      <footer className="ftr">
+        <div className="ftr-in">
+          <div className="ftr-top">
+            <div className="ftr-brand">
+              <div className="ftr-name"><Logo size={28} /><span>AgentBoard</span></div>
+              <p>Hire agents and pay through USDC escrow on Arc.</p>
             </div>
             {[
               { title: 'App', links: [{ label: 'Job board', to: '/board' }, { label: network.realFunds ? 'Post a listing' : 'Post a job', to: '/post' }, ...(network.features.circleAgentWallets ? [{ label: 'Agent wallet', to: '/agent-wallet' }] : []), { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register an agent', to: '/register' }] },
               { title: 'Developers', links: [{ label: 'Documentation', to: '/docs' }, { label: 'Architecture', to: '/docs#architecture' }, { label: 'Contract reference', to: '/docs#contract' }, { label: 'REST API', to: '/docs#api' }] },
-            ].map(({ title, links, external }) => (
-              <nav key={title} aria-label={title}>
-                <div style={{ fontSize: 'var(--fs-md)', fontWeight: 650, marginBottom: 12 }}>{title}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                  {(links || []).map(({ label, to }) => <NavLink key={to} to={to} className="foot-link">{label}</NavLink>)}
-                  {(external || []).map(({ label, url }) => <a key={url} href={url} target="_blank" rel="noreferrer" className="foot-link"><ExternalLink size={12} aria-hidden />{label}</a>)}
+            ].map(({ title, links }) => (
+              <nav key={title} aria-label={title} className="ftr-col">
+                <h3>{title}</h3>
+                <div className="ftr-links">
+                  {links.map(({ label, to }) => <NavLink key={to} to={to} className="foot-link">{label}</NavLink>)}
                 </div>
               </nav>
             ))}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>© 2026 AgentBoard. Built on Arc. <span className="num" style={{ color: 'var(--text-3)' }}>build {__BUILD_ID__}</span></span>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <span className={network.realFunds ? 'tag-main' : 'tag-test'}>{network.label}</span>
-              <span className="badge badge-cancelled">ERC-8183</span><span className="badge badge-cancelled">ERC-8004</span>
-            </div>
+          <div className="ftr-bottom">
+            <span>© 2026 AgentBoard. Built on Arc.</span>
+            <span className={`ftr-net ${network.realFunds ? 'is-main' : 'is-test'}`}><i aria-hidden />{network.label}</span>
           </div>
         </div>
       </footer>

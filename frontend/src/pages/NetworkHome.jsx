@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowUpRight, Bot, Briefcase, FileText, Fingerprint, Gavel, LayoutDashboard, Trophy, Wallet } from 'lucide-react'
+import { ArrowUpRight, Briefcase, FileText, Fingerprint, FlaskConical, Gavel, LayoutDashboard, ShieldAlert, Trophy, Wallet } from 'lucide-react'
 import MascotStage from '../mascot/MascotStage'
 import { useNetwork } from '../hooks/useNetwork'
 import { NETWORKS } from '../lib/networks'
@@ -46,12 +46,6 @@ export default function NetworkHome({ target }) {
     ...(net.features.circleAgentWallets ? [{ to: '/agent-wallet', icon: Wallet, title: 'Agent wallet', desc: 'Create a Circle wallet for an agent. Testnet only.' }] : []),
     { to: '/docs', icon: Gavel, title: 'Documentation', desc: 'Architecture, contracts and the REST API.' },
   ]
-  const info = [
-    ['Network', net.label], ['Chain ID', String(net.chain.id)], ['Currency', 'USDC'],
-    ['Explorer', <a key="e" href={net.explorer} target="_blank" rel="noreferrer">{net.explorer.replace('https://', '')} <ArrowUpRight size={12} aria-hidden /></a>],
-    ...(net.features?.faucet ? [['Test USDC', <a key="f" href={net.features.faucet} target="_blank" rel="noreferrer">faucet.circle.com <ArrowUpRight size={12} aria-hidden /></a>]] : []),
-  ]
-
   return (
     <div className={`nh ${isMain ? 'is-main' : 'is-test'}`}>
       <section className="nh-hero">
@@ -81,26 +75,32 @@ export default function NetworkHome({ target }) {
         </div>
       </section>
 
-      <section className="nh-wrap nh-section nh-two" aria-labelledby="nh-info">
-        <div>
-          <h2 id="nh-info">Network details</h2>
-          <dl className="nh-info">{info.map(([k, v]) => <div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>
-        </div>
-        <div>
-          <h2>{isMain ? 'Before you use real USDC' : 'Practice first'}</h2>
-          <ul className="nh-list">
-            {isMain ? <>
-              <li>Escrow lowers payment risk. It does not remove smart-contract risk.</li>
-              <li>The mainnet contracts have not had an independent security review.</li>
-              <li>Transactions are final within about a second and cannot be reversed.</li>
-              <li>New here? <Link to="/testnet" className="u">Practice on testnet</Link> first.</li>
-            </> : <>
-              <li>Test USDC has no real value. Get some from the Circle faucet.</li>
-              <li>Agents can use a Circle developer-controlled wallet on testnet.</li>
-              <li>Everything you try here maps to the same flow on mainnet.</li>
-              <li>Ready for real money? <Link to="/mainnet" className="u">Open Mainnet</Link>.</li>
-            </>}
-          </ul>
+      <section className="nh-wrap nh-section nh-note-sec" aria-labelledby="nh-note">
+        <div className="nh-note">
+          <span className="nh-ico">{isMain ? <ShieldAlert size={18} aria-hidden /> : <FlaskConical size={18} aria-hidden />}</span>
+          <div>
+            <h2 id="nh-note">{isMain ? 'Before you use real USDC' : 'Practice first'}</h2>
+            <ul className="nh-list">
+              {isMain ? <>
+                <li>Escrow lowers payment risk. It does not remove smart-contract risk.</li>
+                <li>The mainnet contracts have not had an independent security review.</li>
+                <li>Transactions are final within about a second and cannot be reversed.</li>
+                <li>Start with a small job.</li>
+              </> : <>
+                <li>Test USDC has no real value.</li>
+                <li>Agents can use a Circle developer-controlled wallet on testnet.</li>
+                <li>Everything you try here maps to the same flow on mainnet.</li>
+              </>}
+            </ul>
+          </div>
+          <div className="nh-note-cta">
+            {isMain
+              ? <Link to="/testnet" className="btn btn-secondary">Practice on testnet</Link>
+              : <>
+                  {net.features?.faucet && <a href={net.features.faucet} target="_blank" rel="noreferrer" className="btn btn-test">Get test USDC <ArrowUpRight size={14} aria-hidden /></a>}
+                  <Link to="/mainnet" className="btn btn-secondary">Open Mainnet</Link>
+                </>}
+          </div>
         </div>
       </section>
     </div>
