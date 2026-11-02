@@ -4,19 +4,20 @@ import MascotAvatar from './MascotAvatar'
 
 // Mounts the three.js scene. This file (and three itself) is only loaded through React.lazy on the landing page.
 // Falls back to the 2D avatar if WebGL is unavailable or the context is lost. Pauses when off-screen or the tab is hidden.
-const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'hero', fallbackSize = 220, label = 'AgentBoard agent' }, ref) {
+const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'hero', fallbackSize = 220, label = 'AgentBoard agent', hint = false }, ref) {
   const canvasRef = useRef(null)
   const wrapRef = useRef(null)
   const sceneRef = useRef(null)
   const { resolved } = useTheme()
   const [failed, setFailed] = useState(false)
   const [ready, setReady] = useState(false)
+  const [dragged, setDragged] = useState(false)
   const themeRef = useRef(resolved); themeRef.current = resolved
   // Imperative handle so scroll progress can be fed every frame without re-rendering React.
   useImperativeHandle(ref, () => ({ setProgress: p => sceneRef.current?.setProgress(p), react: () => sceneRef.current?.react() }), [])
 
   useEffect(() => {
-    let disposed = false, ro, io, onVis, onMove, onDown, onUp, scene
+    let disposed = false, ro, io, onVis, onMove, onDown, onUp, onDrag, scene
     const canvas = canvasRef.current, wrap = wrapRef.current
     ;(async () => {
       try {
@@ -42,9 +43,27 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
           }
           window.addEventListener('pointermove', onMove, { passive: true })
         }
-        onDown = e => { scene.react(); scene.flash(e.pointerType === 'touch' ? 'happy' : 'curious'); if (e.pointerType === 'touch') onMove(e) }
-        onUp = () => scene.setPointer(0, 0)
-        wrap.addEventListener('pointerdown', onDown); wrap.addEventListener('pointerup', onUp); wrap.addEventListener('pointercancel', onUp)
+        // Drag to spin: horizontal movement rotates the robot (about 520px = one full turn). Vertical movement is left to the
+        // browser so the page still scrolls on touch; the browser then fires pointercancel and the spin is released.
+        const drag = { id: -1, x: 0, y: 0, t: 0, on: false }
+        onDown = e => {
+          scene.react(); scene.flash(e.pointerType === 'touch' ? 'happy' : 'curious'); if (e.pointerType === 'touch') onMove(e)
+          drag.id = e.pointerId; drag.x = e.clientX; drag.y = e.clientY; drag.t = performance.now(); drag.on = false
+        }
+        onDrag = e => {
+          if (e.pointerId !== drag.id) return
+          const dx = e.clientX - drag.x, dy = e.clientY - drag.y
+          if (!drag.on) {
+            if (Math.abs(dx) < 5 || Math.abs(dx) < Math.abs(dy)) return
+            drag.on = true; try { wrap.setPointerCapture(e.pointerId) } catch { /* ignore */ }
+            wrap.style.cursor = 'grabbing'; setDragged(true)
+          }
+          const now = performance.now(); scene.dragBy(dx * 0.012, (now - drag.t) / 1000)
+          drag.x = e.clientX; drag.y = e.clientY; drag.t = now
+        }
+        onUp = () => { drag.id = -1; if (drag.on) { drag.on = false; scene.endDrag(); wrap.style.cursor = '' } scene.setPointer(0, 0) }
+        wrap.addEventListener('pointerdown', onDown); wrap.addEventListener('pointermove', onDrag, { passive: true })
+        wrap.addEventListener('pointerup', onUp); wrap.addEventListener('pointercancel', onUp)
         scene.start(); setReady(true)
       } catch (err) { console.warn('[mascot] WebGL unavailable, using 2D fallback:', err); if (!disposed) setFailed(true) }
     })()
@@ -53,7 +72,7 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
       ro?.disconnect(); io?.disconnect()
       if (onVis) document.removeEventListener('visibilitychange', onVis)
       if (onMove) window.removeEventListener('pointermove', onMove)
-      if (onDown) { wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointerup', onUp); wrap.removeEventListener('pointercancel', onUp) }
+      if (onDown) { wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onDrag); wrap.removeEventListener('pointerup', onUp); wrap.removeEventListener('pointercancel', onUp) }
       scene?.dispose(); sceneRef.current = null
     }
   }, [])
@@ -64,8 +83,9 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
 
   if (failed) return <div className="mascot-fallback" style={{ display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}><MascotAvatar expression={expression} size={fallbackSize} label={label} /></div>
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative', touchAction: 'pan-y', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', cursor: 'pointer' }}>
+    <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative', touchAction: 'pan-y', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', cursor: 'grab' }}>
       <canvas ref={canvasRef} role="img" aria-label={label} style={{ width: '100%', height: '100%', display: 'block', opacity: ready ? 1 : 0, transition: 'opacity .6s var(--ease-out)' }} />
+      {hint && ready && <span className="mascot-hint" data-gone={dragged || undefined} aria-hidden>Drag to rotate</span>}
       {!ready && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}><MascotAvatar expression="idle" size={fallbackSize * 0.6} /></div>}
     </div>
   )

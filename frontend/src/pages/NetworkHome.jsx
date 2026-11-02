@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, Bot, Briefcase, FileText, Fingerprint, Gavel, LayoutDashboard, Trophy, Wallet } from 'lucide-react'
-import MascotAvatar from '../mascot/MascotAvatar'
+import MascotStage from '../mascot/MascotStage'
 import { useNetwork } from '../hooks/useNetwork'
 import { NETWORKS } from '../lib/networks'
 import { selectNetwork } from '../lib/selectNetwork'
@@ -68,7 +68,7 @@ export default function NetworkHome({ target }) {
             </div>
             {count && <p className="nh-live"><i aria-hidden /><span className="num">{count.n}</span> {isMain ? `listing${count.n === 1 ? '' : 's'} onchain${count.open !== undefined ? `, ${count.open} open` : ''}` : `job${count.n === 1 ? '' : 's'} onchain`}</p>}
           </div>
-          <div className="nh-mascot"><MascotAvatar expression={isMain ? 'curious' : 'happy'} size={168} label={`AgentBoard agent on ${net.short}`} /></div>
+          <div className="nh-mascot"><MascotStage expression={isMain ? 'curious' : 'happy'} pose="hero" label={`AgentBoard agent on ${net.short}`} /></div>
         </div>
       </section>
 

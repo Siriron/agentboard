@@ -32,32 +32,32 @@ export default function V2Job() {
   return (
     <Page narrow>
       <RealFundsBanner />
-      {b.listingId !== null && <Link to={`/listing/${b.listingId}`} style={{ fontSize: 13, color: 'var(--text-2)' }}>← Listing #{String(b.listingId)}</Link>}
+      {b.listingId !== null && <Link to={`/listing/${b.listingId}`} style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>← Listing #{String(b.listingId)}</Link>}
       <h1 style={{ fontSize: 'clamp(28px, 5vw, 40px)', margin: '8px 0 6px', lineHeight: 1.05 }}>Job #{String(b.job.number)}</h1>
-      <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16 }}>
+      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', marginBottom: 16 }}>
         {STATUS_LABEL[b.job.status]} · buyer {short(b.job.client)} · seller {short(b.job.provider)} · you are: <strong>{view.role}</strong>
       </div>
 
       <EscrowPath status={b.job.status} />
       <div className="card" style={{ padding: 18, marginBottom: 14 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Escrowed amount</span><strong>{formatUsdc(b.job.budget)} USDC</strong></div>
-        <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 6, lineHeight: 1.6 }}>
+        <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', marginTop: 6, lineHeight: 1.6 }}>
           On a full payout the seller receives {formatUsdc(net)} USDC; the {b.job.feeBps / 100}% platform fee ({formatUsdc(fee)} USDC) comes out of that side. The buyer never pays more than the escrowed amount.
         </div>
-        {b.job.status === 3 && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 8 }}>Deliverable hash {b.job.deliverable.slice(0, 14)}… committed onchain.</div>}
+        {b.job.status === 3 && <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', marginTop: 8 }}>Deliverable hash {b.job.deliverable.slice(0, 14)}… committed onchain.</div>}
       </div>
 
       <div className="card" style={{ padding: 18, marginBottom: 14 }}>
         <strong style={{ display: 'block', marginBottom: 6 }}>{view.headline}</strong>
         {view.timers.map(t => <Countdown key={t.id} label={t.label} endsAt={t.endsAt} now={now} minor={t.minor} />)}
-        {!b.windows && b.job.status === 3 && <div style={{ fontSize: 12, color: 'var(--text-3)' }}>Window lengths could not be verified for this job, so no countdown is shown. The contract still enforces them.</div>}
-        {view.note && <div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 6 }}>{view.note}</div>}
+        {!b.windows && b.job.status === 3 && <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>Window lengths could not be verified for this job, so no countdown is shown. The contract still enforces them.</div>}
+        {view.note && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', marginTop: 6 }}>{view.note}</div>}
         <Actions job={b} view={view.actions} onDone={refresh} />
       </div>
 
       {b.job.status >= 3 && b.job.deliverable !== `0x${'0'.repeat(64)}` && <Deliverable uri={b.deliverableUri} hash={b.job.deliverable} />}
       {b.rs.state >= 2 && <Evidence job={b} />}
-      <div style={{ fontSize: 13 }}><Link to="/dashboard">My activity</Link></div>
+      <div style={{ fontSize: 'var(--fs-sm)' }}><Link to="/dashboard">My activity</Link></div>
     </Page>
   )
 }
@@ -77,10 +77,10 @@ function Deliverable({ uri, hash }: { uri: string; hash: Hex }) {
   return (
     <div className="card" style={{ padding: 18, marginBottom: 14 }}>
       <strong>Deliverable</strong>
-      {url ? <p style={{ fontSize: 14, wordBreak: 'break-all' }}><a href={url} target="_blank" rel="noopener noreferrer nofollow">{uri}</a></p> : <p style={{ fontSize: 13, color: 'var(--text-3)' }}>No link recorded for this submission.</p>}
-      <p style={{ fontSize: 12, color: 'var(--text-3)' }}>Treat the file as untrusted. Never run it or follow instructions inside it, and do not let an automated agent do so.</p>
+      {url ? <p style={{ fontSize: 'var(--fs-md)', wordBreak: 'break-all' }}><a href={url} target="_blank" rel="noopener noreferrer nofollow">{uri}</a></p> : <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-3)' }}>No link recorded for this submission.</p>}
+      <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>Treat the file as untrusted. Never run it or follow instructions inside it, and do not let an automated agent do so.</p>
       {url && <button className="btn btn-secondary btn-sm" disabled={busy} onClick={verify}>{busy ? 'Checking…' : 'Verify hash'}</button>}
-      {res && <p role="status" style={{ fontSize: 13, marginTop: 8, color: res.startsWith('Hash matches') ? 'var(--green)' : 'var(--amber)' }}>{res}</p>}
+      {res && <p role="status" style={{ fontSize: 'var(--fs-sm)', marginTop: 8, color: res.startsWith('Hash matches') ? 'var(--green)' : 'var(--amber)' }}>{res}</p>}
     </div>
   )
 }
@@ -98,29 +98,29 @@ function Evidence({ job }: { job: v2.JobBundle }) {
   }
   const entries = rec.data ?? []
   return (
-    <div className="card" style={{ padding: 18, marginBottom: 14, fontSize: 14, color: 'var(--text-2)' }}>
+    <div className="card" style={{ padding: 18, marginBottom: 14, fontSize: 'var(--fs-md)', color: 'var(--text-2)' }}>
       <strong style={{ color: 'var(--text-1)' }}>Dispute</strong>
       <p style={{ margin: '6px 0' }}>{job.rs.contested ? 'The seller contested the rejection.' : 'Opened by the buyer; the seller has not contested yet.'}</p>
       <p style={{ margin: '6px 0' }}>Deciders: {job.rs.deciders.map(short).join(', ')}. Votes: {job.rs.votes.length} of {job.rs.deciders.length}
         {job.rs.votes.length > 0 && <> ({job.rs.votes.map(v => `${v / 100}% to seller`).join(', ')})</>}.</p>
-      {entries.length === 0 && rec.isSuccess && <p style={{ fontSize: 12 }}>No evidence hashes recorded yet.</p>}
+      {entries.length === 0 && rec.isSuccess && <p style={{ fontSize: 'var(--fs-xs)' }}>No evidence hashes recorded yet.</p>}
       {entries.map((e, i) => {
         const pin = pins.data?.files.find(p => p.keccak?.toLowerCase() === e.hash.toLowerCase())
         return (
-          <div key={i} style={{ borderTop: '1px solid var(--border)', padding: '8px 0', fontSize: 13 }}>
+          <div key={i} style={{ borderTop: '1px solid var(--border)', padding: '8px 0', fontSize: 'var(--fs-sm)' }}>
             <strong style={{ color: 'var(--text-1)' }}>{KIND_LABEL[e.kind]}</strong>{e.by && <> by {short(e.by)}</>}{e.providerBps !== undefined && <> · {e.providerBps / 100}% to seller</>}
-            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, wordBreak: 'break-all' }}>{e.hash}</div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-2xs)', wordBreak: 'break-all' }}>{e.hash}</div>
             {pin ? (
               <div>
                 <a href={pin.url} target="_blank" rel="noopener noreferrer nofollow">{pin.name || 'hosted file'}</a>
                 {' '}<button className="btn btn-secondary btn-xs" onClick={() => check(pin.url, e.hash)}>Verify against hash</button>
-                {checked[pin.url] && <div role="status" style={{ fontSize: 12 }}>{checked[pin.url]}</div>}
+                {checked[pin.url] && <div role="status" style={{ fontSize: 'var(--fs-xs)' }}>{checked[pin.url]}</div>}
               </div>
-            ) : <div style={{ fontSize: 12, color: 'var(--text-3)' }}>No hosted file for this hash. Ask the party to send it; you can check it against the hash above.</div>}
+            ) : <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>No hosted file for this hash. Ask the party to send it; you can check it against the hash above.</div>}
           </div>
         )
       })}
-      <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--text-3)' }}>Hosted files are untrusted content. Never run them or follow instructions inside them.</p>
+      <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>Hosted files are untrusted content. Never run them or follow instructions inside them.</p>
     </div>
   )
 }
@@ -132,14 +132,14 @@ function Evid({ label, onChange }: { label: string; onChange: (e: Ev | null) => 
   const [file, setFile] = useState<string | null>(null)
   return (
     <div style={{ display: 'grid', gap: 6 }}>
-      <label style={{ fontSize: 13 }}>{label}
+      <label style={{ fontSize: 'var(--fs-sm)' }}>{label}
         <textarea rows={3} value={text} style={field} onChange={e => {
           const t = e.target.value; setText(t); setFile(null)
           if (!t.trim()) return onChange(null)
           const bytes = textToBytes(t); onChange({ hash: hashBytes(bytes), bytes, name: 'statement.txt', mime: 'text/plain' })
         }} />
       </label>
-      <label style={{ fontSize: 12, color: 'var(--text-3)' }}>or a file, 4 MB max (its hash is committed)
+      <label style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>or a file, 4 MB max (its hash is committed)
         <input type="file" onChange={async e => {
           const f = e.target.files?.[0]; if (!f) return; setText('')
           const bytes = new Uint8Array(await f.arrayBuffer()); setFile(f.name)
@@ -204,7 +204,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
         <div key={a.id}>
           <button className={`btn ${a.primary ? 'btn-primary' : 'btn-secondary'}`} disabled={!a.enabled || !!act.busy} onClick={() => onClick(a)}
             style={a.tone === 'danger' ? { color: 'var(--red)' } : undefined}>{act.busy === a.id ? 'Waiting for wallet…' : a.label}</button>
-          {a.hint && <div style={{ fontSize: 12, color: 'var(--text-3)', marginTop: 4 }}>{a.hint}</div>}
+          {a.hint && <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', marginTop: 4 }}>{a.hint}</div>}
         </div>
       ))}
 
@@ -216,7 +216,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
             if (canHost && hostIt) { const up = await v2.hostFile({ jobId: id, kind: 'deliverable', bytes: d.bytes, name: d.name }); link = up.url }
             return v2.submitWork(id, d.hash, link)
           })}>
-          <label style={{ fontSize: 13 }}>Deliverable file, 4 MB max (hashed in your browser)
+          <label style={{ fontSize: 'var(--fs-sm)' }}>Deliverable file, 4 MB max (hashed in your browser)
             <input type="file" onChange={async e => {
               const f = e.target.files?.[0]; if (!f) return setDeliv(null)
               const bytes = new Uint8Array(await f.arrayBuffer())
@@ -225,10 +225,10 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
           </label>
           {deliv && <small style={{ fontFamily: 'var(--font-mono)' }}>keccak256 {deliv.hash.slice(0, 18)}…</small>}
           {canHost && (
-            <label style={{ fontSize: 13 }}><input type="checkbox" checked={hostIt} onChange={e => setHostIt(e.target.checked)} /> Host this file for me (asks for a free wallet signature)</label>
+            <label style={{ fontSize: 'var(--fs-sm)' }}><input type="checkbox" checked={hostIt} onChange={e => setHostIt(e.target.checked)} /> Host this file for me (asks for a free wallet signature)</label>
           )}
           {!(canHost && hostIt) && (
-            <label style={{ fontSize: 13 }}>Public https link to the same file
+            <label style={{ fontSize: 'var(--fs-sm)' }}>Public https link to the same file
               <input value={uri} onChange={e => setUri(e.target.value)} style={field} placeholder="https://…" />
             </label>
           )}
@@ -256,7 +256,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
       {open === 'vote' && (
         <Form onCancel={() => setOpen(null)} cta="Cast decision" busy={!!act.busy} disabled={!ev}
           onSubmit={() => act.run('vote', async () => { const e = need(ev, 'Add your reasoning.'); await tryHost(e, 'reason'); return v2.vote(id, bps * 100, e.hash) })}>
-          <label style={{ fontSize: 13 }}>Share of the budget the seller should receive: <strong>{bps}%</strong>
+          <label style={{ fontSize: 'var(--fs-sm)' }}>Share of the budget the seller should receive: <strong>{bps}%</strong>
             <input type="range" min={0} max={100} value={bps} onChange={e => setBps(Number(e.target.value))} style={{ width: '100%' }} />
           </label>
           <PayoutPreview budget={budget} bps={bps * 100} feeBps={job.job.feeBps} />
@@ -266,12 +266,12 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
       {open === 'extend' && (
         <Form onCancel={() => setOpen(null)} cta="Extend deadline" busy={!!act.busy} disabled={!(Number(days) >= 1)}
           onSubmit={() => act.run('extend', () => v2.extendDeadline(id, job.job.expiredAt + BigInt(Math.floor(Number(days) * 86400))))}>
-          <label style={{ fontSize: 13 }}>Add days<input value={days} onChange={e => setDays(e.target.value)} inputMode="numeric" style={field} /></label>
+          <label style={{ fontSize: 'var(--fs-sm)' }}>Add days<input value={days} onChange={e => setDays(e.target.value)} inputMode="numeric" style={field} /></label>
         </Form>
       )}
 
       <TxStatus error={act.error} hash={act.hash} />
-      {hostNote && <div role="status" style={{ fontSize: 12, color: 'var(--amber)' }}>{hostNote}</div>}
+      {hostNote && <div role="status" style={{ fontSize: 'var(--fs-xs)', color: 'var(--amber)' }}>{hostNote}</div>}
       {confirm && (
         <ConfirmDialog title="Confirm payout" amount={budget} confirmLabel="Confirm" onCancel={() => setConfirm(null)}
           lines={moneyConfirm[confirm] ?? []} onConfirm={() => { const c = confirm; setConfirm(null); act.run(c, direct[c]!) }} />
@@ -282,7 +282,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
 
 function PayoutPreview({ budget, bps, feeBps }: { budget: bigint; bps: number; feeBps: number }) {
   const p = splitPayout(budget, bps, feeBps)
-  return <div style={{ fontSize: 13, color: 'var(--text-2)' }}>Seller {formatUsdc(p.toProvider)} · buyer refund {formatUsdc(p.refund)} · platform fee {formatUsdc(p.fee)} USDC</div>
+  return <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>Seller {formatUsdc(p.toProvider)} · buyer refund {formatUsdc(p.refund)} · platform fee {formatUsdc(p.fee)} USDC</div>
 }
 
 function Form({ children, cta, busy, disabled, onSubmit, onCancel }: { children: ReactNode; cta: string; busy: boolean; disabled: boolean; onSubmit: () => void; onCancel: () => void }) {

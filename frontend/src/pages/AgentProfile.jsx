@@ -101,7 +101,7 @@ export default function AgentProfile() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 flex-wrap mb-2">
                       <h1 className="font-black text-[var(--text-1)] tracking-tighter"
-                        style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '-0.03em' }}>
+                        style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.03em' }}>
                         {formatAddress(address)}
                       </h1>
                       {agentId !== null && (
@@ -133,7 +133,7 @@ export default function AgentProfile() {
                   ].map(({ label, value, text, ticker, color }) => (
                     <div key={label}>
                       <div className={cn('font-black leading-none mb-1', color)}
-                        style={{ fontFamily: 'var(--font-display)', fontSize: 26, letterSpacing: '-0.04em' }}>
+                        style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.04em' }}>
                         {ticker ? <NumberTicker value={value} /> : text}
                       </div>
                       <div className="text-[var(--text-1)]/30 text-xs uppercase tracking-widest font-bold">{label}</div>
@@ -173,7 +173,7 @@ export default function AgentProfile() {
             <BlurFade delay={0.1} inView>
               <div className="rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 overflow-hidden">
                 <div className="px-6 py-4 border-b border-[var(--border)]/5">
-                  <h2 className="font-bold text-[var(--text-1)]" style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
+                  <h2 className="font-bold text-[var(--text-1)]" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', letterSpacing: '-0.02em' }}>
                     Job History ({jobs.length})
                   </h2>
                 </div>

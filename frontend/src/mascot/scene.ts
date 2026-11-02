@@ -42,6 +42,7 @@ export class MascotScene {
   private pose: Pose = 'hero'; private appear = 0; private appearTarget = 1
   private ptr = { x: 0, y: 0, sx: 0, sy: 0 }
   private impulse = 0
+  private spin = 0; private spinVel = 0; private dragging = false; private releasedAt = 0; private exprStart = 0
   private frame = 0; private raf = 0; private running = false; private last = 0; private time = 0
   private reduced: boolean; private theme: ThemeName; private lowPower: boolean
   private disposables: Array<{ dispose(): void }> = []
@@ -148,7 +149,7 @@ export class MascotScene {
   setExpression(e: Expression) {
     if (e === this.expr) return
     const pc = this.prevFace.getContext('2d')!; pc.clearRect(0, 0, FACE_W, FACE_H); pc.drawImage(this.faceCanvas, 0, 0)
-    this.expr = e; this.fade = 0; this.faceDirty = true
+    this.expr = e; this.fade = 0; this.faceDirty = true; this.exprStart = this.time
     const led = e === 'prompt' ? 0 : e === 'working' ? 1 : e === 'success' || e === 'happy' ? 2 : -1
     this.leds.forEach((m, i) => { m.emissiveIntensity = i === led ? 1.4 : 0.15 })
     this.renderOnce()
@@ -169,6 +170,19 @@ export class MascotScene {
     if (!this.running) this.renderOnce()
   }
   setPointer(nx: number, ny: number) { this.ptr.x = nx; this.ptr.y = ny }
+  /** Drag to spin the robot around its vertical axis, a full 360 degrees and beyond. `rad` is this move's rotation, `dt` seconds since the last move. */
+  dragBy(rad: number, dt: number) {
+    this.dragging = true; this.spin += rad
+    const v = rad / Math.max(0.008, dt); this.spinVel = this.spinVel * 0.6 + Math.max(-14, Math.min(14, v)) * 0.4
+    this.renderOnce()
+  }
+  /** Let go: momentum carries on, then the robot eases round to face the front again. */
+  endDrag() {
+    if (!this.dragging) return
+    this.dragging = false; this.releasedAt = this.time
+    if (this.reduced) { this.spin = 0; this.spinVel = 0 } // no inertia, no animated return: snap to the front
+    this.renderOnce()
+  }
   /** Show an expression briefly, then return to the previous one. Used for taps. */
   flash(e: Expression, ms = 1100) {
     const back = this.expr; this.setExpression(e)
@@ -220,14 +234,14 @@ export class MascotScene {
   private renderOnce() { if (this.running) return; this.step(0.016, true) }
   private faceAcc = 0; private faceDirty = true
   private paintFace(dt: number) {
-    const animated = this.fade < 1 || this.blinkT >= 0 || this.expr === 'working' || this.expr === 'prompt' || this.time > this.blinkAt
+    const animated = this.fade < 1 || this.blinkT >= 0 || this.expr !== 'idle' || this.time > this.blinkAt
     this.faceAcc += dt
     if (!this.faceDirty && !(animated && this.faceAcc >= 1 / 30)) return // idle face: no canvas redraw, no texture upload
     this.faceAcc = 0; this.faceDirty = false
     if (this.blinkT >= 0) { this.blinkT += dt; if (this.blinkT > 0.18) this.blinkT = -1 }
     else if (this.time > this.blinkAt) { this.blinkT = 0; this.blinkAt = this.time + 2.5 + Math.random() * 3 }
     const blink = this.blinkT < 0 ? 0 : Math.sin((this.blinkT / 0.18) * Math.PI)
-    drawFace(this.faceCtx, this.expr, this.time, this.expr === 'idle' || this.expr === 'curious' ? blink : 0)
+    drawFace(this.faceCtx, this.expr, this.time - this.exprStart, this.expr === 'idle' || this.expr === 'curious' ? blink : 0)
     if (this.fade < 1) { this.fade = Math.min(1, this.fade + (dt || 0.016) * 5); this.faceCtx.globalAlpha = 1 - this.fade; this.faceCtx.drawImage(this.prevFace, 0, 0); this.faceCtx.globalAlpha = 1 }
     this.faceTex.needsUpdate = true
   }
@@ -238,10 +252,18 @@ export class MascotScene {
     this.ptr.sx += (this.ptr.x - this.ptr.sx) * (this.reduced ? 0 : 0.08); this.ptr.sy += (this.ptr.y - this.ptr.sy) * (this.reduced ? 0 : 0.08)
     this.appear += (this.appearTarget - this.appear) * (this.reduced ? 1 : 0.06)
     this.impulse = Math.max(0, this.impulse - dt * 1.6)
+    if (!this.dragging && !this.reduced) {
+      if (Math.abs(this.spinVel) > 0.08) { this.spin += this.spinVel * dt; this.spinVel *= Math.pow(0.05, dt) }
+      else {
+        this.spinVel = 0
+        if (this.time - this.releasedAt > 0.9) { const target = Math.round(this.spin / (Math.PI * 2)) * Math.PI * 2; this.spin += (target - this.spin) * (1 - Math.pow(0.004, dt)) }
+      }
+    }
+    const front = Math.max(0, Math.cos(this.spin)) // the head only tracks the pointer while facing forward
     const idle = this.reduced ? 0 : 1
     this.robot.position.y = 0.1 + Math.sin(t * 1.3) * 0.045 * idle
-    this.robot.rotation.y = this.cur.bodyYaw + this.ptr.sx * 0.1
-    this.head.rotation.y = this.cur.headYaw - this.cur.bodyYaw + this.ptr.sx * 0.42
+    this.robot.rotation.y = this.cur.bodyYaw + this.spin + this.ptr.sx * 0.1 * front
+    this.head.rotation.y = this.cur.headYaw - this.cur.bodyYaw + this.ptr.sx * 0.42 * front
     this.head.rotation.x = -(this.cur.headPitch) - this.ptr.sy * 0.16 + Math.sin(t * 0.9) * 0.02 * idle + Math.sin(this.impulse * Math.PI) * 0.16
     this.head.rotation.z = Math.sin(t * 0.7) * 0.02 * idle
     this.handL.position.y = -0.36 + Math.sin(t * 1.3 + 1) * 0.04 * idle; this.handR.position.y = -0.36 + Math.sin(t * 1.3 + 2.2) * 0.04 * idle

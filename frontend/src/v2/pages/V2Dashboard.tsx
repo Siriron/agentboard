@@ -11,7 +11,7 @@ const jobBadge = (s: number) => (s === 4 ? 'badge-validated' : s === 3 ? 'badge-
 function Row({ to, title, meta, badge, badgeClass }: { to: string; title: string; meta: string; badge: string; badgeClass: string }) {
   return (
     <Link to={to} className="card is-link dash-row">
-      <div style={{ minWidth: 0 }}><div style={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{title}</div><div style={{ fontSize: 13, color: 'var(--text-2)', marginTop: 2 }}>{meta}</div></div>
+      <div style={{ minWidth: 0 }}><div style={{ fontWeight: 600, overflowWrap: 'anywhere' }}>{title}</div><div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', marginTop: 2 }}>{meta}</div></div>
       <span className={`badge ${badgeClass}`}>{badge}</span>
     </Link>
   )
@@ -44,7 +44,7 @@ export default function V2Dashboard() {
           {d.claimable > 0n && (
             <div className="card" style={{ padding: 18, borderColor: 'var(--amber)' }}>
               <strong>{formatUsdc(d.claimable)} USDC waiting to withdraw</strong>
-              <p style={{ fontSize: 13.5, color: 'var(--text-2)', margin: '6px 0 12px' }}>A payout could not be sent directly (for example a blocklisted or non-receiving address) and was held for you.</p>
+              <p style={{ fontSize: 'var(--fs-md)', color: 'var(--text-2)', margin: '6px 0 12px' }}>A payout could not be sent directly (for example a blocklisted or non-receiving address) and was held for you.</p>
               <button className="btn btn-primary btn-sm" disabled={!!act.busy} onClick={() => act.run('claim', () => withdrawClaimable(me))}>Withdraw to this wallet</button>
               <TxStatus error={act.error} hash={act.hash} />
             </div>

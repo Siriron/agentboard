@@ -9,6 +9,9 @@ export const THEME_KEY = 'agentboard.theme'
 export const DAY_START = 6
 export const NIGHT_START = 18
 
+// Browser chrome colours. Must equal --bg in styles/tokens.css for each theme (guarded by theme.test.ts / palette.test.ts).
+export const THEME_COLOR = { light: '#FFFFFF', dark: '#09090B' }
+
 const listeners = new Set()
 let mode = 'auto'
 let resolved = 'light'
@@ -41,7 +44,7 @@ function apply() {
   r.dataset.themeMode = mode
   r.style.colorScheme = resolved
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', resolved === 'dark' ? '#0d0e11' : '#efeadf')
+  if (meta) meta.setAttribute('content', THEME_COLOR[resolved])
   listeners.forEach(l => l())
 }
 

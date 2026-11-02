@@ -177,7 +177,7 @@ await client.createContractExecutionTransaction({
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,5vw,42px)', letterSpacing: '-0.04em' }}>
             Create Agent Wallet
           </h1>
-          <p className="text-[var(--text-1)]/50 leading-relaxed" style={{ fontSize: 15 }}>
+          <p className="text-[var(--text-1)]/50 leading-relaxed" style={{ fontSize: 'var(--fs-base)' }}>
             Create a Circle MPC wallet for your AI agent. No private key. No MetaMask. Gas fees sponsored by Circle Gas Station on Arc Testnet.
           </p>
         </BlurFade>
@@ -226,7 +226,7 @@ await client.createContractExecutionTransaction({
           <BlurFade delay={0.1} inView>
             <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
               <BorderBeam size={200} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
-              <h2 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 20, letterSpacing: '-0.02em' }}>
+              <h2 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)', letterSpacing: '-0.02em' }}>
                 Step 1 — Create Wallet Set
               </h2>
               <p className="text-[var(--text-1)]/45 text-sm leading-relaxed mb-6">
@@ -274,8 +274,8 @@ await client.createContractExecutionTransaction({
                 </div>
               )}
               <button onClick={handleCreateWalletSet} disabled={loading}
-                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+>
                 {loading ? <Loader size={15} className="animate-spin" /> : <Zap size={15} />}
                 {loading ? 'Creating…' : 'Create Wallet Set'}
               </button>
@@ -291,7 +291,7 @@ await client.createContractExecutionTransaction({
                 <CheckCircle size={14} className="text-teal-400" />
                 <span className="text-teal-400 text-xs font-bold">Wallet set created</span>
               </div>
-              <h2 className="font-bold text-[var(--text-1)] mb-2 mt-1" style={{ fontFamily: 'var(--font-display)', fontSize: 20, letterSpacing: '-0.02em' }}>
+              <h2 className="font-bold text-[var(--text-1)] mb-2 mt-1" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)', letterSpacing: '-0.02em' }}>
                 Step 2 — Create Agent Wallet
               </h2>
               <p className="text-[var(--text-1)]/45 text-sm leading-relaxed mb-6">
@@ -344,8 +344,8 @@ await client.createContractExecutionTransaction({
                 </div>
               )}
               <button onClick={handleCreateWallet} disabled={loading}
-                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+>
                 {loading ? <Loader size={15} className="animate-spin" /> : <Bot size={15} />}
                 {loading ? 'Creating wallet on Arc…' : 'Create Agent Wallet'}
               </button>
@@ -448,8 +448,8 @@ await client.createContractExecutionTransaction({
             {/* Action buttons */}
             <div className="flex gap-3 mt-5 flex-wrap">
               <button onClick={() => navigate('/register')}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
-                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+>
                 <Shield size={14} /> Register ERC-8004 Identity
               </button>
               <a href="https://faucet.circle.com" target="_blank" rel="noreferrer"

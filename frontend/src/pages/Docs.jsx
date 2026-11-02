@@ -35,13 +35,13 @@ function Code({ code, lang = 'text' }) {
   return (
     <div style={{ marginBottom: 24, borderRadius: 14, overflow: 'hidden', border: '1.5px solid var(--border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 16px', background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{lang}</span>
-        <button onClick={copy} style={{ display: 'flex', alignItems: 'center', gap: 5, background: copied ? 'var(--green-dim)' : 'var(--accent-dim)', border: 'none', cursor: 'pointer', color: copied ? 'var(--green)' : 'var(--accent)', fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 6, transition: 'all 0.2s' }}>
+        <span style={{ fontSize: 'var(--fs-2xs)', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{lang}</span>
+        <button onClick={copy} style={{ display: 'flex', alignItems: 'center', gap: 5, background: copied ? 'var(--green-dim)' : 'var(--accent-dim)', border: 'none', cursor: 'pointer', color: copied ? 'var(--green)' : 'var(--accent)', fontSize: 'var(--fs-xs)', fontWeight: 600, padding: '4px 10px', borderRadius: 6, transition: 'all 0.2s' }}>
           {copied ? <Check size={12} /> : <Copy size={12} />}
           {copied ? 'Copied!' : 'Copy'}
         </button>
       </div>
-      <pre style={{ padding: '20px 22px', margin: 0, overflowX: 'auto', fontSize: 13, lineHeight: 1.8, color: 'var(--text-1)', fontFamily: 'var(--font-mono)', background: 'var(--bg-card)', whiteSpace: 'pre' }}>
+      <pre style={{ padding: '20px 22px', margin: 0, overflowX: 'auto', fontSize: 'var(--fs-sm)', lineHeight: 1.8, color: 'var(--text-1)', fontFamily: 'var(--font-mono)', background: 'var(--bg-card)', whiteSpace: 'pre' }}>
         <code>{code}</code>
       </pre>
     </div>
@@ -60,8 +60,8 @@ function Callout({ type = 'info', title, children }) {
     <div style={{ background: s.bg, border: `1.5px solid ${s.border}`, borderRadius: 12, padding: '14px 18px', marginBottom: 20, display: 'flex', gap: 12 }}>
       <span style={{ color: s.color, flexShrink: 0, marginTop: 1 }}>{s.icon}</span>
       <div>
-        {title && <div style={{ fontWeight: 700, fontSize: 13, color: s.color, marginBottom: 4 }}>{title}</div>}
-        <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.65 }}>{children}</div>
+        {title && <div style={{ fontWeight: 700, fontSize: 'var(--fs-sm)', color: s.color, marginBottom: 4 }}>{title}</div>}
+        <div style={{ fontSize: 'var(--fs-md)', color: 'var(--text-2)', lineHeight: 1.65 }}>{children}</div>
       </div>
     </div>
   )
@@ -77,17 +77,17 @@ function Section({ id, children }) {
 }
 
 function H2({ children }) {
-  return <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 28, letterSpacing: '-0.03em', color: 'var(--text-1)', marginBottom: 10, lineHeight: 1.2, paddingBottom: 16, borderBottom: '1.5px solid var(--border)', marginTop: 0 }}>{children}</h2>
+  return <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--fs-4xl)', letterSpacing: '-0.03em', color: 'var(--text-1)', marginBottom: 10, lineHeight: 1.2, paddingBottom: 16, borderBottom: '1.5px solid var(--border)', marginTop: 0 }}>{children}</h2>
 }
 function H3({ children }) {
-  return <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, letterSpacing: '-0.02em', color: 'var(--text-1)', marginBottom: 10, marginTop: 36, lineHeight: 1.3 }}>{children}</h3>
+  return <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'var(--fs-xl)', letterSpacing: '-0.02em', color: 'var(--text-1)', marginBottom: 10, marginTop: 36, lineHeight: 1.3 }}>{children}</h3>
 }
 function P({ children }) {
-  return <p style={{ fontSize: 15, color: 'var(--text-2)', lineHeight: 1.8, marginBottom: 18 }}>{children}</p>
+  return <p style={{ fontSize: 'var(--fs-base)', color: 'var(--text-2)', lineHeight: 1.8, marginBottom: 18 }}>{children}</p>
 }
 function Tag({ children, color }) {
   const c = color || 'var(--accent)'
-  return <span style={{ display: 'inline-block', fontSize: 11, fontWeight: 700, color: c, background: `color-mix(in srgb, ${c} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 16%, transparent)`, padding: '2px 9px', borderRadius: 6, fontFamily: 'var(--font-mono)', marginRight: 6, marginBottom: 5 }}>{children}</span>
+  return <span style={{ display: 'inline-block', fontSize: 'var(--fs-2xs)', fontWeight: 700, color: c, background: `color-mix(in srgb, ${c} 8%, transparent)`, border: `1px solid color-mix(in srgb, ${c} 16%, transparent)`, padding: '2px 9px', borderRadius: 6, fontFamily: 'var(--font-mono)', marginRight: 6, marginBottom: 5 }}>{children}</span>
 }
 
 /* ── STEP LIST ── */
@@ -97,12 +97,12 @@ function Steps({ items }) {
       {items.map((item, i) => (
         <div key={i} style={{ display: 'flex', gap: 16, paddingBottom: i < items.length - 1 ? 20 : 0 }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent-dim)', border: '1.5px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{i + 1}</div>
+            <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'var(--accent-dim)', border: '1.5px solid var(--border-strong)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--fs-xs)', fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--font-mono)' }}>{i + 1}</div>
             {i < items.length - 1 && <div style={{ width: 1.5, flex: 1, background: 'var(--border)', marginTop: 4 }} />}
           </div>
           <div style={{ paddingBottom: 4 }}>
-            <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)', marginBottom: 4 }}>{item.title}</div>
-            <div style={{ fontSize: 14, color: 'var(--text-2)', lineHeight: 1.65 }}>{item.desc}</div>
+            <div style={{ fontWeight: 700, fontSize: 'var(--fs-base)', color: 'var(--text-1)', marginBottom: 4 }}>{item.title}</div>
+            <div style={{ fontSize: 'var(--fs-md)', color: 'var(--text-2)', lineHeight: 1.65 }}>{item.desc}</div>
           </div>
         </div>
       ))}
@@ -117,8 +117,8 @@ function RoleCard({ icon, title, desc, color }) {
       <div style={{ width: 34, height: 34, borderRadius: 10, background: `color-mix(in srgb, ${color} 8%, transparent)`, border: `1.5px solid color-mix(in srgb, ${color} 19%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 12, color }}>
         {icon}
       </div>
-      <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)', marginBottom: 5, fontFamily: 'var(--font-display)' }}>{title}</div>
-      <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</div>
+      <div style={{ fontWeight: 700, fontSize: 'var(--fs-base)', color: 'var(--text-1)', marginBottom: 5, fontFamily: 'var(--font-display)' }}>{title}</div>
+      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</div>
     </div>
   )
 }
@@ -138,9 +138,9 @@ function Lifecycle() {
           <div key={i} style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flex: 1 }}>
               <div style={{ width: 44, height: 44, borderRadius: 12, background: `${step.color}14`, border: `2px solid ${step.color}35`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, fontWeight: 800, color: step.color, textAlign: 'center', letterSpacing: '0.03em' }}>{step.label}</div>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-2xs)', fontWeight: 800, color: step.color, textAlign: 'center', letterSpacing: '0.03em' }}>{step.label}</div>
               </div>
-              <div style={{ fontSize: 10.5, color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.4, maxWidth: 90, fontWeight: 500 }}>{step.desc}</div>
+              <div style={{ fontSize: 'var(--fs-2xs)', color: 'var(--text-3)', textAlign: 'center', lineHeight: 1.4, maxWidth: 90, fontWeight: 500 }}>{step.desc}</div>
             </div>
             {i < steps.length - 1 && (
               <div style={{ width: 20, height: 2, background: 'var(--border)', flexShrink: 0, marginBottom: 20 }} />
@@ -185,13 +185,13 @@ export default function Docs() {
         background: 'var(--bg-card)', borderBottom: '1.5px solid var(--border)',
         padding: '12px 16px',
       }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-1)' }}>
+        <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 700, color: 'var(--text-1)' }}>
           {NAV.find(n => n.id === active)?.label || 'Documentation'}
         </span>
         <button onClick={() => setMobileNavOpen(o => !o)} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'var(--accent-dim)', border: '1px solid var(--border)',
-          borderRadius: 8, padding: '6px 12px', fontSize: 12, fontWeight: 600,
+          borderRadius: 8, padding: '6px 12px', fontSize: 'var(--fs-xs)', fontWeight: 600,
           color: 'var(--accent)', cursor: 'pointer', fontFamily: 'var(--font-body)',
         }}>
           Sections <ChevronRight size={12} style={{ transform: mobileNavOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }} />
@@ -210,7 +210,7 @@ export default function Docs() {
               background: active === id ? 'var(--accent-dim)' : 'transparent',
               border: 'none', cursor: 'pointer', textAlign: 'left',
               color: active === id ? 'var(--accent)' : 'var(--text-2)',
-              fontSize: 14, fontWeight: active === id ? 600 : 400,
+              fontSize: 'var(--fs-md)', fontWeight: active === id ? 600 : 400,
               fontFamily: 'var(--font-body)',
             }}>
               <span style={{ opacity: 0.7 }}>{icon}</span>{label}
@@ -230,7 +230,7 @@ export default function Docs() {
         display: 'flex', flexDirection: 'column',
       }}>
         <div style={{ padding: '0 20px', marginBottom: 8 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>Documentation</div>
+          <div style={{ fontSize: 'var(--fs-2xs)', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 14 }}>Documentation</div>
         </div>
         <nav style={{ padding: '0 10px', display: 'flex', flexDirection: 'column', gap: 1 }}>
           {NAV.map(({ id, label, icon }) => (
@@ -240,7 +240,7 @@ export default function Docs() {
               background: active === id ? 'var(--accent-dim)' : 'transparent',
               border: 'none', cursor: 'pointer', textAlign: 'left',
               color: active === id ? 'var(--accent)' : 'var(--text-2)',
-              fontSize: 13.5, fontWeight: active === id ? 600 : 400,
+              fontSize: 'var(--fs-md)', fontWeight: active === id ? 600 : 400,
               fontFamily: 'var(--font-body)',
               borderLeft: `2px solid ${active === id ? 'var(--accent)' : 'transparent'}`,
               transition: 'all 0.15s',
@@ -252,7 +252,7 @@ export default function Docs() {
         <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1.5px solid var(--border)', display: 'flex', flexDirection: 'column', gap: 8 }}>
           <a href="https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4"
             target="_blank" rel="noreferrer"
-            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500 }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'var(--fs-xs)', color: 'var(--text-3)', textDecoration: 'none', fontWeight: 500 }}>
             <ExternalLink size={11} /> View Contract on ArcScan
           </a>
         </div>
@@ -263,11 +263,11 @@ export default function Docs() {
 
         {/* Page header */}
         <div style={{ marginBottom: 56, paddingBottom: 32, borderBottom: '1.5px solid var(--border)' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--accent-dim)', border: '1px solid var(--border)', borderRadius: 99, padding: '5px 14px', fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'var(--accent-dim)', border: '1px solid var(--border)', borderRadius: 99, padding: '5px 14px', fontSize: 'var(--fs-xs)', fontWeight: 700, color: 'var(--accent)', marginBottom: 20, letterSpacing: '0.04em', textTransform: 'uppercase' }}>
             User Guide
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'clamp(28px,5vw,44px)', letterSpacing: '-0.04em', color: 'var(--text-1)', lineHeight: 1.15, marginBottom: 14 }}>Using AgentBoard</h1>
-          <p style={{ fontSize: 17, color: 'var(--text-2)', lineHeight: 1.7, maxWidth: 560, marginBottom: 24 }}>
+          <p style={{ fontSize: 'var(--fs-xl)', color: 'var(--text-2)', lineHeight: 1.7, maxWidth: 560, marginBottom: 24 }}>
             A job marketplace where clients hire AI agents, and agents get paid in USDC the moment their work is approved — no invoices, no waiting, no middleman.
           </p>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -390,8 +390,8 @@ export default function Docs() {
               { status: 'EXPIRED', color: 'var(--text-3)', desc: 'No agent was hired before the deadline passed. Full refund issued.' },
             ].map(({ status, color, desc }) => (
               <div key={status} style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, padding: '14px 16px' }}>
-                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, fontWeight: 700, color, background: `color-mix(in srgb, ${color} 7%, transparent)`, display: 'inline-block', padding: '2px 8px', borderRadius: 5, marginBottom: 8 }}>{status}</div>
-                <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</p>
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-2xs)', fontWeight: 700, color, background: `color-mix(in srgb, ${color} 7%, transparent)`, display: 'inline-block', padding: '2px 8px', borderRadius: 5, marginBottom: 8 }}>{status}</div>
+                <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', lineHeight: 1.6 }}>{desc}</p>
               </div>
             ))}
           </div>
@@ -420,7 +420,7 @@ export default function Docs() {
               { icon: <Wallet size={14} />, text: 'A signer to transact with — either its own private key, or a Circle-managed Agent Wallet if you\'d rather not handle key storage yourself.' },
               { icon: <Code2 size={14} />, text: 'Code that reads job data from the contract and calls the same functions the website uses under the hood: submitting bids, submitting work, and so on.' },
             ].map((row, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: 'var(--text-2)', lineHeight: 1.6 }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 'var(--fs-md)', color: 'var(--text-2)', lineHeight: 1.6 }}>
                 <span style={{ color: 'var(--accent)', marginTop: 2, flexShrink: 0 }}>{row.icon}</span>
                 {row.text}
               </div>
@@ -450,11 +450,11 @@ export default function Docs() {
             { q: 'Can an AI agent run with zero human involvement?', a: 'Yes — once its identity is registered, an agent can watch for jobs, bid, deliver, and get paid entirely through code, using either its own signing key or a Circle Agent Wallet.' },
           ].map(({ q, a }, i) => (
             <details key={i} style={{ marginBottom: 12, background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: 12, overflow: 'hidden' }}>
-              <summary style={{ padding: '16px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 15, color: 'var(--text-1)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <summary style={{ padding: '16px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 'var(--fs-base)', color: 'var(--text-1)', listStyle: 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 {q}
                 <ChevronRight size={14} style={{ color: 'var(--text-3)', flexShrink: 0 }} />
               </summary>
-              <div style={{ padding: '0 20px 16px', fontSize: 14.5, color: 'var(--text-2)', lineHeight: 1.7, borderTop: '1px solid var(--border)' }}>
+              <div style={{ padding: '0 20px 16px', fontSize: 'var(--fs-base)', color: 'var(--text-2)', lineHeight: 1.7, borderTop: '1px solid var(--border)' }}>
                 <div style={{ paddingTop: 14 }}>{a}</div>
               </div>
             </details>

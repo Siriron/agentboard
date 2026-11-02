@@ -54,7 +54,7 @@ function JobCard({ job, onClick }) {
         <ChevronRight size={14} className="text-[var(--text-1)]/15 group-hover:text-purple-400 transition-colors shrink-0 mt-0.5" />
       </div>
       <h3 className="font-bold text-[var(--text-1)] mb-2 leading-snug group-hover:text-purple-600 transition-colors line-clamp-2"
-        style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
+        style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', letterSpacing: '-0.02em' }}>
         {meta.title}
       </h3>
       <p className="text-[var(--text-1)]/35 text-xs leading-relaxed mb-4 line-clamp-2">{meta.description}</p>
@@ -211,8 +211,8 @@ export default function Board() {
                 <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
               <button onClick={() => navigate('/post')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.02]"
-                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+>
                 <Zap size={12} /> Post Job
               </button>
             </div>
@@ -308,7 +308,7 @@ export default function Board() {
             <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
               <AlertCircle size={24} className="text-red-400" />
             </div>
-            <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 18 }}>
+            <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)' }}>
               Couldn't load the job board
             </p>
             <p className="text-[var(--text-1)]/30 text-sm mb-6 max-w-sm">{error}</p>
@@ -322,7 +322,7 @@ export default function Board() {
             <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/15 flex items-center justify-center mb-4">
               <Briefcase size={24} className="text-purple-400" />
             </div>
-            <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 18 }}>
+            <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)' }}>
               {search ? `No results for "${search}"` : 'No jobs found'}
             </p>
             <p className="text-[var(--text-1)]/30 text-sm mb-6">

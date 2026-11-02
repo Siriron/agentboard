@@ -11,3 +11,15 @@ describe('brief palette', () => {
   it.each(Object.entries({ '--bg': '#FFFFFF', '--bg-surface': '#F8FAFC', '--bg-subtle': '#F1F5F9', '--bg-card': '#FFFFFF', '--text-1': '#111827', '--text-2': '#64748B', '--text-3': '#94A3B8', '--border': '#E5E7EB', '--border-light': '#F1F5F9', '--btn-bg': '#111827', '--btn-fg': '#FFFFFF', '--test': '#0F766E', '--accent': '#E54826' }))('light %s', (k, v) => expect(val(light, k)).toBe(v))
   it.each(Object.entries({ '--bg': '#09090B', '--bg-surface': '#111113', '--bg-card': '#18181B', '--bg-elevated': '#202024', '--text-1': '#FAFAFA', '--text-2': '#A1A1AA', '--text-3': '#71717A', '--border': '#27272A', '--btn-bg': '#FAFAFA', '--btn-fg': '#09090B', '--test': '#2DD4BF', '--accent': '#FB704F' }))('dark %s', (k, v) => expect(val(dark, k)).toBe(v))
 })
+
+describe('browser theme-color', () => {
+  it('matches --bg for each theme and no legacy cream is left', async () => {
+    const { THEME_COLOR } = await import('./theme.js')
+    expect(THEME_COLOR.light.toUpperCase()).toBe(val(light, '--bg'))
+    expect(THEME_COLOR.dark.toUpperCase()).toBe(val(dark, '--bg'))
+    const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8')
+    expect(html.toLowerCase()).not.toContain('efeadf')
+    expect(html).toContain('#FFFFFF')
+    expect(html).toContain('#09090B')
+  })
+})

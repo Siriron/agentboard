@@ -11,6 +11,7 @@ import { initTheme } from './theme/theme'
 import './index.css'
 import './styles/tokens.css'
 import './styles/base.css'
+import './styles/mascot.css'
 
 const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 10_000, retry: 1, refetchOnWindowFocus: false } } })
 

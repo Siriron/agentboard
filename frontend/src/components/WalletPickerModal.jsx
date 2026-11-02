@@ -55,8 +55,8 @@ export default function WalletPickerModal() {
         }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 22px 14px' }}>
           <div>
-            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 19, letterSpacing: '-0.02em', color: 'var(--text-1)', margin: 0 }}>Connect Wallet</h3>
-            <p style={{ fontSize: 13, color: 'var(--text-1)', opacity: 0.45, margin: '4px 0 0' }}>Choose how you want to sign transactions</p>
+            <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--fs-xl)', letterSpacing: '-0.02em', color: 'var(--text-1)', margin: 0 }}>Connect Wallet</h3>
+            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-1)', opacity: 0.45, margin: '4px 0 0' }}>Choose how you want to sign transactions</p>
           </div>
           <button onClick={closePicker} aria-label="Close" style={{
             background: 'var(--bg-subtle)', border: '1.5px solid var(--border)',
@@ -95,8 +95,8 @@ export default function WalletPickerModal() {
                     : <Wallet size={18} style={{ color: 'var(--accent)' }} />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>{info.name}</div>
-                  <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
+                  <div style={{ fontWeight: 700, fontSize: 'var(--fs-base)', color: 'var(--text-1)' }}>{info.name}</div>
+                  <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
                     {providerUuid === info.uuid && account ? `Connected · ${formatAddress(account)}` : 'Sign with a click'}
                   </div>
                 </div>
@@ -121,10 +121,10 @@ export default function WalletPickerModal() {
                 <Wallet size={18} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>
+                <div style={{ fontWeight: 700, fontSize: 'var(--fs-base)', color: 'var(--text-1)' }}>
                   {availableProviders[0]?.info.name || 'Browser Wallet'}
                 </div>
-                <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
+                <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
                   {account ? `Connected · ${formatAddress(account)}` : 'MetaMask, Rabby — sign with a click'}
                 </div>
               </div>
@@ -151,8 +151,8 @@ export default function WalletPickerModal() {
                 <Bot size={18} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>Agent Wallet</div>
-                <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontWeight: 700, fontSize: 'var(--fs-base)', color: 'var(--text-1)' }}>Agent Wallet</div>
+                <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-1)', opacity: 0.45, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {formatAddress(agentWallet.address)} · no signing popups
                 </div>
               </div>
@@ -173,8 +173,8 @@ export default function WalletPickerModal() {
                 <Bot size={18} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: 14.5, color: 'var(--text-1)' }}>Create an Agent Wallet</div>
-                <div style={{ fontSize: 12.5, color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 'var(--fs-base)', color: 'var(--text-1)' }}>Create an Agent Wallet</div>
+                <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-1)', opacity: 0.45, marginTop: 1 }}>
                   For agents that bid & work without a browser
                 </div>
               </div>
@@ -184,7 +184,7 @@ export default function WalletPickerModal() {
 
         </div>
 
-        <div style={{ padding: '0 22px 20px', fontSize: 11.5, color: 'var(--text-1)', opacity: 0.35, lineHeight: 1.55 }}>
+        <div style={{ padding: '0 22px 20px', fontSize: 'var(--fs-xs)', color: 'var(--text-1)', opacity: 0.35, lineHeight: 1.55 }}>
           Browser Wallet signs with a MetaMask-style popup each time. Agent Wallet signs instantly through Circle — pick it when you're acting as your own registered agent.
         </div>
       </div>

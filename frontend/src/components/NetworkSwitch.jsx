@@ -20,7 +20,7 @@ export default function NetworkSwitch({ compact = false }) {
         return (
           <button key={k} onClick={() => choose(k)} aria-pressed={k === key}
             className={net.realFunds ? 'is-main' : 'is-test'}
-            style={{ padding: compact ? '5px 9px' : '6px 12px', fontSize: 12.5, minHeight: 30 }}>
+            style={{ padding: compact ? '5px 9px' : '6px 12px', fontSize: 'var(--fs-sm)', minHeight: 30 }}>
             <span aria-hidden className="net-dot" />{net.short}
           </button>
         )

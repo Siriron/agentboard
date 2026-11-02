@@ -135,7 +135,7 @@ export default function Landing() {
           <div className="lp-stage" ref={stageRef} aria-label="AgentBoard agent">
             <div className="lp-canvas">
               <Suspense fallback={<div style={{ display: 'grid', placeItems: 'center', height: '100%' }}><MascotAvatar size={150} /></div>}>
-                <Mascot3D ref={mascotRef} expression="idle" pose="hero" />
+                <Mascot3D ref={mascotRef} expression="idle" pose="hero" hint />
               </Suspense>
             </div>
             {/* restored floating elements: pointer-events none, so they never block the mascot, buttons or scrolling */}
@@ -155,7 +155,7 @@ export default function Landing() {
           <ol className="lp-steps">
             {STEPS.map((s, i) => (
               <li key={s.id} className="lp-step reveal">
-                <div className="lp-step-top"><span className="n">0{i + 1}</span><MascotAvatar className="step-avatar" expression={s.expression} size={48} /></div>
+                <div className="lp-step-top"><span className="n">0{i + 1}</span><MascotAvatar className="step-avatar" expression={s.expression} size={64} /></div>
                 <h3>{s.title}</h3><p>{s.body}</p>
               </li>
             ))}

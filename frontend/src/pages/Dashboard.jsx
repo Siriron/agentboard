@@ -33,7 +33,7 @@ function StatCard({ label, value, sub, icon, color, trend, ticker }) {
         <div className="w-8 h-8 rounded-xl bg-[var(--bg-subtle)]/4 flex items-center justify-center shrink-0">{icon}</div>
       </div>
       <div className={cn('font-black leading-none mb-1', color)}
-        style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.04em' }}>
+        style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-4xl)', letterSpacing: '-0.04em' }}>
         {ticker && typeof value === 'number' ? <NumberTicker value={value} /> : value}
       </div>
       {sub && <div className="text-[var(--text-1)]/30 text-xs">{sub}</div>}
@@ -53,11 +53,11 @@ function EmptyState({ icon, title, desc, action, actionLabel }) {
       <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
         {icon}
       </div>
-      <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 18, letterSpacing: '-0.02em' }}>{title}</p>
+      <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)', letterSpacing: '-0.02em' }}>{title}</p>
       <p className="text-[var(--text-1)]/35 text-sm max-w-xs leading-relaxed mb-6">{desc}</p>
       <button onClick={action}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
-        style={{ background: 'var(--accent)' }}>
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+>
         <Plus size={13}/>{actionLabel}
       </button>
     </div>
@@ -119,7 +119,7 @@ export default function Dashboard() {
         <Wallet size={36} className="text-purple-400" />
       </div>
       <div className="relative">
-        <h2 className="font-black text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.03em' }}>
+        <h2 className="font-black text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-4xl)', letterSpacing: '-0.03em' }}>
           Connect your wallet
         </h2>
         <p className="text-[var(--text-1)]/40 max-w-sm leading-relaxed text-sm">
@@ -127,8 +127,8 @@ export default function Dashboard() {
         </p>
       </div>
       <button onClick={openPicker}
-        className="relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
-        style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+        className="relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+>
         Connect Wallet
       </button>
     </div>
@@ -182,8 +182,8 @@ export default function Dashboard() {
                 <Bot size={12}/> Register Agent
               </button>
               <button onClick={() => navigate('/post')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.01]"
-                style={{ background: 'var(--accent)' }}>
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+>
                 <Plus size={12}/> Post Job
               </button>
             </div>

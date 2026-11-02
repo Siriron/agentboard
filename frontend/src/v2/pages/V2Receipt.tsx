@@ -18,16 +18,16 @@ export default function V2Receipt() {
   const r = q.data
   return (
     <Page narrow>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, marginBottom: 6 }}>Receipt</h1>
-      <p style={{ fontSize: 13, color: 'var(--text-2)' }}>Read directly from Arc Mainnet. Nothing here comes from the app.</p>
-      <div className="card" style={{ padding: 18, display: 'grid', gap: 8, fontSize: 14 }}>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', marginBottom: 6 }}>Receipt</h1>
+      <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>Read directly from Arc Mainnet. Nothing here comes from the app.</p>
+      <div className="card" style={{ padding: 18, display: 'grid', gap: 8, fontSize: 'var(--fs-md)' }}>
         <div>Status: <strong style={{ color: r.status === 'success' ? 'var(--green)' : 'var(--red)' }}>{r.status}</strong> in block {String(r.block)}</div>
         <div>From {short(r.from)}{r.to && <> to {short(r.to)}</>}</div>
         <div><a href={explorerTx(r.hash)} target="_blank" rel="noopener noreferrer">Open in explorer</a></div>
         {r.usdc.length > 0 && <div><strong>USDC moved</strong>{r.usdc.map((m, i) => <div key={i}>{formatUsdc(m.amount)} USDC · {short(m.from)} → {short(m.to)}</div>)}</div>}
         {r.events.length > 0 && <div><strong>Protocol events</strong>{r.events.map((e, i) => (
-          <details key={i} style={{ fontSize: 13 }}><summary>{e.contract}.{e.name}</summary>
-            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: 12 }}>{Object.entries(e.args).map(([k, v]) => `${k}: ${fmt(v)}`).join('\n')}</pre></details>
+          <details key={i} style={{ fontSize: 'var(--fs-sm)' }}><summary>{e.contract}.{e.name}</summary>
+            <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: 'var(--fs-xs)' }}>{Object.entries(e.args).map(([k, v]) => `${k}: ${fmt(v)}`).join('\n')}</pre></details>
         ))}</div>}
       </div>
     </Page>

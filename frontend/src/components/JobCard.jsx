@@ -14,16 +14,16 @@ export default function JobCard({ jobId, core, meta }) {
     <div className="card" onClick={() => !isDemo && navigate(`/job/${jobId}`)} style={{ padding: 24, cursor: isDemo ? 'default' : 'pointer' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <span className={`badge badge-${STATUS_CLASS[sn]||'cancelled'}`}><span className="badge-dot" />{STATUS_LABEL[sn]||'OPEN'}</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--text-3)', textTransform: 'capitalize' }}>{CAT_ICONS[meta.category]||<Tag size={11}/>}{meta.category}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--fs-2xs)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'capitalize' }}>{CAT_ICONS[meta.category]||<Tag size={11}/>}{meta.category}</span>
       </div>
-      <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 8, lineHeight: 1.3, letterSpacing: '-0.02em', color: 'var(--text-1)' }}>{meta.title}</h3>
-      <p style={{ color: 'var(--text-2)', fontSize: 13, lineHeight: 1.55, marginBottom: 18, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{meta.description}</p>
+      <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 'var(--fs-lg)', marginBottom: 8, lineHeight: 1.3, letterSpacing: '-0.02em', color: 'var(--text-1)' }}>{meta.title}</h3>
+      <p style={{ color: 'var(--text-2)', fontSize: 'var(--fs-sm)', lineHeight: 1.55, marginBottom: 18, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{meta.description}</p>
       <div style={{ height: 1, background: 'var(--border)', marginBottom: 16 }} />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 20, letterSpacing: '-0.03em', color: 'var(--text-1)' }}>${formatUSDC(core.budget)}<span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-3)', marginLeft: 3 }}>USDC</span></span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-3)', fontSize: 12 }}><Users size={12}/>{core.bidCount.toString()}</span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-3)', fontSize: 12 }}><Clock size={12}/>{formatDate(core.deadline)}</span>
+          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--fs-2xl)', letterSpacing: '-0.03em', color: 'var(--text-1)' }}>${formatUSDC(core.budget)}<span style={{ fontSize: 'var(--fs-2xs)', fontWeight: 400, color: 'var(--text-3)', marginLeft: 3 }}>USDC</span></span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-3)', fontSize: 'var(--fs-xs)' }}><Users size={12}/>{core.bidCount.toString()}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-3)', fontSize: 'var(--fs-xs)' }}><Clock size={12}/>{formatDate(core.deadline)}</span>
         </div>
         {!isDemo && <a href={`https://testnet.arcscan.app/address/${core.client}`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="address-pill" style={{fontSize:10}}><ExternalLink size={9}/>{formatAddress(core.client)}</a>}
       </div>

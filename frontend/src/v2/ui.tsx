@@ -97,10 +97,10 @@ export function ConfirmDialog({ title, amount, lines, confirmLabel, onConfirm, o
   return (
     <div className="mc-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onCancel() }}>
       <div role="dialog" aria-modal="true" aria-label={title} className="mc-dialog" style={{ width: 'min(460px, 100%)' }}>
-        <h3 style={{ fontSize: 22 }}>{title}</h3>
-        <ul style={{ paddingLeft: 18, margin: '0 0 6px', fontSize: 14.5, lineHeight: 1.6, color: 'var(--text-2)' }}>{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
+        <h3 style={{ fontSize: 'var(--fs-3xl)' }}>{title}</h3>
+        <ul style={{ paddingLeft: 18, margin: '0 0 6px', fontSize: 'var(--fs-base)', lineHeight: 1.6, color: 'var(--text-2)' }}>{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
         {needsTyping && (
-          <label style={{ display: 'block', fontSize: 14 }}>
+          <label style={{ display: 'block', fontSize: 'var(--fs-md)' }}>
             Type <strong className="num">{expected}</strong> to confirm this large amount.
             <input autoFocus value={typed} onChange={e => setTyped(e.target.value)} inputMode="decimal" autoComplete="off" spellCheck={false} className="input" style={{ marginTop: 6 }} />
           </label>
@@ -118,7 +118,7 @@ export function Empty({ children, title, expression = 'curious' }: { children: R
   return (
     <div className="empty">
       <MascotAvatar expression={expression} size={88} />
-      <div>{title && <h3 style={{ fontSize: 20, marginBottom: 4 }}>{title}</h3>}<div style={{ color: 'var(--text-2)' }}>{children}</div></div>
+      <div>{title && <h3 style={{ fontSize: 'var(--fs-2xl)', marginBottom: 4 }}>{title}</h3>}<div style={{ color: 'var(--text-2)' }}>{children}</div></div>
     </div>
   )
 }

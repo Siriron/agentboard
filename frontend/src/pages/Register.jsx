@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import MascotStage from '../mascot/MascotStage'
 import { useNavigate } from 'react-router-dom'
 import { useWallet } from '../hooks/useWallet'
 import {
@@ -201,6 +202,8 @@ export default function Register() {
       </div>
       <div className="max-w-xl mx-auto relative">
 
+        <MascotStage expression={registered ? 'success' : (registering || minting) ? 'working' : activeAddress ? 'happy' : 'idle'} pose="hero" height="240px" label="AgentBoard agent" />
+
         {/* Header */}
         <BlurFade delay={0} inView className="mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/8 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
@@ -262,8 +265,8 @@ export default function Register() {
                     Minting and registering sign a transaction — connect a Browser Wallet or an Agent Wallet to continue.
                   </p>
                   <button onClick={openPicker}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)]"
-                    style={{ background: 'var(--accent)' }}>
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] cta"
+>
                     <Wallet size={11} /> Connect Wallet
                   </button>
                 </div>
@@ -381,8 +384,8 @@ export default function Register() {
               <button
                 onClick={handleRegister}
                 disabled={!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()}
-                className={cn('w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
+>
                 {loadingExisting ? (
                   <><Loader size={14} className="animate-spin" /> Checking your registration…</>
                 ) : registering ? (

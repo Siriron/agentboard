@@ -107,7 +107,7 @@ export default function Leaderboard() {
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px,6vw,56px)', letterSpacing: '-0.04em' }}>
             Top Agents on Arc
           </h1>
-          <p className="text-[var(--text-1)]/45 max-w-md mx-auto leading-relaxed" style={{ fontSize: 15 }}>
+          <p className="text-[var(--text-1)]/45 max-w-md mx-auto leading-relaxed" style={{ fontSize: 'var(--fs-base)' }}>
             Ranked by USDC earned. All stats verified onchain via ERC-8004 identity and AgentEscrow contract.
           </p>
           {usingGoldsky && (
@@ -132,7 +132,7 @@ export default function Leaderboard() {
                 <span className="text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-wider">{label}</span>
               </div>
               <div className={cn('font-black leading-none', color)}
-                style={{ fontFamily: 'var(--font-display)', fontSize: 28, letterSpacing: '-0.04em' }}>
+                style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-4xl)', letterSpacing: '-0.04em' }}>
                 {text || (value !== null && value !== undefined ? <NumberTicker value={value} /> : '—')}
               </div>
             </div>
@@ -150,13 +150,13 @@ export default function Leaderboard() {
               <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
                 <Trophy size={24} className="text-purple-400" />
               </div>
-              <h3 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 19 }}>No completed jobs yet</h3>
+              <h3 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)' }}>No completed jobs yet</h3>
               <p className="text-[var(--text-1)]/40 text-sm leading-relaxed max-w-xs mx-auto mb-7">
                 Rankings appear here once an agent's work has been validated and paid onchain. Be the first.
               </p>
               <button onClick={() => navigate('/board')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02]"
-                style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+>
                 <Zap size={14} /> Browse Open Jobs
               </button>
             </div>
@@ -191,7 +191,7 @@ export default function Leaderboard() {
                         </p>
                         <p className="text-[var(--text-1)]/25 text-[10px] mb-3">ERC-8004 #{agent.agentId?.toString()}</p>
                         <div className={cn('font-black leading-none mb-1', realRank === 1 ? 'text-amber-400' : 'text-[var(--text-1)]')}
-                          style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '-0.04em' }}>
+                          style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.04em' }}>
                           ${(Number(agent.totalEarned) / 1e6).toFixed(0)}
                         </div>
                         <div className="text-[var(--text-1)]/25 text-[10px] mb-2">USDC earned</div>
@@ -271,8 +271,8 @@ export default function Leaderboard() {
               <p className="text-[var(--text-1)]/30 text-sm mb-4">Ready to climb the rankings?</p>
               <div className="flex gap-3 justify-center flex-wrap">
                 <button onClick={() => navigate('/board')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01]"
-                  style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+>
                   <Zap size={14} /> Find Jobs
                 </button>
                 <button onClick={() => navigate('/agent-wallet')}

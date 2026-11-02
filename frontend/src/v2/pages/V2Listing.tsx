@@ -36,16 +36,16 @@ export default function V2Listing() {
   return (
     <Page narrow>
       <RealFundsBanner />
-      <Link to="/board" style={{ fontSize: 13, color: 'var(--text-2)' }}>← Board</Link>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 26, margin: '8px 0' }}>{listing.meta?.title ?? `Listing #${listing.id}`}</h1>
-      <div style={{ fontSize: 13, color: 'var(--text-2)', marginBottom: 16 }}>
+      <Link to="/board" style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>← Board</Link>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', margin: '8px 0' }}>{listing.meta?.title ?? `Listing #${listing.id}`}</h1>
+      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', marginBottom: 16 }}>
         Up to <strong>{formatUsdc(listing.maxBudget)} USDC</strong> · posted by {short(listing.client)}
         {listing.biddingEnds !== 0n && <> · bidding {biddingClosed ? 'closed' : 'closes'} {new Date(Number(listing.biddingEnds) * 1000).toLocaleDateString()}</>}
       </div>
       <div className="card" style={{ padding: 18, marginBottom: 16 }}>
-        <h2 style={{ fontSize: 14, marginBottom: 8 }}>Acceptance criteria</h2>
+        <h2 style={{ fontSize: 'var(--fs-md)', marginBottom: 8 }}>Acceptance criteria</h2>
         {/* Rendered as plain text, never as HTML. */}
-        <p style={{ whiteSpace: 'pre-wrap', fontSize: 14, lineHeight: 1.6 }}>{listing.meta?.description ?? 'The description is not stored onchain for this listing. Only its hash is.'}</p>
+        <p style={{ whiteSpace: 'pre-wrap', fontSize: 'var(--fs-md)', lineHeight: 1.6 }}>{listing.meta?.description ?? 'The description is not stored onchain for this listing. Only its hash is.'}</p>
         <small style={{ color: listing.specMatches === false ? 'var(--red)' : 'var(--text-3)' }}>
           {listing.specMatches === true ? 'Matches the onchain hash.' : listing.specMatches === false ? 'Does NOT match the onchain hash. Do not trust this text.' : `Onchain hash ${listing.specHash.slice(0, 12)}…`}
         </small>
@@ -54,7 +54,7 @@ export default function V2Listing() {
       {listing.status === ListingStatus.Cancelled && <Empty>This listing was cancelled.</Empty>}
       {isOwner && open && <OwnerTools listing={listing} onDone={() => q.refetch()} />}
 
-      <h2 style={{ fontSize: 16, margin: '22px 0 10px' }}>Bids ({bids.length})</h2>
+      <h2 style={{ fontSize: 'var(--fs-lg)', margin: '22px 0 10px' }}>Bids ({bids.length})</h2>
       {bids.length === 0 && <Empty>No bids yet.</Empty>}
       <div style={{ display: 'grid', gap: 12 }}>
         {bids.map(b => <BidCard key={b.id} bid={b} listing={listing} params={params.data} now={now} isOwner={isOwner} me={me} onDone={() => q.refetch()} />)}
@@ -110,21 +110,21 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <strong>{formatUsdc(bid.price)} USDC</strong><span className="badge">{label}</span>
       </div>
-      <div style={{ fontSize: 13, color: 'var(--text-2)' }}>by {short(bid.provider)}{mine && ' (you)'} · valid until {new Date(Number(bid.validUntil) * 1000).toLocaleDateString()}</div>
-      {bid.proposal && <p style={{ whiteSpace: 'pre-wrap', fontSize: 14 }}>{bid.proposal}</p>}
-      {bid.config ? <TermsSummary c={bid.config} /> : <div style={{ fontSize: 13, color: 'var(--red)' }}>Evaluation terms could not be verified against the bid&apos;s onchain hash. Hiring is disabled.</div>}
-      {outOfLimits && active && <div style={{ fontSize: 13, color: 'var(--red)' }}>This price is outside the current launch limits ({formatUsdc(params!.minBudget)} to {formatUsdc(params!.maxBudget)} USDC), so it cannot be funded.</div>}
+      <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>by {short(bid.provider)}{mine && ' (you)'} · valid until {new Date(Number(bid.validUntil) * 1000).toLocaleDateString()}</div>
+      {bid.proposal && <p style={{ whiteSpace: 'pre-wrap', fontSize: 'var(--fs-md)' }}>{bid.proposal}</p>}
+      {bid.config ? <TermsSummary c={bid.config} /> : <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--red)' }}>Evaluation terms could not be verified against the bid&apos;s onchain hash. Hiring is disabled.</div>}
+      {outOfLimits && active && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--red)' }}>This price is outside the current launch limits ({formatUsdc(params!.minBudget)} to {formatUsdc(params!.maxBudget)} USDC), so it cannot be funded.</div>}
       {isOwner && active && listing.status === ListingStatus.Open && bid.configVerified && !outOfLimits && (
         <>
-          <label style={{ fontSize: 13 }}>Seller deadline (days from now)
+          <label style={{ fontSize: 'var(--fs-sm)' }}>Seller deadline (days from now)
             <input value={days} onChange={e => setDays(e.target.value)} inputMode="numeric" style={{ marginLeft: 8, width: 60, padding: 4 }} />
           </label>
           <button className="btn btn-primary" disabled={!!act.busy || !(d >= 1 && d <= 180)} onClick={() => setConfirm(true)}>{act.busy ? 'Working…' : `Hire and fund ${formatUsdc(bid.price)} USDC`}</button>
         </>
       )}
-      {act.busy === 'hire' && mode === null && <div style={{ fontSize: 13, color: 'var(--text-2)' }}>Confirm in your wallet. This usually takes one confirmation.</div>}
+      {act.busy === 'hire' && mode === null && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>Confirm in your wallet. This usually takes one confirmation.</div>}
       {act.busy === 'hire' && mode === 'sequential' && (
-        <ol style={{ fontSize: 13, paddingLeft: 18, margin: 0 }}>
+        <ol style={{ fontSize: 'var(--fs-sm)', paddingLeft: 18, margin: 0 }}>
           {HIRE_STEPS.map(s => <li key={s.id} style={{ color: steps[s.id] === 'done' ? 'var(--green)' : 'var(--text-2)' }}>{s.label}{steps[s.id] === 'start' ? ' (confirm in wallet)' : steps[s.id] === 'done' ? ' ✓' : ''}</li>)}
         </ol>
       )}
@@ -145,7 +145,7 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
 
 function TermsSummary({ c }: { c: EvalConfig }) {
   return (
-    <div style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.6 }}>
+    <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', lineHeight: 1.6 }}>
       <div>{MODE[c.mode]}</div>
       <div>Buyer review {c.reviewWindow / DAY}d · seller response {c.responseWindow / DAY}d · decision {c.decisionWindow / DAY}d · if deciders stay silent, seller gets {c.timeoutProviderBps / 100}%</div>
       {c.validators.length > 0 && <div>Validators: {c.validators.map(short).join(', ')}</div>}
@@ -170,12 +170,12 @@ function BidForm({ listing, params, onDone }: { listing: Listing; params?: Param
   }
   return (
     <div className="card" style={{ padding: 18, marginTop: 20, display: 'grid', gap: 12 }}>
-      <h2 style={{ fontSize: 16 }}>Place a bid</h2>
+      <h2 style={{ fontSize: 'var(--fs-lg)' }}>Place a bid</h2>
       <label>Your price (USDC, max {formatUsdc(listing.maxBudget)}){params && <small style={{ color: 'var(--text-3)' }}> · min {formatUsdc(params.minBudget)}</small>}<input value={f.price} onChange={set('price')} inputMode="decimal" style={field} /></label>
       <label>Proposal<textarea value={f.proposal} onChange={set('proposal')} rows={3} maxLength={2000} style={field} /></label>
       <label>Bid valid for (days)<input value={f.validDays} onChange={set('validDays')} inputMode="numeric" style={field} /></label>
       <fieldset style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 12, display: 'grid', gap: 10 }}>
-        <legend style={{ fontSize: 13 }}>Evaluation terms you accept (hashed into your bid)</legend>
+        <legend style={{ fontSize: 'var(--fs-sm)' }}>Evaluation terms you accept (hashed into your bid)</legend>
         <label>Who settles disputes
           <select value={f.mode} onChange={set('mode')} style={field}>{MODE.map((m, i) => <option key={i} value={i}>{m}</option>)}</select>
         </label>

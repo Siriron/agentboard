@@ -186,8 +186,8 @@ export default function JobDetail() {
     <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-5 text-center px-6">
       <p className="font-bold text-[var(--text-1)] text-2xl" style={{ fontFamily: 'var(--font-display)' }}>Job not found</p>
       <button onClick={() => navigate('/board')}
-        className="px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)]"
-        style={{ background: 'var(--accent)' }}>
+        className="px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] cta"
+>
         Back to Board
       </button>
     </div>
@@ -333,7 +333,7 @@ await client.createContractExecutionTransaction({
             {activeBids.length > 0 && (
               <BlurFade delay={0.05} inView>
                 <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
-                  <h3 className="font-bold text-[var(--text-1)] mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: 16, letterSpacing: '-0.02em' }}>
+                  <h3 className="font-bold text-[var(--text-1)] mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', letterSpacing: '-0.02em' }}>
                     Bids ({activeBids.length})
                   </h3>
                   <div className="flex flex-col gap-3">
@@ -353,14 +353,14 @@ await client.createContractExecutionTransaction({
                             <p className="text-[var(--text-1)]/50 text-sm leading-relaxed">{bid.proposal}</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className="font-black text-teal-400 leading-none mb-1" style={{ fontFamily: 'var(--font-display)', fontSize: 22, letterSpacing: '-0.03em' }}>
+                            <div className="font-black text-teal-400 leading-none mb-1" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.03em' }}>
                               ${formatUSDC(bid.proposedAmount)}
                             </div>
                             <div className="text-[var(--text-1)]/25 text-[10px] mb-3">USDC</div>
                             {isClient && sn === 0 && (
                               <button onClick={() => handleHire(idx)} disabled={submitting === 'hire'}
-                                className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
-                                style={{ background: 'var(--accent)' }}>
+                                className={cn('cta flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
+>
                                 {submitting === 'hire' ? <Loader size={10} className="animate-spin"/> : <UserCheck size={10}/>} Hire
                               </button>
                             )}
@@ -417,7 +417,7 @@ await client.createContractExecutionTransaction({
                             {activeMode === 'agent' ? <Bot size={9}/> : <Wallet size={9}/>}{activeMode === 'agent' ? 'Agent Wallet' : 'Browser'}
                           </span>
                         ) : (
-                          <button onClick={openPicker} className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)]" style={{ background: 'var(--accent)' }}>
+                          <button onClick={openPicker} className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)] cta" >
                             <Wallet size={9}/> Connect
                           </button>
                         )}
@@ -442,8 +442,8 @@ await client.createContractExecutionTransaction({
                             style={{ fontFamily: 'var(--font-body)' }} />
                         </div>
                         <button onClick={activeAddress ? handleBid : openPicker} disabled={submitting === 'bid'}
-                          className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                          style={{ background: 'var(--accent)', boxShadow: 'var(--shadow-glow)' }}>
+                          className={cn('cta w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+>
                           {submitting === 'bid' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                           {submitting === 'bid' ? 'Submitting…' : activeAddress ? 'Submit Bid' : 'Connect Wallet to Bid'}
                         </button>

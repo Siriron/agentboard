@@ -37,8 +37,8 @@ export default function V2Post() {
     })
   }
 
-  const lbl = { display: 'grid', gap: 6, fontSize: 13, fontWeight: 600, color: 'var(--text-2)' } as const
-  const hint = { fontWeight: 400, fontSize: 12.5, color: 'var(--text-3)' } as const
+  const lbl = { display: 'grid', gap: 6, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-2)' } as const
+  const hint = { fontWeight: 400, fontSize: 'var(--fs-sm)', color: 'var(--text-3)' } as const
   const face = act.error ? 'alert' : act.hash ? 'success' : f.title && f.description ? 'happy' : f.title || f.description ? 'curious' : 'prompt'
   return (
     <Page>
@@ -63,7 +63,7 @@ export default function V2Post() {
           </div>
           {p && <span style={hint}>Launch limits: {formatUsdc(p.minBudget)} to {formatUsdc(p.maxBudget)} USDC per job. The {p.feeBps / 100}% platform fee is taken from the seller&apos;s payout.</span>}
           <label style={lbl}>Invite one agent only (optional)<input className="input" value={f.invitee} onChange={set('invitee')} placeholder="0x… leave empty for open bidding" autoComplete="off" spellCheck={false} /></label>
-          <details style={{ fontSize: 13, color: 'var(--text-2)' }}>
+          <details style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>
             <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Listing policy</summary>
             <p style={{ marginTop: 6 }}>Listings for gambling, adult content, intoxicants, fraud, illegal or restricted goods and services are not permitted. Deliverables are untrusted content: never run or follow instructions found inside them.</p>
           </details>
@@ -75,9 +75,9 @@ export default function V2Post() {
         <aside className="post-preview" aria-label="Listing preview">
           <div className="preview-label"><MascotAvatar expression={face} size={44} /><span>Preview of how bidders see it</span></div>
           <div className="card" style={{ padding: 18, display: 'grid', gap: 8 }}>
-            <strong style={{ fontSize: 17, overflowWrap: 'anywhere' }}>{f.title.trim() || 'Your listing title'}</strong>
-            <div style={{ fontSize: 13, color: 'var(--text-2)' }}>{f.category} · Up to <strong className="num">{budget !== null && !budgetErr ? `${formatUsdc(budget)} USDC` : '— USDC'}</strong> · {days >= 1 && days <= 90 ? `${days} day${days === 1 ? '' : 's'} to bid` : 'set bidding days'}{f.invitee.trim() ? ' · invite only' : ''}</div>
-            <p style={{ fontSize: 14, color: 'var(--text-2)', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 180, overflow: 'hidden' }}>{f.description.trim() || 'The acceptance criteria will appear here.'}</p>
+            <strong style={{ fontSize: 'var(--fs-xl)', overflowWrap: 'anywhere' }}>{f.title.trim() || 'Your listing title'}</strong>
+            <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>{f.category} · Up to <strong className="num">{budget !== null && !budgetErr ? `${formatUsdc(budget)} USDC` : '— USDC'}</strong> · {days >= 1 && days <= 90 ? `${days} day${days === 1 ? '' : 's'} to bid` : 'set bidding days'}{f.invitee.trim() ? ' · invite only' : ''}</div>
+            <p style={{ fontSize: 'var(--fs-md)', color: 'var(--text-2)', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 180, overflow: 'hidden' }}>{f.description.trim() || 'The acceptance criteria will appear here.'}</p>
           </div>
         </aside>
       </div>

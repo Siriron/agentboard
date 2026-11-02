@@ -25,6 +25,13 @@ export default function Layout() {
 
   useEffect(() => { setMobileOpen(false); setMenuOpen(false) }, [location.pathname])
 
+  // Reserve space for the fixed real-funds banner so no page content sits under it (landing included).
+  useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty('--banner-h', network.realFunds ? '28px' : '0px')
+    return () => root.style.removeProperty('--banner-h')
+  }, [network.realFunds])
+
   // Wallet menu: close on outside tap or Escape.
   useEffect(() => {
     if (!menuOpen && !mobileOpen) return
@@ -115,7 +122,7 @@ export default function Layout() {
   const isTestnet = netKey === 'testnet'
   const copyAddress = () => { try { navigator.clipboard?.writeText(activeAddress) } catch { /* clipboard blocked */ } setMenuOpen(false) }
   const navStyle = ({ isActive }) => ({
-    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 8, fontSize: 14, fontWeight: isActive ? 650 : 500,
+    display: 'flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 8, fontSize: 'var(--fs-md)', fontWeight: isActive ? 650 : 500,
     textDecoration: 'none', whiteSpace: 'nowrap', transition: 'color var(--t-short), background-color var(--t-short)',
     color: isActive ? 'var(--text-1)' : 'var(--text-2)', background: isActive ? 'var(--bg-subtle)' : 'transparent',
   })
@@ -141,14 +148,14 @@ export default function Layout() {
             <rect x="10" y="12" width="4" height="7" rx="2" fill="#fff4e8" /><rect x="18" y="12" width="4" height="7" rx="2" fill="#fff4e8" />
             <rect x="13" y="0.5" width="6" height="4" rx="1.5" style={{ fill: 'var(--accent)' }} />
           </svg>
-          <span className="hdr-logo-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 19, letterSpacing: '-0.03em', color: 'var(--text-1)' }}>AgentBoard</span>
+          <span className="hdr-logo-text" style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 'var(--fs-xl)', letterSpacing: '-0.03em', color: 'var(--text-1)' }}>AgentBoard</span>
         </button>
 
         <nav className="hdr-nav" aria-label="Main">
           {navLinks.map(({ to, label, badge }) => (
             <NavLink key={to} to={to} style={navStyle}>
               {label}
-              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 6, lineHeight: 1.6 }}>{badge}</span>}
+              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 'var(--fs-2xs)', fontWeight: 700, padding: '1px 5px', borderRadius: 6, lineHeight: 1.6 }}>{badge}</span>}
             </NavLink>
           ))}
         </nav>
@@ -191,7 +198,7 @@ export default function Layout() {
               {walletError && (
                 <div role="alert" style={{
                   position: 'absolute', top: 'calc(100% + 6px)', right: 0, background: 'var(--bg-card)', border: '1px solid var(--border-strong)',
-                  borderRadius: 10, padding: '8px 13px', fontSize: 12, color: 'var(--red)', zIndex: 200, boxShadow: 'var(--shadow)',
+                  borderRadius: 10, padding: '8px 13px', fontSize: 'var(--fs-xs)', color: 'var(--red)', zIndex: 200, boxShadow: 'var(--shadow)',
                   width: 'max-content', maxWidth: 'calc(100vw - 24px)',
                 }}>{walletError}</div>
               )}
@@ -217,24 +224,24 @@ export default function Layout() {
           display: 'flex', flexDirection: 'column', gap: 3,
         }}>
           {navLinks.map(({ to, label, badge }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({ ...navStyle({ isActive }), padding: '12px 14px', fontSize: 15, fontWeight: 600, borderRadius: 10 })}>
+            <NavLink key={to} to={to} style={({ isActive }) => ({ ...navStyle({ isActive }), padding: '12px 14px', fontSize: 'var(--fs-base)', fontWeight: 600, borderRadius: 10 })}>
               {label}
-              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 6 }}>{badge}</span>}
+              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 'var(--fs-2xs)', fontWeight: 700, padding: '1px 6px', borderRadius: 6 }}>{badge}</span>}
             </NavLink>
           ))}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
-            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}><span style={{ fontSize: 13, color: 'var(--text-2)', fontWeight: 600 }}>Theme</span><ThemeSwitch wide /></div>
+            <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}><span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', fontWeight: 600 }}>Theme</span><ThemeSwitch wide /></div>
             {activeMode === 'browser' && wrongChain && (
               <button onClick={() => { setMobileOpen(false); switchChain() }} style={{
                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--amber-dim)',
-                border: '1.5px solid rgba(245,158,11,0.3)', color: 'var(--amber)', fontSize: 13, fontWeight: 700, padding: '10px 14px',
+                border: '1.5px solid rgba(245,158,11,0.3)', color: 'var(--amber)', fontSize: 'var(--fs-sm)', fontWeight: 700, padding: '10px 14px',
                 borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 8,
               }}><AlertTriangle size={12} /> Switch to {network.label}</button>
             )}
             {activeAddress ? (
               <button onClick={() => { setMobileOpen(false); disconnect() }} style={{
                 width: '100%', background: 'var(--bg-subtle)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '11px 14px',
-                color: 'var(--text-2)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
+                color: 'var(--text-2)', fontSize: 'var(--fs-md)', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
               }}>Disconnect {formatAddress(activeAddress)}</button>
             ) : (
               <button onClick={() => { openPicker(); setMobileOpen(false) }} className="btn btn-primary" style={{ width: '100%' }}>Connect Wallet</button>
@@ -244,7 +251,7 @@ export default function Layout() {
       )}
 
       {/* ── MAIN ── */}
-      <main id="main" tabIndex={-1} style={{ flex: 1, paddingTop: isLanding ? 0 : (network.realFunds ? 'calc(var(--header-h) + 26px)' : 'var(--header-h)'), outline: 'none' }}>
+      <main id="main" tabIndex={-1} style={{ flex: 1, paddingTop: isLanding ? 0 : (network.realFunds ? 'calc(var(--header-h) + var(--banner-h, 28px))' : 'var(--header-h)'), outline: 'none' }}>
         <Outlet />
       </main>
 
@@ -253,8 +260,8 @@ export default function Layout() {
         <div style={{ maxWidth: 1180, margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))', gap: 36, marginBottom: 40 }}>
             <div style={{ gridColumn: 'span 1' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 22, letterSpacing: '-0.03em', marginBottom: 10 }}>AgentBoard</div>
-              <p style={{ fontSize: 14, color: 'var(--text-2)', maxWidth: 240 }}>Hire agents, pay through USDC escrow. Currently on {network.label}.</p>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 720, fontSize: 'var(--fs-3xl)', letterSpacing: '-0.03em', marginBottom: 10 }}>AgentBoard</div>
+              <p style={{ fontSize: 'var(--fs-md)', color: 'var(--text-2)', maxWidth: 240 }}>Hire agents, pay through USDC escrow. Currently on {network.label}.</p>
             </div>
             {[
               { title: 'App', links: [{ label: 'Job board', to: '/board' }, { label: network.realFunds ? 'Post a listing' : 'Post a job', to: '/post' }, ...(network.features.circleAgentWallets ? [{ label: 'Agent wallet', to: '/agent-wallet' }] : []), { label: 'Leaderboard', to: '/leaderboard' }, { label: 'Dashboard', to: '/dashboard' }, { label: 'Register an agent', to: '/register' }] },
@@ -262,7 +269,7 @@ export default function Layout() {
               { title: 'Resources', external: [{ label: 'GitHub', url: 'https://github.com/Siriron/agentboard' }, network.realFunds ? { label: 'Job board contract', url: `${network.explorer}/address/${network.contracts.v2.board}` } : { label: 'Contract on ArcScan', url: 'https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4' }] },
             ].map(({ title, links, external }) => (
               <nav key={title} aria-label={title}>
-                <div style={{ fontSize: 14, fontWeight: 650, marginBottom: 12 }}>{title}</div>
+                <div style={{ fontSize: 'var(--fs-md)', fontWeight: 650, marginBottom: 12 }}>{title}</div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                   {(links || []).map(({ label, to }) => <NavLink key={to} to={to} className="foot-link">{label}</NavLink>)}
                   {(external || []).map(({ label, url }) => <a key={url} href={url} target="_blank" rel="noreferrer" className="foot-link"><ExternalLink size={12} aria-hidden />{label}</a>)}
@@ -271,7 +278,7 @@ export default function Layout() {
             ))}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, paddingTop: 20, borderTop: '1px solid var(--border)' }}>
-            <span style={{ fontSize: 13, color: 'var(--text-2)' }}>© 2026 AgentBoard. Built on Arc. <span className="num" style={{ color: 'var(--text-3)' }}>build {__BUILD_ID__}</span></span>
+            <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>© 2026 AgentBoard. Built on Arc. <span className="num" style={{ color: 'var(--text-3)' }}>build {__BUILD_ID__}</span></span>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <span className={network.realFunds ? 'tag-main' : 'tag-test'}>{network.label}</span>
               <span className="badge badge-cancelled">ERC-8183</span><span className="badge badge-cancelled">ERC-8004</span>

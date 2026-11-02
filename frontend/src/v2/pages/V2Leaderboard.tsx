@@ -52,7 +52,7 @@ function Table({ title, rows, ids }: { title: string; rows: LeaderRow[]; ids?: M
                 return (
                   <tr key={r.address}>
                     <td>{i + 1}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 13 }}>{id ? <Link to={`/agent/${id}`} style={{ textDecoration: 'underline' }}>{short(r.address)} · agent #{id}</Link> : short(r.address)}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--fs-sm)' }}>{id ? <Link to={`/agent/${id}`} style={{ textDecoration: 'underline' }}>{short(r.address)} · agent #{id}</Link> : short(r.address)}</td>
                     <td className="r num">{r.completed}</td><td className="r num">{r.hired}</td><td className="r num">{formatUsdc(r.volume)}</td>
                   </tr>
                 )

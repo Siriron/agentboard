@@ -32,6 +32,15 @@ describe('MascotScene', () => {
       expect((globalThis as any).__r.renders).toBeGreaterThan(20)
       s.dispose()
     }
+    // drag-to-rotate: spins past a full turn, coasts, then eases back to facing front
+    const d = new MascotScene({ canvas, theme: 'light', reducedMotion: false, lowPower: false }); d.resize(390, 420, 2)
+    for (let i = 0; i < 40; i++) d.dragBy(0.2, 0.016)
+    expect((d as any).spin).toBeGreaterThan(Math.PI * 2)
+    d.endDrag(); d.start(); (d as any).running = true
+    for (let i = 0; i < 400; i++) { (d as any).time += 0.016; (d as any).step(0.016) }
+    const sp = (d as any).spin, turn = Math.PI * 2; expect(Math.abs(sp - Math.round(sp / turn) * turn)).toBeLessThan(0.05)
+    const rd = new MascotScene({ canvas, theme: 'light', reducedMotion: true, lowPower: true }); rd.dragBy(1, 0.016); rd.endDrag(); expect((rd as any).spin).toBe(0)
+    d.dispose(); rd.dispose()
     const r = new MascotScene({ canvas, theme: 'light', reducedMotion: true, lowPower: true }); r.resize(300, 300, 1); r.start(); r.dispose()
   })
 })
