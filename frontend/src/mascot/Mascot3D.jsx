@@ -16,7 +16,7 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
   useImperativeHandle(ref, () => ({ setProgress: p => sceneRef.current?.setProgress(p), react: () => sceneRef.current?.react() }), [])
 
   useEffect(() => {
-    let disposed = false, ro, io, onVis, onMove, onDown, onUp, onDrag, scene
+    let disposed = false, ro, io, onVis, onMove, onEnd, onDown, onUp, onDrag, scene
     const canvas = canvasRef.current, wrap = wrapRef.current
     ;(async () => {
       try {
@@ -41,6 +41,8 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
             else scene.setPointer((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1)
           }
           window.addEventListener('pointermove', onMove, { passive: true })
+          onEnd = e => { if (e.pointerType === 'touch') scene.setPointer(0, 0) } // a finger lifted or a scroll began anywhere: head back to centre
+          window.addEventListener('pointerup', onEnd); window.addEventListener('pointercancel', onEnd)
         }
         // Drag to spin: horizontal movement rotates the robot (about 520px = one full turn). Vertical movement is left to the
         // browser so the page still scrolls on touch; the browser then fires pointercancel and the spin is released.
@@ -70,7 +72,7 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
       disposed = true
       ro?.disconnect(); io?.disconnect()
       if (onVis) document.removeEventListener('visibilitychange', onVis)
-      if (onMove) window.removeEventListener('pointermove', onMove)
+      if (onMove) window.removeEventListener('pointermove', onMove); if (onEnd) { window.removeEventListener('pointerup', onEnd); window.removeEventListener('pointercancel', onEnd) }
       if (onDown) { wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onDrag); wrap.removeEventListener('pointerup', onUp); wrap.removeEventListener('pointercancel', onUp) }
       scene?.dispose(); sceneRef.current = null
     }

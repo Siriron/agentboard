@@ -169,7 +169,7 @@ export class MascotScene {
     this.appearTarget = 1
     if (!this.running) this.renderOnce()
   }
-  setPointer(nx: number, ny: number) { this.ptr.x = nx; this.ptr.y = ny }
+  setPointer(nx: number, ny: number) { const c = (v: number) => (Number.isFinite(v) ? Math.max(-1, Math.min(1, v)) : 0); this.ptr.x = c(nx); this.ptr.y = c(ny) }
   /** Drag to spin the robot around its vertical axis, a full 360 degrees and beyond. `rad` is this move's rotation, `dt` seconds since the last move. */
   dragBy(rad: number, dt: number) {
     this.dragging = true; this.spin += rad
