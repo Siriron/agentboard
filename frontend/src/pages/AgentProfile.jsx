@@ -2,20 +2,19 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatDate, formatAddress } from '../lib/arc'
 import { BlurFade } from '../components/magicui/BlurFade'
-import { BorderBeam } from '../components/magicui/BorderBeam'
 import { NumberTicker } from '../components/magicui/NumberTicker'
 import { cn } from '../lib/utils'
 import { ExternalLink, ArrowLeft, CheckCircle, Star, Briefcase, DollarSign, Clock, Shield, Bot } from 'lucide-react'
 
 const STATUS_LABEL = ['OPEN','HIRED','SUBMITTED','VALIDATED','DISPUTED','CANCELLED','EXPIRED']
 const STATUS_COLORS = {
-  0: 'text-teal-400 bg-teal-500/10 border-teal-500/25',
-  1: 'text-amber-400 bg-amber-500/10 border-amber-500/25',
-  2: 'text-blue-400 bg-blue-500/10 border-blue-500/25',
-  3: 'text-teal-400 bg-teal-500/10 border-teal-500/25',
-  4: 'text-red-400 bg-red-500/10 border-red-500/25',
-  5: 'text-gray-400 bg-gray-500/10 border-gray-500/25',
-  6: 'text-gray-400 bg-gray-500/10 border-gray-500/25',
+  0: 'text-[var(--test)] bg-[color-mix(in_srgb,var(--test)_10%,transparent)] border-[color-mix(in_srgb,var(--test)_25%,transparent)]',
+  1: 'text-[var(--amber)] bg-[color-mix(in_srgb,var(--amber)_10%,transparent)] border-[color-mix(in_srgb,var(--amber)_25%,transparent)]',
+  2: 'text-[var(--blue)] bg-[color-mix(in_srgb,var(--blue)_10%,transparent)] border-[color-mix(in_srgb,var(--blue)_25%,transparent)]',
+  3: 'text-[var(--test)] bg-[color-mix(in_srgb,var(--test)_10%,transparent)] border-[color-mix(in_srgb,var(--test)_25%,transparent)]',
+  4: 'text-[var(--red)] bg-[color-mix(in_srgb,var(--red)_10%,transparent)] border-[color-mix(in_srgb,var(--red)_25%,transparent)]',
+  5: 'text-[var(--text-3)] bg-[color-mix(in_srgb,var(--text-3)_10%,transparent)] border-[color-mix(in_srgb,var(--text-3)_25%,transparent)]',
+  6: 'text-[var(--text-3)] bg-[color-mix(in_srgb,var(--text-3)_10%,transparent)] border-[color-mix(in_srgb,var(--text-3)_25%,transparent)]',
 }
 
 export default function AgentProfile() {
@@ -78,25 +77,24 @@ export default function AgentProfile() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="max-w-4xl mx-auto">
         <button onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-[var(--text-1)]/40 text-sm hover:text-[var(--text-1)] transition-colors mb-8">
+          className="flex items-center gap-2 text-[var(--text-2)] text-sm hover:text-[var(--text-1)] transition-colors mb-8">
           <ArrowLeft size={14} /> Back
         </button>
 
         {loading ? (
           <div className="flex items-center justify-center gap-4 py-24">
-            <div className="w-5 h-5 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
-            <span className="text-[var(--text-1)]/40 text-sm">Loading agent profile…</span>
+            <div className="w-5 h-5 rounded-full border-2 border-[var(--net)] border-t-transparent animate-spin" />
+            <span className="text-[var(--text-2)] text-sm">Loading agent profile…</span>
           </div>
         ) : (
           <>
             {/* Profile Header */}
             <BlurFade delay={0} inView>
-              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 mb-6 overflow-hidden">
-                <BorderBeam size={250} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
+              <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-7 mb-6 overflow-hidden">
                 <div className="flex items-start gap-5 flex-wrap">
                   {/* Avatar */}
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/30 to-teal-500/30 border border-purple-500/20 flex items-center justify-center shrink-0">
-                    <Bot size={28} className="text-purple-600" />
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[color-mix(in_srgb,var(--net)_30%,transparent)] to-[color-mix(in_srgb,var(--test)_30%,transparent)] border border-[color-mix(in_srgb,var(--net)_20%,transparent)] flex items-center justify-center shrink-0">
+                    <Bot size={28} className="text-[var(--net)]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -105,18 +103,18 @@ export default function AgentProfile() {
                         {formatAddress(address)}
                       </h1>
                       {agentId !== null && (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-blue-400 bg-blue-500/10 border border-blue-500/25 px-2.5 py-1 rounded-full">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--blue)] bg-[color-mix(in_srgb,var(--blue)_10%,transparent)] border border-[color-mix(in_srgb,var(--blue)_25%,transparent)] px-2.5 py-1 rounded-full">
                           <Shield size={10} /> ERC-8004 #{agentId}
                         </span>
                       )}
                       {completed.length >= 3 && (
-                        <span className="flex items-center gap-1.5 text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 rounded-full">
+                        <span className="flex items-center gap-1.5 text-xs font-bold text-[var(--amber)] bg-[color-mix(in_srgb,var(--amber)_10%,transparent)] border border-[color-mix(in_srgb,var(--amber)_25%,transparent)] px-2.5 py-1 rounded-full">
                           <Star size={10} /> Verified Agent
                         </span>
                       )}
                     </div>
                     <a href={`https://testnet.arcscan.app/address/${address}`} target="_blank" rel="noreferrer"
-                      className="flex items-center gap-1.5 text-[var(--text-1)]/30 text-xs hover:text-purple-400 transition-colors"
+                      className="flex items-center gap-1.5 text-[var(--text-2)] text-xs hover:text-[var(--net)] transition-colors"
                       style={{ fontFamily: 'var(--font-mono)' }}>
                       <ExternalLink size={10} />{address}
                     </a>
@@ -124,11 +122,11 @@ export default function AgentProfile() {
                 </div>
 
                 {/* Stats row */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-7 pt-6 border-t border-[var(--border)]/5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-7 pt-6 border-t border-[var(--border)]">
                   {[
-                    { label: 'Jobs Completed', value: completed.length, ticker: true, color: 'text-teal-400' },
-                    { label: 'USDC Earned', value: null, text: `$${formatUSDC(totalEarned)}`, color: 'text-teal-400' },
-                    { label: 'Success Rate', value: null, text: `${successRate}%`, color: successRate >= 80 ? 'text-teal-400' : successRate >= 50 ? 'text-amber-400' : 'text-red-400' },
+                    { label: 'Jobs Completed', value: completed.length, ticker: true, color: 'text-[var(--test)]' },
+                    { label: 'USDC Earned', value: null, text: `$${formatUSDC(totalEarned)}`, color: 'text-[var(--test)]' },
+                    { label: 'Success Rate', value: null, text: `${successRate}%`, color: successRate >= 80 ? 'text-[var(--test)]' : successRate >= 50 ? 'text-[var(--amber)]' : 'text-[var(--red)]' },
                     { label: 'Avg Payout', value: null, text: `$${formatUSDC(avgBudget)}`, color: 'text-[var(--text-1)]' },
                   ].map(({ label, value, text, ticker, color }) => (
                     <div key={label}>
@@ -136,7 +134,7 @@ export default function AgentProfile() {
                         style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.04em' }}>
                         {ticker ? <NumberTicker value={value} /> : text}
                       </div>
-                      <div className="text-[var(--text-1)]/30 text-xs uppercase tracking-widest font-bold">{label}</div>
+                      <div className="text-[var(--text-2)] text-xs uppercase tracking-widest font-bold">{label}</div>
                     </div>
                   ))}
                 </div>
@@ -146,20 +144,20 @@ export default function AgentProfile() {
             {/* In Progress */}
             {inProgress.length > 0 && (
               <BlurFade delay={0.05} inView className="mb-6">
-                <div className="rounded-2xl border border-amber-500/15 bg-amber-500/[0.03] p-5">
+                <div className="rounded-2xl border border-[color-mix(in_srgb,var(--amber)_15%,transparent)] bg-[var(--amber)]/[0.03] p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <Clock size={14} className="text-amber-400" />
-                    <span className="text-amber-400 text-xs font-bold uppercase tracking-widest">In Progress ({inProgress.length})</span>
+                    <Clock size={14} className="text-[var(--amber)]" />
+                    <span className="text-[var(--amber)] text-xs font-bold uppercase tracking-widest">In Progress ({inProgress.length})</span>
                   </div>
                   <div className="flex flex-col gap-3">
                     {inProgress.map(({ id, core, meta }) => (
-                      <div key={id} onClick={() => navigate(`/job/${id}`)}
-                        className="flex items-center justify-between gap-4 p-3 rounded-xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/2 cursor-pointer hover:border-[var(--border)] transition-all">
+                      <div key={id} role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/job/${id}`) } }} onClick={() => navigate(`/job/${id}`)}
+                        className="flex items-center justify-between gap-4 p-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] cursor-pointer hover:border-[var(--border)] transition-all">
                         <div className="flex-1 min-w-0">
                           <p className="font-semibold text-[var(--text-1)] text-sm truncate" style={{ fontFamily: 'var(--font-display)' }}>{meta.title}</p>
-                          <p className="text-[var(--text-1)]/30 text-xs mt-0.5">#{id} · {STATUS_LABEL[Number(core.status)]}</p>
+                          <p className="text-[var(--text-2)] text-xs mt-0.5">#{id} · {STATUS_LABEL[Number(core.status)]}</p>
                         </div>
-                        <div className="font-bold text-amber-400 text-sm shrink-0" style={{ fontFamily: 'var(--font-display)' }}>
+                        <div className="font-bold text-[var(--amber)] text-sm shrink-0" style={{ fontFamily: 'var(--font-display)' }}>
                           ${formatUSDC(core.budget)}
                         </div>
                       </div>
@@ -171,43 +169,43 @@ export default function AgentProfile() {
 
             {/* Job history */}
             <BlurFade delay={0.1} inView>
-              <div className="rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 overflow-hidden">
-                <div className="px-6 py-4 border-b border-[var(--border)]/5">
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
+                <div className="px-6 py-4 border-b border-[var(--border)]">
                   <h2 className="font-bold text-[var(--text-1)]" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', letterSpacing: '-0.02em' }}>
                     Job History ({jobs.length})
                   </h2>
                 </div>
                 {jobs.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                    <Briefcase size={28} className="text-[var(--text-1)]/15 mb-3" />
-                    <p className="text-[var(--text-1)]/30 text-sm">No jobs yet for this agent.</p>
+                    <Briefcase size={28} className="text-[var(--text-3)] mb-3" />
+                    <p className="text-[var(--text-2)] text-sm">No jobs yet for this agent.</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-white/[0.04]">
                     {jobs.map(({ id, core, meta }) => {
                       const sn = Number(core.status)
                       return (
-                        <div key={id} onClick={() => navigate(`/job/${id}`)}
-                          className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-[var(--bg-subtle)]/2 transition-all group">
+                        <div key={id} role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(`/job/${id}`) } }} onClick={() => navigate(`/job/${id}`)}
+                          className="flex items-center gap-4 px-6 py-4 cursor-pointer hover:bg-[var(--bg-subtle)] transition-all group">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                              <span className={cn('text-[9px] font-black px-2 py-0.5 rounded border', STATUS_COLORS[sn])}>
+                              <span className={cn('text-[11px] font-black px-2 py-0.5 rounded border', STATUS_COLORS[sn])}>
                                 {STATUS_LABEL[sn]}
                               </span>
-                              <span className="text-[var(--text-1)]/20 text-xs" style={{ fontFamily: 'var(--font-mono)' }}>#{id}</span>
+                              <span className="text-[var(--text-3)] text-xs" style={{ fontFamily: 'var(--font-mono)' }}>#{id}</span>
                             </div>
-                            <p className="font-semibold text-[var(--text-1)] text-sm truncate group-hover:text-purple-600 transition-colors"
+                            <p className="font-semibold text-[var(--text-1)] text-sm truncate group-hover:text-[var(--net)] transition-colors"
                               style={{ fontFamily: 'var(--font-display)' }}>{meta.title}</p>
-                            <p className="text-[var(--text-1)]/30 text-xs mt-0.5">{meta.category} · Due {formatDate(core.deadline)}</p>
+                            <p className="text-[var(--text-2)] text-xs mt-0.5">{meta.category} · Due {formatDate(core.deadline)}</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className={cn('font-bold text-sm', sn === 3 ? 'text-teal-400' : 'text-[var(--text-1)]/60')}
+                            <div className={cn('font-bold text-sm', sn === 3 ? 'text-[var(--test)]' : 'text-[var(--text-2)]')}
                               style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
                               {sn === 3 ? '+' : ''}${formatUSDC(sn === 3 ? core.budget * 0.99 : core.budget)}
                             </div>
-                            <div className="text-[var(--text-1)]/20 text-xs">{sn === 3 ? 'earned' : 'budget'}</div>
+                            <div className="text-[var(--text-3)] text-xs">{sn === 3 ? 'earned' : 'budget'}</div>
                           </div>
-                          <ExternalLink size={13} className="text-[var(--text-1)]/15 group-hover:text-purple-400 transition-colors shrink-0" />
+                          <ExternalLink size={13} className="text-[var(--text-3)] group-hover:text-[var(--net)] transition-colors shrink-0" />
                         </div>
                       )
                     })}

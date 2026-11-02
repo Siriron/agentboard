@@ -4,7 +4,6 @@ import { getPublicClient, getWalletClient, executeViaAgentWallet, CONTRACT_ADDRE
 import { useWallet } from '../hooks/useWallet'
 import { useToast } from '../components/Toast'
 import { BlurFade } from '../components/magicui/BlurFade'
-import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import {
   ExternalLink, ArrowLeft, CheckCircle, AlertTriangle, Send,
@@ -14,30 +13,30 @@ import {
 
 const STATUS_LABEL_ARR = ['OPEN','HIRED','SUBMITTED','VALIDATED','DISPUTED','CANCELLED','EXPIRED']
 const STATUS_COLORS = {
-  0: { text: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/25', dot: 'bg-teal-400' },
-  1: { text: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/25', dot: 'bg-amber-400' },
-  2: { text: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/25', dot: 'bg-blue-400' },
-  3: { text: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/25', dot: 'bg-teal-400' },
-  4: { text: 'text-red-400', bg: 'bg-red-500/10 border-red-500/25', dot: 'bg-red-400' },
-  5: { text: 'text-gray-400', bg: 'bg-gray-500/10 border-gray-500/25', dot: 'bg-gray-400' },
-  6: { text: 'text-gray-400', bg: 'bg-gray-500/10 border-gray-500/25', dot: 'bg-gray-400' },
+  0: { text: 'text-[var(--test)]', bg: 'bg-[color-mix(in_srgb,var(--test)_10%,transparent)] border-[color-mix(in_srgb,var(--test)_25%,transparent)]', dot: 'bg-[var(--test)]' },
+  1: { text: 'text-[var(--amber)]', bg: 'bg-[color-mix(in_srgb,var(--amber)_10%,transparent)] border-[color-mix(in_srgb,var(--amber)_25%,transparent)]', dot: 'bg-[var(--amber)]' },
+  2: { text: 'text-[var(--blue)]', bg: 'bg-[color-mix(in_srgb,var(--blue)_10%,transparent)] border-[color-mix(in_srgb,var(--blue)_25%,transparent)]', dot: 'bg-[var(--blue)]' },
+  3: { text: 'text-[var(--test)]', bg: 'bg-[color-mix(in_srgb,var(--test)_10%,transparent)] border-[color-mix(in_srgb,var(--test)_25%,transparent)]', dot: 'bg-[var(--test)]' },
+  4: { text: 'text-[var(--red)]', bg: 'bg-[color-mix(in_srgb,var(--red)_10%,transparent)] border-[color-mix(in_srgb,var(--red)_25%,transparent)]', dot: 'bg-[var(--red)]' },
+  5: { text: 'text-[var(--text-3)]', bg: 'bg-[color-mix(in_srgb,var(--text-3)_10%,transparent)] border-[color-mix(in_srgb,var(--text-3)_25%,transparent)]', dot: 'bg-[var(--text-3)]' },
+  6: { text: 'text-[var(--text-3)]', bg: 'bg-[color-mix(in_srgb,var(--text-3)_10%,transparent)] border-[color-mix(in_srgb,var(--text-3)_25%,transparent)]', dot: 'bg-[var(--text-3)]' },
 }
 const LIFECYCLE = ['OPEN','HIRED','SUBMITTED','VALIDATED']
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
 
 function CodeSnip({ code }) {
   const [copied, setCopied] = useState(false)
   return (
-    <div className="rounded-xl overflow-hidden border border-[var(--border)]/6 bg-[var(--bg-surface)]">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)]/4 bg-[var(--bg-subtle)]/1">
-        <span className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-wider">javascript</span>
+    <div className="rounded-xl overflow-hidden border border-[var(--border)] bg-[var(--bg-surface)]">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--bg-card)]">
+        <span className="text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider">javascript</span>
         <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          className={cn('flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-teal-400' : 'text-[var(--text-1)]/30 hover:text-[var(--text-1)]')}>
+          className={cn('flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-[var(--test)]' : 'text-[var(--text-2)] hover:text-[var(--text-1)]')}>
           {copied ? <Check size={10}/> : <Copy size={10}/>}{copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="p-4 text-xs leading-relaxed text-[var(--text-1)]/70 overflow-x-auto" style={{ fontFamily: 'var(--font-mono)', whiteSpace: 'pre' }}>
+      <pre className="p-4 text-xs leading-relaxed text-[var(--text-2)] overflow-x-auto" style={{ fontFamily: 'var(--font-mono)', whiteSpace: 'pre' }}>
         <code>{code}</code>
       </pre>
     </div>
@@ -177,8 +176,8 @@ export default function JobDetail() {
 
   if (loading) return (
     <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center gap-4">
-      <div className="w-5 h-5 rounded-full border-2 border-purple-400 border-t-transparent animate-spin" />
-      <span className="text-[var(--text-1)]/40 text-sm">Loading from Arc…</span>
+      <div className="w-5 h-5 rounded-full border-2 border-[var(--net)] border-t-transparent animate-spin" />
+      <span className="text-[var(--text-2)] text-sm">Loading from Arc…</span>
     </div>
   )
 
@@ -240,7 +239,7 @@ await client.createContractExecutionTransaction({
         {/* Back + lifecycle */}
         <div className="mb-8">
           <button onClick={() => navigate('/board')}
-            className="flex items-center gap-2 text-[var(--text-1)]/40 text-sm hover:text-[var(--text-1)] transition-colors mb-5">
+            className="flex items-center gap-2 text-[var(--text-2)] text-sm hover:text-[var(--text-1)] transition-colors mb-5">
             <ArrowLeft size={14} /> Board
           </button>
 
@@ -249,12 +248,12 @@ await client.createContractExecutionTransaction({
             {LIFECYCLE.map((s, i) => (
               <div key={s} className="flex items-center flex-1">
                 <div className="flex items-center gap-2">
-                  <div className={cn('w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold border transition-all', sn > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : sn === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)]/3 border-[var(--border)] text-[var(--text-1)]/20')}>
+                  <div className={cn('w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border transition-all', sn > i ? 'bg-[var(--net)] border-[var(--net)] text-[var(--text-1)]' : sn === i ? 'bg-[color-mix(in_srgb,var(--net)_20%,transparent)] border-[color-mix(in_srgb,var(--net)_40%,transparent)] text-[var(--net)]' : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-3)]')}>
                     {sn > i ? <CheckCircle size={11}/> : i + 1}
                   </div>
-                  <span className={cn('text-xs font-semibold hidden sm:block', sn === i ? 'text-purple-400' : sn > i ? 'text-[var(--text-1)]/50' : 'text-[var(--text-1)]/20')}>{s}</span>
+                  <span className={cn('text-xs font-semibold hidden sm:block', sn === i ? 'text-[var(--net)]' : sn > i ? 'text-[var(--text-2)]' : 'text-[var(--text-3)]')}>{s}</span>
                 </div>
-                {i < LIFECYCLE.length - 1 && <div className={cn('flex-1 h-px mx-3 transition-all', sn > i ? 'bg-purple-500' : 'bg-[var(--bg-subtle)]/6')} />}
+                {i < LIFECYCLE.length - 1 && <div className={cn('flex-1 h-px mx-3 transition-all', sn > i ? 'bg-[var(--net)]' : 'bg-[var(--bg-card)]')} />}
               </div>
             ))}
           </div>
@@ -262,17 +261,17 @@ await client.createContractExecutionTransaction({
 
         {/* Last TX */}
         {lastTx && (
-          <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-teal-500/20 bg-teal-500/[0.05] mb-5">
+          <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[color-mix(in_srgb,var(--test)_20%,transparent)] bg-[var(--test)]/[0.05] mb-5">
             <div className="flex items-center gap-2">
-              <CheckCircle size={13} className="text-teal-400" />
-              <span className="text-teal-400 text-xs font-semibold">Transaction confirmed</span>
+              <CheckCircle size={13} className="text-[var(--test)]" />
+              <span className="text-[var(--test)] text-xs font-semibold">Transaction confirmed</span>
             </div>
             <div className="flex items-center gap-3">
               <a href={`https://testnet.arcscan.app/tx/${lastTx}`} target="_blank" rel="noreferrer"
-                className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
+                className="flex items-center gap-1 text-xs text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors">
                 <ExternalLink size={11}/> View on ArcScan
               </a>
-              <button onClick={() => setLastTx(null)} className="text-[var(--text-1)]/20 hover:text-[var(--text-1)] transition-colors">
+              <button onClick={() => setLastTx(null)} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">
                 <X size={13}/>
               </button>
             </div>
@@ -287,10 +286,9 @@ await client.createContractExecutionTransaction({
 
             {/* Job header */}
             <BlurFade delay={0} inView>
-              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
-                <BorderBeam size={200} duration={20} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
+              <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 overflow-hidden">
                 <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
-                  <span className={cn('inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border', sc.text, sc.bg)}>
+                  <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full border', sc.text, sc.bg)}>
                     <span className={cn('w-1.5 h-1.5 rounded-full', sc.dot)} />
                     {STATUS_LABEL_ARR[sn] || 'UNKNOWN'}
                   </span>
@@ -299,16 +297,16 @@ await client.createContractExecutionTransaction({
                   style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(20px,3vw,28px)', letterSpacing: '-0.03em' }}>
                   {meta.title}
                 </h1>
-                <p className="text-[var(--text-1)]/50 leading-relaxed text-sm mb-5">{meta.description}</p>
-                <div className="flex flex-wrap gap-5 pt-4 border-t border-[var(--border)]/5">
+                <p className="text-[var(--text-2)] leading-relaxed text-sm mb-5">{meta.description}</p>
+                <div className="flex flex-wrap gap-5 pt-4 border-t border-[var(--border)]">
                   {[
-                    { icon: <DollarSign size={12}/>, label: 'Budget', value: `$${formatUSDC(core.budget)} USDC`, color: 'text-teal-400' },
+                    { icon: <DollarSign size={12}/>, label: 'Budget', value: `$${formatUSDC(core.budget)} USDC`, color: 'text-[var(--test)]' },
                     { icon: <Clock size={12}/>, label: 'Deadline', value: formatDate(core.deadline), color: 'text-[var(--text-1)]' },
                     { icon: <Users size={12}/>, label: 'Bids', value: activeBids.length, color: 'text-[var(--text-1)]' },
-                    { icon: <Shield size={12}/>, label: 'Standard', value: 'ERC-8183', color: 'text-purple-400' },
+                    { icon: <Shield size={12}/>, label: 'Standard', value: 'ERC-8183', color: 'text-[var(--net)]' },
                   ].map(({ icon, label, value, color }) => (
                     <div key={label}>
-                      <div className="flex items-center gap-1 text-[var(--text-1)]/30 text-[10px] font-bold uppercase tracking-wider mb-1">{icon}{label}</div>
+                      <div className="flex items-center gap-1 text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider mb-1">{icon}{label}</div>
                       <div className={cn('font-bold text-sm', color)} style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>{value}</div>
                     </div>
                   ))}
@@ -318,41 +316,41 @@ await client.createContractExecutionTransaction({
 
             {/* Memo bar */}
             <BlurFade delay={0.03} inView>
-              <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-purple-500/12 bg-purple-500/[0.04]">
-                <Terminal size={12} className="text-purple-400 shrink-0" />
-                <span className="text-[var(--text-1)]/35 text-xs">Memo: </span>
-                <span className="text-purple-400 text-xs" style={{ fontFamily: 'var(--font-mono)' }}>{buildMemo('job', id)}</span>
+              <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl border border-[color-mix(in_srgb,var(--net)_12%,transparent)] bg-[var(--net)]/[0.04]">
+                <Terminal size={12} className="text-[var(--net)] shrink-0" />
+                <span className="text-[var(--text-2)] text-xs">Memo: </span>
+                <span className="text-[var(--net)] text-xs" style={{ fontFamily: 'var(--font-mono)' }}>{buildMemo('job', id)}</span>
               </div>
             </BlurFade>
 
             {/* Bids */}
             {activeBids.length > 0 && (
               <BlurFade delay={0.05} inView>
-                <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-6 overflow-hidden">
+                <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-6 overflow-hidden">
                   <h3 className="font-bold text-[var(--text-1)] mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', letterSpacing: '-0.02em' }}>
                     Bids ({activeBids.length})
                   </h3>
                   <div className="flex flex-col gap-3">
                     {activeBids.map((bid, idx) => (
-                      <div key={idx} className="p-4 rounded-xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/2">
+                      <div key={idx} className="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)]">
                         <div className="flex items-start justify-between gap-4 flex-wrap">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               <a href={`https://testnet.arcscan.app/address/${bid.agent}`} target="_blank" rel="noreferrer"
-                                className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-600 transition-colors"
+                                className="flex items-center gap-1 text-[var(--net)] text-xs hover:text-[var(--net)] transition-colors"
                                 style={{ fontFamily: 'var(--font-mono)' }}>
                                 <ExternalLink size={9}/>{formatAddress(bid.agent)}
                               </a>
-                              <span className="text-[var(--text-1)]/20 text-[10px]" style={{ fontFamily: 'var(--font-mono)' }}>ERC-8004 #{bid.agentId?.toString()}</span>
-                              <span className="text-[var(--text-1)]/20 text-[10px]">{bid.deliveryDays?.toString()} days</span>
+                              <span className="text-[var(--text-3)] text-[11px]" style={{ fontFamily: 'var(--font-mono)' }}>ERC-8004 #{bid.agentId?.toString()}</span>
+                              <span className="text-[var(--text-3)] text-[11px]">{bid.deliveryDays?.toString()} days</span>
                             </div>
-                            <p className="text-[var(--text-1)]/50 text-sm leading-relaxed">{bid.proposal}</p>
+                            <p className="text-[var(--text-2)] text-sm leading-relaxed">{bid.proposal}</p>
                           </div>
                           <div className="text-right shrink-0">
-                            <div className="font-black text-teal-400 leading-none mb-1" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.03em' }}>
+                            <div className="font-black text-[var(--test)] leading-none mb-1" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-3xl)', letterSpacing: '-0.03em' }}>
                               ${formatUSDC(bid.proposedAmount)}
                             </div>
-                            <div className="text-[var(--text-1)]/25 text-[10px] mb-3">USDC</div>
+                            <div className="text-[var(--text-2)] text-[11px] mb-3">USDC</div>
                             {isClient && sn === 0 && (
                               <button onClick={() => handleHire(idx)} disabled={submitting === 'hire'}
                                 className={cn('cta flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
@@ -372,15 +370,15 @@ await client.createContractExecutionTransaction({
             {/* Deliverable */}
             {meta.deliverableURI && (
               <BlurFade delay={0.07} inView>
-                <div className="relative rounded-2xl border border-blue-500/15 bg-blue-500/[0.03] p-5 overflow-hidden">
+                <div className="relative rounded-2xl border border-[color-mix(in_srgb,var(--blue)_15%,transparent)] bg-[var(--blue)]/[0.03] p-5 overflow-hidden">
                   <h3 className="font-bold text-[var(--text-1)] mb-3 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Deliverable</h3>
                   <a href={meta.deliverableURI.startsWith('ipfs://') ? `https://ipfs.io/ipfs/${meta.deliverableURI.slice(7)}` : meta.deliverableURI}
                     target="_blank" rel="noreferrer"
-                    className="flex items-center gap-2 text-blue-400 text-sm hover:text-blue-600 transition-colors break-all"
+                    className="flex items-center gap-2 text-[var(--blue)] text-sm hover:text-[var(--blue)] transition-colors break-all"
                     style={{ fontFamily: 'var(--font-mono)' }}>
                     <ExternalLink size={12}/>{meta.deliverableURI}
                   </a>
-                  {meta.resultNotes && <p className="text-[var(--text-1)]/40 text-sm leading-relaxed mt-3 pt-3 border-t border-[var(--border)]/5">{meta.resultNotes}</p>}
+                  {meta.resultNotes && <p className="text-[var(--text-2)] text-sm leading-relaxed mt-3 pt-3 border-t border-[var(--border)]">{meta.resultNotes}</p>}
                 </div>
               </BlurFade>
             )}
@@ -392,13 +390,12 @@ await client.createContractExecutionTransaction({
             {/* Bid form */}
             {sn === 0 && (
               <BlurFade delay={0.1} inView>
-                <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-5 overflow-hidden">
-                  <BorderBeam size={180} duration={18} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
+                <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5 overflow-hidden">
                   {/* Tabs */}
-                  <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-subtle)]/4 mb-5">
+                  <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-card)] mb-5">
                     {[['wallet', <Wallet size={11}/>, 'Submit Bid'], ['headless', <Terminal size={11}/>, 'Copy Code']].map(([key, icon, label]) => (
                       <button key={key} onClick={() => setBidTab(key)}
-                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-subtle)]/8 border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-1)]/35 hover:text-[var(--text-1)]/60')}>
+                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-2)] hover:text-[var(--text-2)]')}>
                         {icon}{label}
                       </button>
                     ))}
@@ -409,11 +406,11 @@ await client.createContractExecutionTransaction({
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit a Bid</h3>
                         {activeAddress ? (
-                          <span className={cn('flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full', activeMode === 'agent' ? 'text-pink-600 bg-pink-500/10' : 'text-purple-600 bg-purple-500/10')}>
+                          <span className={cn('flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full', activeMode === 'agent' ? 'text-pink-600 bg-pink-500/10' : 'text-[var(--net)] bg-[color-mix(in_srgb,var(--net)_10%,transparent)]')}>
                             {activeMode === 'agent' ? <Bot size={9}/> : <Wallet size={9}/>}{activeMode === 'agent' ? 'Agent Wallet' : 'Browser'}
                           </span>
                         ) : (
-                          <button onClick={openPicker} className="flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)] cta" >
+                          <button onClick={openPicker} className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)] cta" >
                             <Wallet size={9}/> Connect
                           </button>
                         )}
@@ -425,14 +422,14 @@ await client.createContractExecutionTransaction({
                           { label: 'Delivery Days', key: 'days', type: 'number', placeholder: '7' },
                         ].map(({ label, key, type, placeholder }) => (
                           <div key={key}>
-                            <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">{label}</label>
+                            <label className="block text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider mb-1.5">{label}</label>
                             <input className={inputClass} type={type} placeholder={placeholder}
                               value={bidForm[key]} onChange={e => setBidForm(f => ({ ...f, [key]: e.target.value }))}
                               style={{ fontFamily: key === 'agentId' || key === 'amount' || key === 'days' ? 'var(--font-mono)' : 'var(--font-body)' }} />
                           </div>
                         ))}
                         <div>
-                          <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Proposal</label>
+                          <label className="block text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider mb-1.5">Proposal</label>
                           <textarea className={cn(inputClass, 'resize-none')} rows={3} placeholder="Describe your approach…"
                             value={bidForm.proposal} onChange={e => setBidForm(f => ({ ...f, proposal: e.target.value }))}
                             style={{ fontFamily: 'var(--font-body)' }} />
@@ -448,10 +445,10 @@ await client.createContractExecutionTransaction({
                   ) : (
                     <>
                       <div className="flex items-center gap-2 mb-2">
-                        <Terminal size={14} className="text-purple-400"/>
+                        <Terminal size={14} className="text-[var(--net)]"/>
                         <h3 className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Bid From Your Own Backend</h3>
                       </div>
-                      <p className="text-[var(--text-1)]/40 text-xs leading-relaxed mb-3">
+                      <p className="text-[var(--text-2)] text-xs leading-relaxed mb-3">
                         For an agent running unattended on a server, sign directly with Circle's SDK using your Agent Wallet's ID — no browser involved at all.
                       </p>
                       <CodeSnip code={headlessCode} />
@@ -464,12 +461,11 @@ await client.createContractExecutionTransaction({
             {/* Submit work */}
             {isAgent && sn === 1 && (
               <BlurFade delay={0.1} inView>
-                <div className="relative rounded-2xl border border-blue-500/15 bg-blue-500/[0.03] p-5 overflow-hidden">
-                  <BorderBeam size={160} duration={16} colorFrom="var(--blue)" colorTo="var(--accent)" />
+                <div className="relative rounded-2xl border border-[color-mix(in_srgb,var(--blue)_15%,transparent)] bg-[var(--blue)]/[0.03] p-5 overflow-hidden">
                   <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Submit Work</h3>
                   <div className="flex flex-col gap-3">
                     <div>
-                      <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">
+                      <label className="block text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider mb-1.5">
                         Deliverable URI
                       </label>
                       <input className={inputClass} placeholder="ipfs://Qm… or https://…"
@@ -477,7 +473,7 @@ await client.createContractExecutionTransaction({
                         style={{ fontFamily: 'var(--font-mono)' }} />
                     </div>
                     {/* IPFS Upload */}
-                    <label className={cn('flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-[var(--border)]/12 text-[var(--text-1)]/40 text-xs font-medium cursor-pointer hover:border-purple-500/30 hover:text-purple-400 transition-all', uploading && 'opacity-60 cursor-not-allowed')}>
+                    <label className={cn('flex items-center justify-center gap-2 py-2.5 rounded-xl border border-dashed border-[var(--border)] text-[var(--text-2)] text-xs font-medium cursor-pointer hover:border-[color-mix(in_srgb,var(--net)_30%,transparent)] hover:text-[var(--net)] transition-all', uploading && 'opacity-60 cursor-not-allowed')}>
                       {uploading ? <Loader size={13} className="animate-spin"/> : <Upload size={13}/>}
                       {uploading ? 'Uploading to IPFS…' : 'Or upload file to IPFS (Pinata)'}
                       <input type="file" className="hidden" onChange={handleIPFSUpload} disabled={uploading} />
@@ -496,12 +492,11 @@ await client.createContractExecutionTransaction({
             {/* Validate */}
             {isValidator && sn === 2 && (
               <BlurFade delay={0.1} inView>
-                <div className="relative rounded-2xl border border-teal-500/15 bg-teal-500/[0.03] p-5 overflow-hidden">
-                  <BorderBeam size={160} duration={14} colorFrom="var(--green)" colorTo="var(--accent)" />
+                <div className="relative rounded-2xl border border-[color-mix(in_srgb,var(--test)_15%,transparent)] bg-[var(--test)]/[0.03] p-5 overflow-hidden">
                   <h3 className="font-bold text-[var(--text-1)] mb-4 text-sm" style={{ fontFamily: 'var(--font-display)' }}>Validate & Release</h3>
                   <div className="flex flex-col gap-3">
                     <div>
-                      <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Notes (optional)</label>
+                      <label className="block text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider mb-1.5">Notes (optional)</label>
                       <textarea className={cn(inputClass, 'resize-none')} rows={3} placeholder="Validation notes…"
                         value={validatorNotes} onChange={e => setValidatorNotes(e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
                     </div>
@@ -511,14 +506,14 @@ await client.createContractExecutionTransaction({
                       {submitting === 'validate' ? <Loader size={14} className="animate-spin"/> : <CheckCircle size={14}/>}
                       Release Payment
                     </button>
-                    <div className="h-px bg-[var(--bg-subtle)]/5" />
+                    <div className="h-px bg-[var(--bg-card)]" />
                     <div>
-                      <label className="block text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wider mb-1.5">Dispute Reason</label>
+                      <label className="block text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider mb-1.5">Dispute Reason</label>
                       <textarea className={cn(inputClass, 'resize-none')} rows={2} placeholder="Reason for dispute…"
                         value={disputeReason} onChange={e => setDisputeReason(e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
                     </div>
                     <button onClick={handleDispute} disabled={submitting === 'dispute' || !disputeReason.trim()}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)]/70 border border-red-500/20 bg-red-500/[0.06] hover:bg-red-500/10 transition-all">
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-2)] border border-[color-mix(in_srgb,var(--red)_20%,transparent)] bg-[var(--red)]/[0.06] hover:bg-[color-mix(in_srgb,var(--red)_10%,transparent)] transition-all">
                       <AlertTriangle size={14}/> Raise Dispute
                     </button>
                   </div>
@@ -530,7 +525,7 @@ await client.createContractExecutionTransaction({
             {isClient && sn === 0 && activeBids.length === 0 && (
               <BlurFade delay={0.12} inView>
                 <button onClick={handleCancel} disabled={submitting === 'cancel'}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-[var(--text-1)]/50 border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)]/4 transition-all">
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-[var(--text-2)] border border-[var(--border)] bg-[var(--bg-card)] hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all">
                   Cancel & Refund USDC
                 </button>
               </BlurFade>
@@ -538,8 +533,8 @@ await client.createContractExecutionTransaction({
 
             {/* On-chain info */}
             <BlurFade delay={0.15} inView>
-              <div className="rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/1 p-5">
-                <div className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-widest mb-4">On-chain Info</div>
+              <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
+                <div className="text-[var(--text-2)] text-[11px] font-bold uppercase tracking-widest mb-4">On-chain Info</div>
                 <div className="flex flex-col gap-3">
                   {[
                     { label: 'Job ID', value: `#${id}`, mono: true },
@@ -548,9 +543,9 @@ await client.createContractExecutionTransaction({
                     { label: 'Memo', value: buildMemo('job', id), mono: true },
                   ].map(({ label, value, mono, link }) => (
                     <div key={label} className="flex items-center justify-between gap-3">
-                      <span className="text-[var(--text-1)]/30 text-xs shrink-0">{label}</span>
+                      <span className="text-[var(--text-2)] text-xs shrink-0">{label}</span>
                       {link
-                        ? <a href={link} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-purple-400 text-xs hover:text-purple-600 transition-colors" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>
+                        ? <a href={link} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[var(--net)] text-xs hover:text-[var(--net)] transition-colors" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>
                           <ExternalLink size={9}/>{value}
                         </a>
                         : <span className="text-[var(--text-1)] text-xs" style={mono ? { fontFamily: 'var(--font-mono)' } : {}}>{value}</span>

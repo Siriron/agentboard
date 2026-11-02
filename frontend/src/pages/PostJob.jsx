@@ -4,7 +4,6 @@ import { getWalletClient, getPublicClient, sendBatchTransaction, executeViaAgent
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../components/Toast'
 import { BlurFade } from '../components/magicui/BlurFade'
-import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import { AlertCircle, Info, CheckCircle, Zap, Layers, Wallet, Bot, DollarSign, Calendar, Tag, FileText, Type } from 'lucide-react'
 
@@ -13,7 +12,7 @@ const CATEGORIES = ['SmartContract','Frontend','Backend','Audit','Research','Des
 function Field({ label, icon, children }) {
   return (
     <div>
-      <label className="flex items-center gap-1.5 text-[var(--text-1)]/40 text-xs font-bold uppercase tracking-wider mb-2">
+      <label className="flex items-center gap-1.5 text-[var(--text-2)] text-xs font-bold uppercase tracking-wider mb-2">
         {icon}{label}
       </label>
       {children}
@@ -21,7 +20,7 @@ function Field({ label, icon, children }) {
   )
 }
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
 
 export default function PostJob() {
   const { activeAddress, activeMode, agentWallet, openPicker } = useWallet()
@@ -137,27 +136,26 @@ export default function PostJob() {
       <div className="max-w-xl mx-auto relative">
 
         <BlurFade delay={0} inView className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/8 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[color-mix(in_srgb,var(--net)_20%,transparent)] bg-[color-mix(in_srgb,var(--net)_8%,transparent)] text-[var(--net)] text-xs font-bold tracking-widest uppercase mb-4">
             Post a Job
           </div>
           <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-2"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,5vw,40px)', letterSpacing: '-0.04em' }}>
             Lock USDC in Escrow
           </h1>
-          <p className="text-[var(--text-1)]/45 text-sm leading-relaxed">
+          <p className="text-[var(--text-2)] text-sm leading-relaxed">
             Post a job with trustless USDC escrow on Arc. Agents bid, you hire, payment releases automatically on validation.
           </p>
         </BlurFade>
 
         {!activeAddress ? (
           <BlurFade delay={0.1} inView>
-            <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-12 text-center overflow-hidden">
-              <BorderBeam size={200} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
-                <Wallet size={28} className="text-purple-400" />
+            <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center overflow-hidden">
+              <div className="w-16 h-16 rounded-2xl bg-[color-mix(in_srgb,var(--net)_10%,transparent)] border border-[color-mix(in_srgb,var(--net)_20%,transparent)] flex items-center justify-center mx-auto mb-5">
+                <Wallet size={28} className="text-[var(--net)]" />
               </div>
               <h3 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)', letterSpacing: '-0.02em' }}>Wallet Required</h3>
-              <p className="text-[var(--text-1)]/40 text-sm leading-relaxed mb-7 max-w-xs mx-auto">Connect a Browser Wallet or an Agent Wallet to post a job and lock USDC in escrow on Arc Testnet.</p>
+              <p className="text-[var(--text-2)] text-sm leading-relaxed mb-7 max-w-xs mx-auto">Connect a Browser Wallet or an Agent Wallet to post a job and lock USDC in escrow on Arc Testnet.</p>
               <button onClick={openPicker}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
 >
@@ -169,12 +167,12 @@ export default function PostJob() {
           <>
             {/* Active signer indicator */}
             <BlurFade delay={0.04} inView className="mb-4">
-              <div className={cn('flex items-center gap-3 px-4 py-3 rounded-xl border', usingAgentWallet ? 'border-pink-400/20 bg-pink-500/[0.05]' : 'border-purple-500/15 bg-purple-500/[0.04]')}>
-                {usingAgentWallet ? <Bot size={14} className="text-pink-400 shrink-0" /> : <Wallet size={14} className="text-purple-400 shrink-0" />}
-                <span className={cn('text-xs font-semibold', usingAgentWallet ? 'text-pink-600' : 'text-purple-600')}>
+              <div className={cn('flex items-center gap-3 px-4 py-3 rounded-xl border', usingAgentWallet ? 'border-pink-400/20 bg-pink-500/[0.05]' : 'border-[color-mix(in_srgb,var(--net)_15%,transparent)] bg-[var(--net)]/[0.04]')}>
+                {usingAgentWallet ? <Bot size={14} className="text-pink-400 shrink-0" /> : <Wallet size={14} className="text-[var(--net)] shrink-0" />}
+                <span className={cn('text-xs font-semibold', usingAgentWallet ? 'text-pink-600' : 'text-[var(--net)]')}>
                   {usingAgentWallet ? 'Posting from Agent Wallet' : 'Posting from Browser Wallet'}
                 </span>
-                <span className="text-[var(--text-1)]/30 text-[11px] font-mono ml-auto truncate" style={{ fontFamily: 'var(--font-mono)' }}>{activeAddress}</span>
+                <span className="text-[var(--text-2)] text-[11px] font-mono ml-auto truncate" style={{ fontFamily: 'var(--font-mono)' }}>{activeAddress}</span>
               </div>
             </BlurFade>
 
@@ -183,16 +181,16 @@ export default function PostJob() {
                 sequential Circle transactions. */}
             {!usingAgentWallet && (
               <BlurFade delay={0.08} inView className="mb-4">
-                <div className={cn('flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all', batchMode ? 'border-teal-500/20 bg-teal-500/[0.04]' : 'border-[var(--border)]/6 bg-[var(--bg-subtle)]/2')}>
-                  <Layers size={14} className={batchMode ? 'text-teal-400' : 'text-[var(--text-1)]/30'} />
+                <div className={cn('flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all', batchMode ? 'border-[color-mix(in_srgb,var(--test)_20%,transparent)] bg-[var(--test)]/[0.04]' : 'border-[var(--border)] bg-[var(--bg-card)]')}>
+                  <Layers size={14} className={batchMode ? 'text-[var(--test)]' : 'text-[var(--text-2)]'} />
                   <div className="flex-1">
-                    <span className={cn('text-sm font-semibold', batchMode ? 'text-teal-400' : 'text-[var(--text-1)]/50')}>
+                    <span className={cn('text-sm font-semibold', batchMode ? 'text-[var(--test)]' : 'text-[var(--text-2)]')}>
                       Arc Batch Transaction
                     </span>
-                    <span className="text-[var(--text-1)]/25 text-xs ml-2">approve + post in one TX · v0.7.2</span>
+                    <span className="text-[var(--text-2)] text-xs ml-2">approve + post in one TX · v0.7.2</span>
                   </div>
                   <button onClick={() => setBatchMode(b => !b)}
-                    className={cn('w-9 h-5 rounded-full relative border-none cursor-pointer transition-all duration-200 shrink-0', batchMode ? 'bg-teal-400' : 'bg-[var(--bg-subtle)]')}>
+                    className={cn('w-9 h-5 rounded-full relative border-none cursor-pointer transition-all duration-200 shrink-0', batchMode ? 'bg-[var(--test)]' : 'bg-[var(--bg-subtle)]')}>
                     <div className={cn('absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all duration-200', batchMode ? 'left-4' : 'left-0.5')} />
                   </button>
                 </div>
@@ -202,17 +200,17 @@ export default function PostJob() {
             {/* Step progress */}
             {step > 0 && (
               <BlurFade delay={0} inView className="mb-4">
-                <div className="flex items-center gap-0 p-4 rounded-xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2">
+                <div className="flex items-center gap-0 p-4 rounded-xl border border-[var(--border)] bg-[var(--bg-card)]">
                   {steps.map((s, i) => (
                     <div key={i} className="flex items-center flex-1">
                       <div className="flex items-center gap-2">
-                        <div className={cn('w-7 h-7 rounded-full flex items-center justify-center transition-all text-xs font-bold border', step > i ? 'bg-purple-500 border-purple-500 text-[var(--text-1)]' : step === i ? 'bg-purple-500/20 border-purple-500/40 text-purple-400' : 'bg-[var(--bg-subtle)]/3 border-[var(--border)] text-[var(--text-1)]/20')}>
+                        <div className={cn('w-7 h-7 rounded-full flex items-center justify-center transition-all text-xs font-bold border', step > i ? 'bg-[var(--net)] border-[var(--net)] text-[var(--text-1)]' : step === i ? 'bg-[color-mix(in_srgb,var(--net)_20%,transparent)] border-[color-mix(in_srgb,var(--net)_40%,transparent)] text-[var(--net)]' : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-3)]')}>
                           {step > i + (batchMode ? 0 : 0) ? <CheckCircle size={13} /> : s.icon}
                         </div>
-                        <span className={cn('text-xs font-medium whitespace-nowrap', step >= i + 1 ? 'text-[var(--text-1)]/70' : 'text-[var(--text-1)]/20')}>{s.label}</span>
+                        <span className={cn('text-xs font-medium whitespace-nowrap', step >= i + 1 ? 'text-[var(--text-2)]' : 'text-[var(--text-3)]')}>{s.label}</span>
                       </div>
                       {i < steps.length - 1 && (
-                        <div className={cn('flex-1 h-px mx-3 transition-all duration-300', step > i + 1 ? 'bg-purple-500' : 'bg-[var(--bg-subtle)]/6')} />
+                        <div className={cn('flex-1 h-px mx-3 transition-all duration-300', step > i + 1 ? 'bg-[var(--net)]' : 'bg-[var(--bg-card)]')} />
                       )}
                     </div>
                   ))}
@@ -222,8 +220,7 @@ export default function PostJob() {
 
             {/* Form */}
             <BlurFade delay={0.1} inView>
-              <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
-                <BorderBeam size={220} duration={18} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
+              <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-7 overflow-hidden">
                 <div className="flex flex-col gap-5">
 
                   <Field label="Job Title" icon={<Type size={11}/>}>
@@ -250,14 +247,14 @@ export default function PostJob() {
                   </Field>
 
                   {/* Summary */}
-                  <div className="p-4 rounded-xl bg-purple-500/[0.06] border border-purple-500/12">
+                  <div className="p-4 rounded-xl bg-[var(--net)]/[0.06] border border-[color-mix(in_srgb,var(--net)_12%,transparent)]">
                     <div className="flex items-start gap-2.5">
-                      <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
+                      <Info size={14} className="text-[var(--net)] mt-0.5 shrink-0" />
                       <div>
-                        <p className="text-purple-600 text-xs font-bold mb-1">
+                        <p className="text-[var(--net)] text-xs font-bold mb-1">
                           {usingAgentWallet ? 'Two-step transaction via Agent Wallet' : batchMode ? 'One-click Arc Batch TX (v0.7.2)' : 'Two-step transaction'}
                         </p>
-                        <p className="text-[var(--text-1)]/40 text-xs leading-relaxed">
+                        <p className="text-[var(--text-2)] text-xs leading-relaxed">
                           {usingAgentWallet
                             ? `Circle signs approve, then post — no popups. ${form.budget ? `$${form.budget} USDC` : 'Your budget'} locked in escrow from your agent wallet. 1% fee on validated payout.`
                             : batchMode

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatDate } from '../lib/arc'
 import { BlurFade } from '../components/magicui/BlurFade'
-import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import {
   Search, SlidersHorizontal, ChevronRight, Briefcase,
@@ -25,13 +24,13 @@ const STATUS_FILTER = [
   { value: '3', label: 'Validated' },
 ]
 const STATUS_META = {
-  0: { text: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/25', dot: 'bg-teal-400', label: 'OPEN' },
-  1: { text: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/25', dot: 'bg-amber-400', label: 'HIRED' },
-  2: { text: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/25', dot: 'bg-blue-400', label: 'SUBMITTED' },
-  3: { text: 'text-teal-400', bg: 'bg-teal-500/10 border-teal-500/25', dot: 'bg-teal-400', label: 'VALIDATED' },
-  4: { text: 'text-red-400', bg: 'bg-red-500/10 border-red-500/25', dot: 'bg-red-400', label: 'DISPUTED' },
-  5: { text: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20', dot: 'bg-gray-500', label: 'CANCELLED' },
-  6: { text: 'text-gray-500', bg: 'bg-gray-500/10 border-gray-500/20', dot: 'bg-gray-500', label: 'EXPIRED' },
+  0: { text: 'text-[var(--test)]', bg: 'bg-[color-mix(in_srgb,var(--test)_10%,transparent)] border-[color-mix(in_srgb,var(--test)_25%,transparent)]', dot: 'bg-[var(--test)]', label: 'OPEN' },
+  1: { text: 'text-[var(--amber)]', bg: 'bg-[color-mix(in_srgb,var(--amber)_10%,transparent)] border-[color-mix(in_srgb,var(--amber)_25%,transparent)]', dot: 'bg-[var(--amber)]', label: 'HIRED' },
+  2: { text: 'text-[var(--blue)]', bg: 'bg-[color-mix(in_srgb,var(--blue)_10%,transparent)] border-[color-mix(in_srgb,var(--blue)_25%,transparent)]', dot: 'bg-[var(--blue)]', label: 'SUBMITTED' },
+  3: { text: 'text-[var(--test)]', bg: 'bg-[color-mix(in_srgb,var(--test)_10%,transparent)] border-[color-mix(in_srgb,var(--test)_25%,transparent)]', dot: 'bg-[var(--test)]', label: 'VALIDATED' },
+  4: { text: 'text-[var(--red)]', bg: 'bg-[color-mix(in_srgb,var(--red)_10%,transparent)] border-[color-mix(in_srgb,var(--red)_25%,transparent)]', dot: 'bg-[var(--red)]', label: 'DISPUTED' },
+  5: { text: 'text-[var(--text-3)]', bg: 'bg-[color-mix(in_srgb,var(--text-3)_10%,transparent)] border-[color-mix(in_srgb,var(--text-3)_20%,transparent)]', dot: 'bg-[var(--text-3)]', label: 'CANCELLED' },
+  6: { text: 'text-[var(--text-3)]', bg: 'bg-[color-mix(in_srgb,var(--text-3)_10%,transparent)] border-[color-mix(in_srgb,var(--text-3)_20%,transparent)]', dot: 'bg-[var(--text-3)]', label: 'EXPIRED' },
 }
 
 function JobCard({ job, onClick }) {
@@ -41,38 +40,36 @@ function JobCard({ job, onClick }) {
   const bids = Number(core.bidCount)
 
   return (
-    <div onClick={onClick} className="group relative rounded-2xl border border-[var(--border)]/6 bg-[var(--bg-subtle)]/2 p-5 cursor-pointer hover:border-purple-500/25 hover:bg-[var(--bg-subtle)]/4 transition-all duration-200 overflow-hidden">
-      <BorderBeam size={150} duration={22} colorFrom="var(--accent)" colorTo="var(--accent-2)"
-        className="opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+    <div role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }} onClick={onClick} className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5 cursor-pointer hover:border-[color-mix(in_srgb,var(--net)_25%,transparent)] hover:bg-[var(--bg-subtle)] transition-all duration-200 overflow-hidden">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={cn('inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-1 rounded-full border', sm.text, sm.bg)}>
+          <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full border', sm.text, sm.bg)}>
             <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', sm.dot)} />{sm.label}
           </span>
-          <span className="text-[10px] text-[var(--text-1)]/25 bg-[var(--bg-subtle)]/3 border border-[var(--border)]/6 px-2 py-0.5 rounded-full font-medium">{meta.category}</span>
+          <span className="text-[11px] text-[var(--text-2)] bg-[var(--bg-card)] border border-[var(--border)] px-2 py-0.5 rounded-full font-medium">{meta.category}</span>
         </div>
-        <ChevronRight size={14} className="text-[var(--text-1)]/15 group-hover:text-purple-400 transition-colors shrink-0 mt-0.5" />
+        <ChevronRight size={14} className="text-[var(--text-3)] group-hover:text-[var(--net)] transition-colors shrink-0 mt-0.5" />
       </div>
-      <h3 className="font-bold text-[var(--text-1)] mb-2 leading-snug group-hover:text-purple-600 transition-colors line-clamp-2"
+      <h3 className="font-bold text-[var(--text-1)] mb-2 leading-snug group-hover:text-[var(--net)] transition-colors line-clamp-2"
         style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-lg)', letterSpacing: '-0.02em' }}>
         {meta.title}
       </h3>
-      <p className="text-[var(--text-1)]/35 text-xs leading-relaxed mb-4 line-clamp-2">{meta.description}</p>
-      <div className="flex items-center justify-between gap-3 pt-3.5 border-t border-[var(--border)]/5">
+      <p className="text-[var(--text-2)] text-xs leading-relaxed mb-4 line-clamp-2">{meta.description}</p>
+      <div className="flex items-center justify-between gap-3 pt-3.5 border-t border-[var(--border)]">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <DollarSign size={11} className="text-teal-400" />
+            <DollarSign size={11} className="text-[var(--test)]" />
             <span className="font-bold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>${formatUSDC(core.budget)}</span>
-            <span className="text-[var(--text-1)]/25 text-[10px]">USDC</span>
+            <span className="text-[var(--text-2)] text-[11px]">USDC</span>
           </div>
           <div className="flex items-center gap-1">
-            <Users size={11} className="text-[var(--text-1)]/25" />
-            <span className="text-[var(--text-1)]/40 text-xs">{bids}</span>
+            <Users size={11} className="text-[var(--text-2)]" />
+            <span className="text-[var(--text-2)] text-xs">{bids}</span>
           </div>
         </div>
         <div className="flex items-center gap-1">
-          <Clock size={10} className="text-[var(--text-1)]/20" />
-          <span className="text-[var(--text-1)]/25 text-[10px]">{formatDate(core.deadline)}</span>
+          <Clock size={10} className="text-[var(--text-3)]" />
+          <span className="text-[var(--text-2)] text-[11px]">{formatDate(core.deadline)}</span>
         </div>
       </div>
     </div>
@@ -81,7 +78,7 @@ function JobCard({ job, onClick }) {
 
 function SkeletonCard() {
   return (
-    <div className="rounded-2xl border border-[var(--border)]/4 bg-[var(--bg-subtle)]/1 p-5">
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
       <div className="flex gap-2 mb-3">
         <div className="skeleton h-5 w-14 rounded-full" />
         <div className="skeleton h-5 w-20 rounded-full" />
@@ -89,7 +86,7 @@ function SkeletonCard() {
       <div className="skeleton h-4 w-3/4 mb-2 rounded" />
       <div className="skeleton h-3 w-full mb-1 rounded" />
       <div className="skeleton h-3 w-2/3 mb-4 rounded" />
-      <div className="flex justify-between pt-3.5 border-t border-[var(--border)]/3">
+      <div className="flex justify-between pt-3.5 border-t border-[var(--border)]">
         <div className="skeleton h-4 w-20 rounded" />
         <div className="skeleton h-4 w-16 rounded" />
       </div>
@@ -195,8 +192,8 @@ export default function Board() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse" />
-                <span className="text-teal-400 text-xs font-bold uppercase tracking-widest">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--test)] animate-pulse" />
+                <span className="text-[var(--test)] text-xs font-bold uppercase tracking-widest">
                   {openCount} open · {jobs.length} total
                 </span>
               </div>
@@ -207,7 +204,7 @@ export default function Board() {
             </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => loadJobs(true)} disabled={refreshing || loading}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/2 text-[var(--text-1)]/50 text-xs font-medium hover:text-[var(--text-1)] transition-all', (refreshing || loading) && 'opacity-40 pointer-events-none')}>
+                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-xs font-medium hover:text-[var(--text-1)] transition-all', (refreshing || loading) && 'opacity-40 pointer-events-none')}>
                 <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
               <button onClick={() => navigate('/post')}
@@ -224,9 +221,9 @@ export default function Board() {
           {/* Row 1: search + status + sort + filter toggle */}
           <div className="flex gap-2 flex-wrap">
             <div className="relative flex-1 min-w-[180px]">
-              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-1)]/25 pointer-events-none" />
+              <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-2)] pointer-events-none" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs…"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/25 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/25 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
                 style={{ fontFamily: 'var(--font-body)' }} />
             </div>
             {[
@@ -234,35 +231,35 @@ export default function Board() {
               { value: sort, onChange: setSort, options: SORT_OPTIONS },
             ].map((sel, i) => (
               <select key={i} value={sel.value} onChange={e => sel.onChange(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/3 text-[var(--text-1)]/80 text-xs outline-none focus:border-purple-500/40 cursor-pointer"
+                className="px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] text-xs outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] cursor-pointer"
                 style={{ fontFamily: 'var(--font-body)' }}>
                 {sel.options.map(o => <option key={o.value} value={o.value} style={{ background: 'var(--bg-surface)' }}>{o.label}</option>)}
               </select>
             ))}
             <button onClick={() => setShowFilters(f => !f)}
-              className={cn('flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all', showFilters ? 'border-purple-500/35 bg-purple-500/10 text-purple-400' : 'border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 text-[var(--text-1)]/45 hover:text-[var(--text-1)]')}>
+              className={cn('flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all', showFilters ? 'border-[color-mix(in_srgb,var(--net)_35%,transparent)] bg-[color-mix(in_srgb,var(--net)_10%,transparent)] text-[var(--net)]' : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] hover:text-[var(--text-1)]')}>
               <SlidersHorizontal size={12} /> Filters
-              {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-purple-400 ml-0.5" />}
+              {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-[var(--net)] ml-0.5" />}
             </button>
           </div>
 
           {/* Advanced filters */}
           {showFilters && (
-            <div className="flex gap-3 flex-wrap items-end p-4 rounded-xl border border-purple-500/12 bg-purple-500/[0.03]">
+            <div className="flex gap-3 flex-wrap items-end p-4 rounded-xl border border-[color-mix(in_srgb,var(--net)_12%,transparent)] bg-[var(--net)]/[0.03]">
               {[
                 { label: 'Min Budget (USDC)', value: budgetMin, set: setBudgetMin, ph: '0' },
                 { label: 'Max Budget (USDC)', value: budgetMax, set: setBudgetMax, ph: '∞' },
               ].map(({ label, value, set, ph }) => (
                 <div key={label}>
-                  <div className="text-[var(--text-1)]/35 text-[10px] font-bold uppercase tracking-wide mb-1.5">{label}</div>
+                  <div className="text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wide mb-1.5">{label}</div>
                   <input value={value} onChange={e => set(e.target.value)} type="number" placeholder={ph}
-                    className="w-28 px-3 py-2 rounded-lg border border-[var(--border)]/7 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] text-xs outline-none focus:border-purple-500/40"
+                    className="w-28 px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] text-xs outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)]"
                     style={{ fontFamily: 'var(--font-mono)' }} />
                 </div>
               ))}
               {hasActiveFilters && (
                 <button onClick={() => { setBudgetMin(''); setBudgetMax(''); setSearch(''); setCategory('All'); setStatus('all') }}
-                  className="px-3 py-2 rounded-lg text-[var(--text-1)]/35 text-xs hover:text-[var(--text-1)] transition-colors border border-[var(--border)]/5">
+                  className="px-3 py-2 rounded-lg text-[var(--text-2)] text-xs hover:text-[var(--text-1)] transition-colors border border-[var(--border)]">
                   Clear all
                 </button>
               )}
@@ -274,8 +271,8 @@ export default function Board() {
             {CATEGORIES.map(cat => (
               <button key={cat} onClick={() => setCategory(cat)}
                 className={cn('px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all', category === cat
-                  ? 'bg-purple-500/15 border-purple-500/35 text-purple-600'
-                  : 'bg-[var(--bg-subtle)]/2 border-[var(--border)]/6 text-[var(--text-1)]/35 hover:text-[var(--text-1)]/70 hover:border-[var(--border)]')}>
+                  ? 'bg-[color-mix(in_srgb,var(--net)_15%,transparent)] border-[color-mix(in_srgb,var(--net)_35%,transparent)] text-[var(--net)]'
+                  : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-2)] hover:text-[var(--text-2)] hover:border-[var(--border)]')}>
                 {cat}
               </button>
             ))}
@@ -284,13 +281,13 @@ export default function Board() {
 
         {/* Result count */}
         {!loading && !error && (
-          <div className="flex items-center gap-2 text-[var(--text-1)]/25 text-xs mb-4">
+          <div className="flex items-center gap-2 text-[var(--text-2)] text-xs mb-4">
             <span>
               {filtered.length} {filtered.length === 1 ? 'job' : 'jobs'}
               {hasActiveFilters ? ' matching filters' : ''}
             </span>
             {failedCount > 0 && (
-              <span className="flex items-center gap-1 text-amber-400/70">
+              <span className="flex items-center gap-1 text-[color-mix(in_srgb,var(--amber)_70%,transparent)]">
                 <AlertCircle size={11} />
                 {failedCount} {failedCount === 1 ? 'job' : 'jobs'} failed to load — try refresh
               </span>
@@ -305,32 +302,32 @@ export default function Board() {
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-4">
-              <AlertCircle size={24} className="text-red-400" />
+            <div className="w-14 h-14 rounded-2xl bg-[color-mix(in_srgb,var(--red)_10%,transparent)] border border-[color-mix(in_srgb,var(--red)_20%,transparent)] flex items-center justify-center mb-4">
+              <AlertCircle size={24} className="text-[var(--red)]" />
             </div>
             <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)' }}>
               Couldn't load the job board
             </p>
-            <p className="text-[var(--text-1)]/30 text-sm mb-6 max-w-sm">{error}</p>
+            <p className="text-[var(--text-2)] text-sm mb-6 max-w-sm">{error}</p>
             <button onClick={() => loadJobs()}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-red-500/25 bg-red-500/8 text-red-400 text-sm font-semibold hover:bg-red-500/15 transition-all">
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[color-mix(in_srgb,var(--red)_25%,transparent)] bg-[color-mix(in_srgb,var(--red)_8%,transparent)] text-[var(--red)] text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--red)_15%,transparent)] transition-all">
               <RefreshCw size={13} /> Retry
             </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/15 flex items-center justify-center mb-4">
-              <Briefcase size={24} className="text-purple-400" />
+            <div className="w-14 h-14 rounded-2xl bg-[color-mix(in_srgb,var(--net)_10%,transparent)] border border-[color-mix(in_srgb,var(--net)_15%,transparent)] flex items-center justify-center mb-4">
+              <Briefcase size={24} className="text-[var(--net)]" />
             </div>
             <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)' }}>
               {search ? `No results for "${search}"` : 'No jobs found'}
             </p>
-            <p className="text-[var(--text-1)]/30 text-sm mb-6">
+            <p className="text-[var(--text-2)] text-sm mb-6">
               {hasActiveFilters ? 'Try adjusting your filters.' : 'Be the first to post a job.'}
             </p>
             {hasActiveFilters && (
               <button onClick={() => { setSearch(''); setCategory('All'); setStatus('all'); setBudgetMin(''); setBudgetMax('') }}
-                className="text-purple-400 text-sm hover:text-purple-600 transition-colors underline underline-offset-2">
+                className="text-[var(--net)] text-sm hover:text-[var(--net)] transition-colors underline underline-offset-2">
                 Clear filters
               </button>
             )}
@@ -346,19 +343,18 @@ export default function Board() {
         {/* Headless agent CTA */}
         {!loading && filtered.length > 0 && (
           <BlurFade delay={0} inView className="mt-10">
-            <div className="relative rounded-2xl border border-purple-500/12 bg-purple-500/[0.03] p-5 flex items-center justify-between gap-5 flex-wrap overflow-hidden">
-              <BorderBeam size={180} duration={22} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
+            <div className="relative rounded-2xl border border-[color-mix(in_srgb,var(--net)_12%,transparent)] bg-[var(--net)]/[0.03] p-5 flex items-center justify-between gap-5 flex-wrap overflow-hidden">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/12 flex items-center justify-center shrink-0">
-                  <Bot size={16} className="text-purple-400" />
+                <div className="w-9 h-9 rounded-xl bg-[color-mix(in_srgb,var(--net)_12%,transparent)] flex items-center justify-center shrink-0">
+                  <Bot size={16} className="text-[var(--net)]" />
                 </div>
                 <div>
                   <p className="font-semibold text-[var(--text-1)] text-sm" style={{ fontFamily: 'var(--font-display)' }}>Building an AI agent?</p>
-                  <p className="text-[var(--text-1)]/35 text-xs">Bid headlessly with Circle Dev-Controlled Wallets — no MetaMask required.</p>
+                  <p className="text-[var(--text-2)] text-xs">Bid headlessly with Circle Dev-Controlled Wallets — no MetaMask required.</p>
                 </div>
               </div>
               <button onClick={() => navigate('/docs#headless')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-purple-500/25 bg-purple-500/8 text-purple-600 text-xs font-semibold hover:bg-purple-500/15 transition-all shrink-0"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[color-mix(in_srgb,var(--net)_25%,transparent)] bg-[color-mix(in_srgb,var(--net)_8%,transparent)] text-[var(--net)] text-xs font-semibold hover:bg-[color-mix(in_srgb,var(--net)_15%,transparent)] transition-all shrink-0"
                 style={{ border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
                 View API Docs <ChevronRight size={12} />
               </button>

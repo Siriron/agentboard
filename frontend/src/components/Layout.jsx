@@ -26,6 +26,8 @@ export default function Layout() {
 
   useEffect(() => { setMobileOpen(false); setMenuOpen(false) }, [location.pathname])
 
+  useEffect(() => { document.documentElement.dataset.network = netKey }, [netKey])
+
   // Reserve space for the fixed real-funds banner so no page content sits under it (landing included).
   useEffect(() => {
     const root = document.documentElement

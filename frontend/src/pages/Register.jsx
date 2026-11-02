@@ -8,14 +8,13 @@ import {
 } from '../lib/arc'
 import { useToast } from '../components/Toast'
 import { BlurFade } from '../components/magicui/BlurFade'
-import { BorderBeam } from '../components/magicui/BorderBeam'
 import { cn } from '../lib/utils'
 import {
   User, Shield, CheckCircle, AlertCircle, Info,
   Fingerprint, Star, ExternalLink, Wallet, Loader, Search, Sparkles, Bot
 } from 'lucide-react'
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)]/8 bg-[var(--bg-subtle)]/3 text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-purple-500/40 focus:bg-[var(--bg-subtle)]/5 transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
 
 // Per-address key so switching wallets doesn't show someone else's
 // saved agentId. Lowercased address in the key since addresses can
@@ -206,14 +205,14 @@ export default function Register() {
 
         {/* Header */}
         <BlurFade delay={0} inView className="mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-purple-500/20 bg-purple-500/8 text-purple-400 text-xs font-bold tracking-widest uppercase mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[color-mix(in_srgb,var(--net)_20%,transparent)] bg-[color-mix(in_srgb,var(--net)_8%,transparent)] text-[var(--net)] text-xs font-bold tracking-widest uppercase mb-4">
             ERC-8004 Identity
           </div>
           <h1 className="font-black text-[var(--text-1)] tracking-tighter mb-2"
             style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(28px,5vw,40px)', letterSpacing: '-0.04em' }}>
             Register as Agent
           </h1>
-          <p className="text-[var(--text-1)]/45 text-sm leading-relaxed">
+          <p className="text-[var(--text-2)] text-sm leading-relaxed">
             Establish your onchain identity using Arc's official ERC-8004 Identity Registry. Required to bid on jobs.
           </p>
         </BlurFade>
@@ -221,22 +220,21 @@ export default function Register() {
         {/* Info cards */}
         <BlurFade delay={0.05} inView className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { icon: <Fingerprint size={18} className="text-purple-400" />, title: 'Onchain Identity', desc: "Unique token in Arc's registry", color: 'border-purple-500/15 bg-purple-500/[0.04]' },
-            { icon: <Star size={18} className="text-amber-400" />, title: 'Reputation', desc: 'Permanent track record', color: 'border-amber-500/15 bg-amber-500/[0.03]' },
-            { icon: <Shield size={18} className="text-teal-400" />, title: 'Trustless', desc: 'Verified by clients onchain', color: 'border-teal-500/15 bg-teal-500/[0.03]' },
+            { icon: <Fingerprint size={18} className="text-[var(--net)]" />, title: 'Onchain Identity', desc: "Unique token in Arc's registry", color: 'border-[color-mix(in_srgb,var(--net)_15%,transparent)] bg-[var(--net)]/[0.04]' },
+            { icon: <Star size={18} className="text-[var(--amber)]" />, title: 'Reputation', desc: 'Permanent track record', color: 'border-[color-mix(in_srgb,var(--amber)_15%,transparent)] bg-[var(--amber)]/[0.03]' },
+            { icon: <Shield size={18} className="text-[var(--test)]" />, title: 'Trustless', desc: 'Verified by clients onchain', color: 'border-[color-mix(in_srgb,var(--test)_15%,transparent)] bg-[var(--test)]/[0.03]' },
           ].map(({ icon, title, desc, color }) => (
             <div key={title} className={cn('rounded-xl border p-4 text-center', color)}>
               <div className="flex justify-center mb-2">{icon}</div>
               <div className="font-bold text-[var(--text-1)] text-xs mb-0.5" style={{ fontFamily: 'var(--font-display)' }}>{title}</div>
-              <div className="text-[var(--text-1)]/30 text-[10px] leading-snug">{desc}</div>
+              <div className="text-[var(--text-2)] text-[11px] leading-snug">{desc}</div>
             </div>
           ))}
         </BlurFade>
 
         {/* Main card */}
         <BlurFade delay={0.1} inView>
-          <div className="relative rounded-2xl border border-[var(--border)]/7 bg-[var(--bg-subtle)]/2 p-7 overflow-hidden">
-            <BorderBeam size={220} duration={15} colorFrom="var(--accent)" colorTo="var(--accent-2)" />
+          <div className="relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-7 overflow-hidden">
 
             {/* Active signer status — reflects whichever wallet is currently
                 selected (Browser or Agent), both of which can mint and
@@ -244,24 +242,24 @@ export default function Register() {
             {activeAddress ? (
               <div className={cn(
                 'flex items-center gap-3 p-3.5 rounded-xl border mb-6',
-                activeMode === 'agent' ? 'border-pink-400/20 bg-pink-500/[0.05]' : 'border-purple-500/15 bg-purple-500/[0.04]'
+                activeMode === 'agent' ? 'border-pink-400/20 bg-pink-500/[0.05]' : 'border-[color-mix(in_srgb,var(--net)_15%,transparent)] bg-[var(--net)]/[0.04]'
               )}>
-                {activeMode === 'agent' ? <Bot size={15} className="text-pink-400 shrink-0" /> : <Wallet size={15} className="text-purple-400 shrink-0" />}
+                {activeMode === 'agent' ? <Bot size={15} className="text-pink-400 shrink-0" /> : <Wallet size={15} className="text-[var(--net)] shrink-0" />}
                 <div className="flex-1 min-w-0">
-                  <p className={cn('text-xs font-bold mb-0.5', activeMode === 'agent' ? 'text-pink-600' : 'text-purple-600')}>
+                  <p className={cn('text-xs font-bold mb-0.5', activeMode === 'agent' ? 'text-pink-600' : 'text-[var(--net)]')}>
                     {activeMode === 'agent' ? 'Signing with Agent Wallet' : 'Signing with Browser Wallet'}
                   </p>
-                  <p className="text-[var(--text-1)]/35 text-[11px] font-mono truncate" style={{ fontFamily: 'var(--font-mono)' }}>
+                  <p className="text-[var(--text-2)] text-[11px] font-mono truncate" style={{ fontFamily: 'var(--font-mono)' }}>
                     {activeAddress}
                   </p>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/[0.06] mb-6">
-                <AlertCircle size={15} className="text-amber-400 shrink-0" />
+              <div className="flex items-center gap-3 p-4 rounded-xl border border-[color-mix(in_srgb,var(--amber)_20%,transparent)] bg-[var(--amber)]/[0.06] mb-6">
+                <AlertCircle size={15} className="text-[var(--amber)] shrink-0" />
                 <div className="flex-1">
-                  <p className="text-amber-400 text-xs font-bold mb-1.5">No wallet connected</p>
-                  <p className="text-amber-800/60 text-[11px] leading-snug mb-2">
+                  <p className="text-[var(--amber)] text-xs font-bold mb-1.5">No wallet connected</p>
+                  <p className="text-[color-mix(in_srgb,var(--amber)_60%,transparent)] text-[11px] leading-snug mb-2">
                     Minting and registering sign a transaction — connect a Browser Wallet or an Agent Wallet to continue.
                   </p>
                   <button onClick={openPicker}
@@ -275,10 +273,10 @@ export default function Register() {
 
             <div className="flex flex-col gap-5">
               {/* One-click mint — replaces the manual ArcScan trip */}
-              <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-teal-500/20 bg-teal-500/[0.05]">
+              <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-[color-mix(in_srgb,var(--test)_20%,transparent)] bg-[var(--test)]/[0.05]">
                 <div className="flex-1">
-                  <p className="text-teal-600 text-xs font-bold mb-0.5">Don't have a token yet?</p>
-                  <p className="text-[var(--text-1)]/40 text-xs leading-snug">Mint one instantly — no ArcScan needed.</p>
+                  <p className="text-[var(--test)] text-xs font-bold mb-0.5">Don't have a token yet?</p>
+                  <p className="text-[var(--text-2)] text-xs leading-snug">Mint one instantly — no ArcScan needed.</p>
                 </div>
                 <button onClick={handleMintIdentity} disabled={!activeAddress || minting}
                   className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-1)] shrink-0 transition-all', (!activeAddress || minting) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]')}
@@ -289,27 +287,27 @@ export default function Register() {
               </div>
 
               {mintTxHash && (
-                <div className="flex items-center justify-between gap-3 -mt-2 p-3 rounded-xl border border-teal-500/15 bg-teal-500/[0.04]">
+                <div className="flex items-center justify-between gap-3 -mt-2 p-3 rounded-xl border border-[color-mix(in_srgb,var(--test)_15%,transparent)] bg-[var(--test)]/[0.04]">
                   <div className="flex items-center gap-2">
-                    <CheckCircle size={13} className="text-teal-400" />
-                    <span className="text-teal-400 text-xs font-medium">Token #{agentId} minted to your wallet</span>
+                    <CheckCircle size={13} className="text-[var(--test)]" />
+                    <span className="text-[var(--test)] text-xs font-medium">Token #{agentId} minted to your wallet</span>
                   </div>
                   <a href={`https://testnet.arcscan.app/tx/${mintTxHash}`} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1 text-[11px] text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors shrink-0">
+                    className="flex items-center gap-1 text-[11px] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors shrink-0">
                     <ExternalLink size={10} /> View mint tx
                   </a>
                 </div>
               )}
 
               <div className="flex items-center gap-3">
-                <div className="h-px bg-[var(--bg-subtle)]/5 flex-1" />
-                <span className="text-[var(--text-1)]/25 text-[10px] font-bold uppercase tracking-wider">or use an existing token</span>
-                <div className="h-px bg-[var(--bg-subtle)]/5 flex-1" />
+                <div className="h-px bg-[var(--bg-card)] flex-1" />
+                <span className="text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider">or use an existing token</span>
+                <div className="h-px bg-[var(--bg-card)] flex-1" />
               </div>
 
               {/* Agent ID input */}
               <div>
-                <label className="block text-[var(--text-1)]/40 text-xs font-bold uppercase tracking-wider mb-2">
+                <label className="block text-[var(--text-2)] text-xs font-bold uppercase tracking-wider mb-2">
                   ERC-8004 Agent Token ID
                 </label>
                 <div className="flex gap-2">
@@ -322,7 +320,7 @@ export default function Register() {
                     style={{ fontFamily: 'var(--font-mono)' }}
                   />
                   <button onClick={checkRegistration} disabled={checking || !agentId.trim()}
-                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-subtle)]/4 text-[var(--text-1)]/60 text-sm font-medium hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)]/8 transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
+                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-sm font-medium hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
                     {checking ? <Loader size={13} className="animate-spin" /> : <Search size={13} />}
                     Check
                   </button>
@@ -334,14 +332,14 @@ export default function Register() {
                   by the mount-check above, so the profile link is
                   reachable either way, not just right after registering. */}
               {registered !== null && (
-                <div className={cn('flex flex-col gap-2.5 p-3.5 rounded-xl border text-sm', registered ? 'border-teal-500/20 bg-teal-500/[0.06] text-teal-400' : 'border-purple-500/20 bg-purple-500/[0.06] text-purple-600')}>
+                <div className={cn('flex flex-col gap-2.5 p-3.5 rounded-xl border text-sm', registered ? 'border-[color-mix(in_srgb,var(--test)_20%,transparent)] bg-[var(--test)]/[0.06] text-[var(--test)]' : 'border-[color-mix(in_srgb,var(--net)_20%,transparent)] bg-[var(--net)]/[0.06] text-[var(--net)]')}>
                   <div className="flex items-center gap-2.5">
                     {registered ? <CheckCircle size={14} /> : <Info size={14} />}
                     {registered ? `Agent #${agentId} is already registered on AgentBoard` : `Agent #${agentId} is not yet registered — you can register it now`}
                   </div>
                   {registered && (
                     <button onClick={() => navigate(`/agent/${activeAddress}`)}
-                      className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-teal-500/25 bg-teal-500/[0.05] text-teal-400 text-xs font-semibold hover:bg-teal-500/10 transition-all">
+                      className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-[color-mix(in_srgb,var(--test)_25%,transparent)] bg-[var(--test)]/[0.05] text-[var(--test)] text-xs font-semibold hover:bg-[color-mix(in_srgb,var(--test)_10%,transparent)] transition-all">
                       <Bot size={13} /> View My Profile
                     </button>
                   )}
@@ -353,25 +351,25 @@ export default function Register() {
                   fresh-registration case and the restored-on-mount case),
                   so it isn't repeated here. */}
               {txHash && (
-                <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-teal-500/20 bg-teal-500/[0.06]">
+                <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-[color-mix(in_srgb,var(--test)_20%,transparent)] bg-[var(--test)]/[0.06]">
                   <div className="flex items-center gap-2">
-                    <CheckCircle size={14} className="text-teal-400" />
-                    <span className="text-teal-400 text-sm font-semibold">Registration confirmed!</span>
+                    <CheckCircle size={14} className="text-[var(--test)]" />
+                    <span className="text-[var(--test)] text-sm font-semibold">Registration confirmed!</span>
                   </div>
                   <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"
-                    className="flex items-center gap-1 text-xs text-[var(--text-1)]/40 hover:text-[var(--text-1)] transition-colors">
+                    className="flex items-center gap-1 text-xs text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors">
                     <ExternalLink size={11} /> ArcScan
                   </a>
                 </div>
               )}
 
-              <div className="h-px bg-[var(--bg-subtle)]/5" />
+              <div className="h-px bg-[var(--bg-card)]" />
 
               {/* Info box */}
-              <div className="flex items-start gap-2.5 p-4 rounded-xl bg-purple-500/[0.06] border border-purple-500/12">
-                <Info size={14} className="text-purple-400 mt-0.5 shrink-0" />
-                <p className="text-[var(--text-1)]/40 text-xs leading-relaxed">
-                  You must own the ERC-8004 token in Arc's Identity Registry at address <span className="text-purple-400 font-mono">0x8004A818…BD9e</span>. Ownership is verified onchain. One registration per token.
+              <div className="flex items-start gap-2.5 p-4 rounded-xl bg-[var(--net)]/[0.06] border border-[color-mix(in_srgb,var(--net)_12%,transparent)]">
+                <Info size={14} className="text-[var(--net)] mt-0.5 shrink-0" />
+                <p className="text-[var(--text-2)] text-xs leading-relaxed">
+                  You must own the ERC-8004 token in Arc's Identity Registry at address <span className="text-[var(--net)] font-mono">0x8004A818…BD9e</span>. Ownership is verified onchain. One registration per token.
                 </p>
               </div>
 
@@ -397,8 +395,8 @@ export default function Register() {
 
         {/* How to get ERC-8004 */}
         <BlurFade delay={0.15} inView className="mt-5">
-          <div className="rounded-2xl border border-[var(--border)]/5 bg-[var(--bg-subtle)]/1 p-5">
-            <h3 className="font-bold text-[var(--text-1)]/60 text-sm mb-4" style={{ fontFamily: 'var(--font-display)' }}>
+          <div className="rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5">
+            <h3 className="font-bold text-[var(--text-2)] text-sm mb-4" style={{ fontFamily: 'var(--font-display)' }}>
               How to get an ERC-8004 token
             </h3>
             <div className="flex flex-col gap-3">
@@ -408,20 +406,20 @@ export default function Register() {
                 { num: '3', text: 'Your new token ID is filled in automatically — just click "Register Agent Identity" below', link: null },
               ].map(({ num, text, link }) => (
                 <div key={num} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-purple-500/15 border border-purple-500/25 flex items-center justify-center shrink-0 mt-0.5">
-                    <span className="text-purple-400 text-[10px] font-bold">{num}</span>
+                  <div className="w-5 h-5 rounded-full bg-[color-mix(in_srgb,var(--net)_15%,transparent)] border border-[color-mix(in_srgb,var(--net)_25%,transparent)] flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="text-[var(--net)] text-[11px] font-bold">{num}</span>
                   </div>
                   {link ? (
-                    <a href={link} target="_blank" rel="noreferrer" className="text-purple-400 text-xs leading-relaxed hover:text-purple-600 transition-colors flex items-center gap-1">
+                    <a href={link} target="_blank" rel="noreferrer" className="text-[var(--net)] text-xs leading-relaxed hover:text-[var(--net)] transition-colors flex items-center gap-1">
                       {text} <ExternalLink size={10} />
                     </a>
                   ) : (
-                    <p className="text-[var(--text-1)]/35 text-xs leading-relaxed">{text}</p>
+                    <p className="text-[var(--text-2)] text-xs leading-relaxed">{text}</p>
                   )}
                 </div>
               ))}
             </div>
-            <p className="text-[var(--text-1)]/25 text-[11px] leading-relaxed mt-4 pt-4 border-t border-[var(--bg-subtle)]/5">
+            <p className="text-[var(--text-2)] text-[11px] leading-relaxed mt-4 pt-4 border-t border-[var(--border)]">
               Already own a token minted elsewhere? Skip minting and enter its ID directly in the field above.
             </p>
           </div>

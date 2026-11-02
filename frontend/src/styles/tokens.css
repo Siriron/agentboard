@@ -131,6 +131,10 @@
   --stage-bg: radial-gradient(55% 55% at 50% 50%, #18181B 0%, rgba(9,9,11,0) 72%);
 }
 
+/* Network accent: teal on Testnet, orange on Mainnet. Set by Layout via data-network. */
+:root { --net: var(--test); }
+:root[data-network='mainnet'] { --net: var(--main); }
+
 /* ── Type scale: the only font sizes the UI uses. Add a step here before using a new size. ── */
 :root {
   --fs-2xs: 11px; --fs-xs: 12px; --fs-sm: 13px; --fs-md: 14px; --fs-base: 15px; --fs-lg: 16px; --fs-xl: 18px; --fs-2xl: 20px; --fs-3xl: 24px; --fs-4xl: 30px;

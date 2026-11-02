@@ -11,7 +11,7 @@ export default function JobCard({ jobId, core, meta }) {
   const isDemo = typeof jobId === 'string' && jobId.startsWith('d')
 
   return (
-    <div className="card" onClick={() => !isDemo && navigate(`/job/${jobId}`)} style={{ padding: 24, cursor: isDemo ? 'default' : 'pointer' }}>
+    <div className="card" role={isDemo ? undefined : 'link'} tabIndex={isDemo ? undefined : 0} onKeyDown={e => { if (!isDemo && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); navigate(`/job/${jobId}`) } }} onClick={() => !isDemo && navigate(`/job/${jobId}`)} style={{ padding: 24, cursor: isDemo ? 'default' : 'pointer' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <span className={`badge badge-${STATUS_CLASS[sn]||'cancelled'}`}><span className="badge-dot" />{STATUS_LABEL[sn]||'OPEN'}</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--fs-2xs)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'capitalize' }}>{CAT_ICONS[meta.category]||<Tag size={11}/>}{meta.category}</span>
@@ -25,7 +25,7 @@ export default function JobCard({ jobId, core, meta }) {
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-3)', fontSize: 'var(--fs-xs)' }}><Users size={12}/>{core.bidCount.toString()}</span>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-3)', fontSize: 'var(--fs-xs)' }}><Clock size={12}/>{formatDate(core.deadline)}</span>
         </div>
-        {!isDemo && <a href={`https://testnet.arcscan.app/address/${core.client}`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="address-pill" style={{fontSize:10}}><ExternalLink size={9}/>{formatAddress(core.client)}</a>}
+        {!isDemo && <a href={`https://testnet.arcscan.app/address/${core.client}`} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="address-pill" style={{fontSize: 'var(--fs-2xs)'}}><ExternalLink size={9}/>{formatAddress(core.client)}</a>}
       </div>
     </div>
   )
