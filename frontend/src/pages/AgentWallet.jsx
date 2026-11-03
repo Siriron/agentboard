@@ -236,7 +236,7 @@ await client.createContractExecutionTransaction({
                   value={walletSetName}
                   onChange={e => setWalletSetName(e.target.value)}
                   placeholder="e.g. AgentBoard Agents"
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder:text-[var(--text-3)] text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] transition-all"
                   style={{ fontFamily: 'var(--font-body)' }}
                 />
               </div>
@@ -300,7 +300,7 @@ await client.createContractExecutionTransaction({
                   value={agentName}
                   onChange={e => setAgentName(e.target.value)}
                   placeholder="e.g. my-arc-agent-01"
-                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] transition-all"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder:text-[var(--text-3)] text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] transition-all"
                   style={{ fontFamily: 'var(--font-body)' }}
                 />
               </div>

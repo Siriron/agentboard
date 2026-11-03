@@ -13,13 +13,15 @@
   --font-body:    'Geist Variable', 'Geist', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono:    'Geist Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
 
-  --r-sm: 6px; --r: 10px; --r-lg: 12px; --r-xl: 16px; --r-pill: 999px; --r-btn: 10px;
+  --r-sm: 6px; --r: 10px; --r-lg: 14px; --r-xl: 18px; --r-pill: 999px; --r-btn: 10px;
 
   --ease-out: cubic-bezier(.2,.7,.2,1);
   --ease-io:  cubic-bezier(.65,0,.2,1);
   --t-micro: 120ms; --t-short: 180ms; --t-med: 280ms; --t-long: 520ms;
 
   --header-h: 60px;
+  --shadow-card: 0 1px 2px rgba(15,23,42,.04);
+  --shadow-lift: 0 1px 2px rgba(15,23,42,.04), 0 10px 28px -6px rgba(15,23,42,.10);
   --page-max: 1200px;
   --gutter: clamp(16px, 4vw, 40px);
 }
@@ -130,6 +132,9 @@
   --overlay: rgba(0,0,0,.66);
   --stage-bg: radial-gradient(55% 55% at 50% 50%, #18181B 0%, rgba(9,9,11,0) 72%);
 }
+
+@media (max-width: 479px) { :root { --header-h: 56px; } }
+:root[data-theme='dark'] { --shadow-card: 0 1px 2px rgba(0,0,0,.4); --shadow-lift: 0 1px 2px rgba(0,0,0,.4), 0 12px 30px -8px rgba(0,0,0,.6); }
 
 /* Network accent: teal on Testnet, orange on Mainnet. Set by Layout via data-network. */
 :root { --net: var(--test); }

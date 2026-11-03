@@ -11,7 +11,7 @@ export default function JobCard({ jobId, core, meta }) {
   const isDemo = typeof jobId === 'string' && jobId.startsWith('d')
 
   return (
-    <div className="card" role={isDemo ? undefined : 'link'} tabIndex={isDemo ? undefined : 0} onKeyDown={e => { if (!isDemo && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); navigate(`/job/${jobId}`) } }} onClick={() => !isDemo && navigate(`/job/${jobId}`)} style={{ padding: 24, cursor: isDemo ? 'default' : 'pointer' }}>
+    <div className={isDemo ? 'card' : 'card is-link'} role={isDemo ? undefined : 'link'} tabIndex={isDemo ? undefined : 0} onKeyDown={e => { if (!isDemo && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); navigate(`/job/${jobId}`) } }} onClick={() => !isDemo && navigate(`/job/${jobId}`)} style={{ padding: 24, cursor: isDemo ? 'default' : 'pointer' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
         <span className={`badge badge-${STATUS_CLASS[sn]||'cancelled'}`}><span className="badge-dot" />{STATUS_LABEL[sn]||'OPEN'}</span>
         <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'var(--fs-2xs)', fontWeight: 600, color: 'var(--text-3)', textTransform: 'capitalize' }}>{CAT_ICONS[meta.category]||<Tag size={11}/>}{meta.category}</span>

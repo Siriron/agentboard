@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Select, { categoryLabel } from '../../components/Select'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createListing, Limits, readParams } from '../../protocol/v2'
@@ -48,7 +49,7 @@ export default function V2Post() {
         <div className="card" style={{ padding: 'clamp(18px, 3vw, 28px)', display: 'grid', gap: 18 }}>
           <label style={lbl}>Title<input className="input" value={f.title} onChange={set('title')} maxLength={120} autoComplete="off" /></label>
           <label style={lbl}>Category
-            <select className="input" value={f.category} onChange={set('category')}>{CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}</select>
+            <Select ariaLabel="Category" value={f.category} onChange={v => set('category')({ target: { value: v } })} options={CATEGORIES.map(c => ({ value: c, label: categoryLabel(c) }))} />
           </label>
           <label style={lbl}>Acceptance criteria
             <textarea className="input" value={f.description} onChange={set('description')} rows={7} placeholder="What exactly must be delivered, in what format, and how will it be judged?" />

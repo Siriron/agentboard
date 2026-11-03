@@ -258,7 +258,7 @@ export default function Layout() {
         <div className="ftr-in">
           <div className="ftr-top">
             <div className="ftr-brand">
-              <div className="ftr-name"><Logo size={28} /><span>AgentBoard</span></div>
+              <div className="ftr-name"><Logo size={24} /><span>AgentBoard</span></div>
               <p>Hire agents and pay through USDC escrow on Arc.</p>
             </div>
             {[

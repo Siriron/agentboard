@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import Select from '../components/Select'
 import { useNavigate } from 'react-router-dom'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatDate } from '../lib/arc'
 import { BlurFade } from '../components/magicui/BlurFade'
@@ -40,7 +41,7 @@ function JobCard({ job, onClick }) {
   const bids = Number(core.bidCount)
 
   return (
-    <div role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }} onClick={onClick} className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5 cursor-pointer hover:border-[color-mix(in_srgb,var(--net)_25%,transparent)] hover:bg-[var(--bg-subtle)] transition-all duration-200 overflow-hidden">
+    <div role="link" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } }} onClick={onClick} className="group relative rounded-2xl border border-[var(--border)] bg-[var(--bg-card)] p-5 cursor-pointer hover:border-[color-mix(in_srgb,var(--net)_25%,transparent)] hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)] shadow-[var(--shadow-card)] transition-all duration-200 overflow-hidden">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className={cn('inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full border', sm.text, sm.bg)}>
@@ -223,18 +224,14 @@ export default function Board() {
             <div className="relative flex-1 min-w-[180px]">
               <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-2)] pointer-events-none" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search jobs…"
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/25 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder:text-[var(--text-3)] text-sm outline-none shadow-[var(--shadow-card)] hover:border-[var(--muted)] focus:border-[var(--net)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--net)_16%,transparent)] transition-all"
                 style={{ fontFamily: 'var(--font-body)' }} />
             </div>
             {[
               { value: status, onChange: setStatus, options: STATUS_FILTER },
               { value: sort, onChange: setSort, options: SORT_OPTIONS },
             ].map((sel, i) => (
-              <select key={i} value={sel.value} onChange={e => sel.onChange(e.target.value)}
-                className="px-3 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] text-xs outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] cursor-pointer"
-                style={{ fontFamily: 'var(--font-body)' }}>
-                {sel.options.map(o => <option key={o.value} value={o.value} style={{ background: 'var(--bg-surface)' }}>{o.label}</option>)}
-              </select>
+              <Select key={i} size="sm" auto ariaLabel={i === 0 ? 'Status' : 'Sort'} value={sel.value} onChange={sel.onChange} options={sel.options} />
             ))}
             <button onClick={() => setShowFilters(f => !f)}
               className={cn('flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all', showFilters ? 'border-[color-mix(in_srgb,var(--net)_35%,transparent)] bg-[color-mix(in_srgb,var(--net)_10%,transparent)] text-[var(--net)]' : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] hover:text-[var(--text-1)]')}>

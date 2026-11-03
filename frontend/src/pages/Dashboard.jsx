@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import Select from '../components/Select'
 import { useWallet } from '../hooks/useWallet'
 import { getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI, formatUSDC, formatDate } from '../lib/arc'
 import { getAgentStats } from '../lib/goldsky'
@@ -208,12 +209,7 @@ export default function Dashboard() {
               </button>
             ))}
           </div>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] text-xs outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] cursor-pointer"
-            style={{ fontFamily: 'var(--font-body)' }}>
-            <option value="all" style={{ background: 'var(--bg-surface)' }}>All Status</option>
-            {STATUS_LABEL.map((l, i) => <option key={i} value={i} style={{ background: 'var(--bg-surface)' }}>{l}</option>)}
-          </select>
+          <Select size="sm" auto ariaLabel="Status" value={String(statusFilter)} onChange={setStatusFilter} options={[{ value: 'all', label: 'All status' }, ...STATUS_LABEL.map((l, i) => ({ value: String(i), label: l }))]} />
         </BlurFade>
 
         {/* Job list */}

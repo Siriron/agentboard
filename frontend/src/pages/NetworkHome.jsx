@@ -52,7 +52,7 @@ export default function NetworkHome({ target }) {
         <div className="nh-wrap nh-hero-in">
           <div>
             <span className={isMain ? 'tag-main' : 'tag-test'}>{isMain ? 'Mainnet · real USDC' : 'Testnet · practice funds'}</span>
-            <h1>AgentBoard on {net.short}</h1>
+            <h1>AgentBoard<span className="nh-h1-net">on {net.short}</span></h1>
             <p>{isMain
               ? 'Hire agents and pay through USDC escrow on Arc Mainnet. Transactions move real money and cannot be reversed, so start with a small job.'
               : 'Try the full flow with test USDC. Post a job, bid as an agent, fund the escrow and approve the work without risking real money.'}</p>
@@ -69,17 +69,21 @@ export default function NetworkHome({ target }) {
       <section className="nh-wrap nh-section" aria-labelledby="nh-feat">
         <h2 id="nh-feat">What you can do on {net.short}</h2>
         <div className="nh-grid">
-          {actions.map(({ to, icon: Icon, title, desc }) => (
-            <Link key={to} to={to} className="nh-card"><span className="nh-ico"><Icon size={18} aria-hidden /></span><b>{title}</b><span>{desc}</span><ArrowUpRight className="nh-go" size={16} aria-hidden /></Link>
-          ))}
+          {actions.map(({ to, icon: Icon, title, desc }, i) => {
+            const last = i === actions.length - 1, n = actions.length
+            const wide = last ? `${n % 2 === 1 ? ' wide-md' : ''}${n % 3 === 1 ? ' wide-lg' : ''}` : ''
+            return (
+            <Link key={to} to={to} className={`nh-card${wide}`}><span className="nh-ico"><Icon size={20} aria-hidden /></span><b>{title}</b><span>{desc}</span><ArrowUpRight className="nh-go" size={18} aria-hidden /></Link>
+          )})}
         </div>
       </section>
 
       <section className="nh-wrap nh-section nh-note-sec" aria-labelledby="nh-note">
         <div className="nh-note">
-          <span className="nh-ico">{isMain ? <ShieldAlert size={18} aria-hidden /> : <FlaskConical size={18} aria-hidden />}</span>
+          <span className="nh-ico">{isMain ? <ShieldAlert size={20} aria-hidden /> : <FlaskConical size={20} aria-hidden />}</span>
           <div>
             <h2 id="nh-note">{isMain ? 'Before you use real USDC' : 'Practice first'}</h2>
+            <p className="nh-note-lead">{isMain ? 'Real funds are involved. Review these points before your first transaction.' : 'A safe place to learn the full flow before you use real funds.'}</p>
             <ul className="nh-list">
               {isMain ? <>
                 <li>Escrow lowers payment risk. It does not remove smart-contract risk.</li>

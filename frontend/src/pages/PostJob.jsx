@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Select, { categoryLabel } from '../components/Select'
 import { useWallet } from '../hooks/useWallet'
 import { getWalletClient, getPublicClient, sendBatchTransaction, executeViaAgentWallet, CONTRACT_ADDRESS, CONTRACT_ABI, USDC_ADDRESS, USDC_ABI } from '../lib/arc'
 import { useNavigate } from 'react-router-dom'
@@ -20,7 +21,7 @@ function Field({ label, icon, children }) {
   )
 }
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder:text-[var(--text-3)] text-sm outline-none shadow-[var(--shadow-card)] hover:border-[var(--muted)] focus:border-[var(--net)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--net)_16%,transparent)] transition-all"
 
 export default function PostJob() {
   const { activeAddress, activeMode, agentWallet, openPicker } = useWallet()
@@ -233,9 +234,7 @@ export default function PostJob() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <Field label="Category" icon={<Tag size={11}/>}>
-                      <select className={inputClass} value={form.category} onChange={e => set('category', e.target.value)} style={{ fontFamily: 'var(--font-body)' }}>
-                        {CATEGORIES.map(c => <option key={c} value={c} style={{ background: 'var(--bg-surface)' }}>{c}</option>)}
-                      </select>
+                      <Select ariaLabel="Category" value={form.category} onChange={v => set('category', v)} options={CATEGORIES.map(c => ({ value: c, label: categoryLabel(c) }))} />
                     </Field>
                     <Field label="Budget (USDC)" icon={<DollarSign size={11}/>}>
                       <input className={inputClass} type="number" min="0" step="1" placeholder="e.g. 150" value={form.budget} onChange={e => set('budget', e.target.value)} style={{ fontFamily: 'var(--font-mono)' }} />

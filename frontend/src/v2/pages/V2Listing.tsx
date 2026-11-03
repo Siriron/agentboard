@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Select from '../../components/Select'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toHex, type Address } from 'viem'
@@ -177,7 +178,7 @@ function BidForm({ listing, params, onDone }: { listing: Listing; params?: Param
       <fieldset style={{ border: '1px solid var(--border)', borderRadius: 8, padding: 12, display: 'grid', gap: 10 }}>
         <legend style={{ fontSize: 'var(--fs-sm)' }}>Evaluation terms you accept (hashed into your bid)</legend>
         <label>Who settles disputes
-          <select value={f.mode} onChange={set('mode')} style={field}>{MODE.map((m, i) => <option key={i} value={i}>{m}</option>)}</select>
+          <Select ariaLabel="Who settles disputes" value={f.mode} onChange={v => set('mode')({ target: { value: v } })} options={MODE.map((m, i) => ({ value: String(i), label: m }))} />
         </label>
         {f.mode !== '0' && <label>Validator address(es), comma separated ({f.mode === '1' ? '1' : '3 or 5'})<input value={f.validators} onChange={set('validators')} style={field} /></label>}
         <label>Buyer review window (1 to 7 days)<input value={f.review} onChange={set('review')} inputMode="numeric" style={field} /></label>

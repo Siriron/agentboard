@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Select from '../../components/Select'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { listListings, ListingStatus } from '../../protocol/v2'
@@ -38,7 +39,7 @@ export default function V2Board() {
           </div>
           <div className="bf-group">
             <label className="input-label" htmlFor="bs">Sort</label>
-            <select id="bs" className="input" value={f.sort} onChange={e => set({ sort: e.target.value as BoardFilter['sort'] })}><option value="newest">Newest</option><option value="budget">Highest budget</option></select>
+            <Select id="bs" value={f.sort} onChange={v => set({ sort: v as BoardFilter['sort'] })} options={[{ value: 'newest', label: 'Newest' }, { value: 'budget', label: 'Highest budget' }]} />
           </div>
           <div className="bf-group">
             <span className="input-label">Category</span>

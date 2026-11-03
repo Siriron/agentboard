@@ -14,7 +14,7 @@ import {
   Fingerprint, Star, ExternalLink, Wallet, Loader, Search, Sparkles, Bot
 } from 'lucide-react'
 
-const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder-white/20 text-sm outline-none focus:border-[color-mix(in_srgb,var(--net)_40%,transparent)] focus:bg-[var(--bg-subtle)] transition-all"
+const inputClass = "w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-1)] placeholder:text-[var(--text-3)] text-sm outline-none shadow-[var(--shadow-card)] hover:border-[var(--muted)] focus:border-[var(--net)] focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--net)_16%,transparent)] transition-all"
 
 // Per-address key so switching wallets doesn't show someone else's
 // saved agentId. Lowercased address in the key since addresses can
