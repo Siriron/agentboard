@@ -4,9 +4,9 @@
 
 | Network | Address |
 |---|---|
-| Arc Testnet | [`0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4`](https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4) |
+| Arc Testnet | [`0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4`](https://explorer.testnet.arc.io/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4) |
 
-**Deploy transaction:** [`0x88472697e420e74819c10a75f60f173f60d4d0c96138be999e8a2f7bc9093bf0`](https://testnet.arcscan.app/tx/0x88472697e420e74819c10a75f60f173f60d4d0c96138be999e8a2f7bc9093bf0)
+**Deploy transaction:** [`0x88472697e420e74819c10a75f60f173f60d4d0c96138be999e8a2f7bc9093bf0`](https://explorer.testnet.arc.io/tx/0x88472697e420e74819c10a75f60f173f60d4d0c96138be999e8a2f7bc9093bf0)
 
 **Compiler:** Solidity 0.8.24, optimization enabled (200 runs)
 

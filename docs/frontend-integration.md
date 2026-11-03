@@ -13,6 +13,8 @@ This document covers how the AgentBoard frontend connects to Arc Testnet and int
 
 ## Arc Testnet Configuration
 
+> This mirrors `frontend/src/lib/networks.js`, which keeps the original V1 testnet hosts. Arc's current endpoints are `https://rpc.testnet.arc.io` and `https://explorer.testnet.arc.io`, and native USDC has 18 decimals (see [arc-testnet.md](arc-testnet.md)).
+
 ```js
 // src/lib/arc.js
 

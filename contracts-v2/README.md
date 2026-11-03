@@ -40,7 +40,7 @@ Step 5 reverts unless the funded job matches an active bid exactly. Config hash 
 
 ```bash
 export OWNER=0x...  TREASURY=0x...  ARBITRATOR=0x...   # multisigs on mainnet
-export MIN_BUDGET=1000000 MAX_BUDGET=100000000          # 1 to 100 USDC launch cap
+export MIN_BUDGET=1000000 MAX_BUDGET=100000000          # example: 1 to 100 USDC (mainnet was deployed with 0.01 to 1,000, see DEPLOYMENTS.md)
 cast wallet import deployer --interactive               # encrypted keystore, never a raw key
 forge script script/Deploy.s.sol --rpc-url $RPC --account deployer --broadcast \
   --with-gas-price 20000000000 --priority-gas-price 1000000000   # maxFeePerGas >= 20 gwei

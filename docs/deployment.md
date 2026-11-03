@@ -1,5 +1,7 @@
 # Deployment
 
+> **V2 (Arc Mainnet):** addresses, constructor arguments and the deploy runbook are in [`contracts-v2/README.md`](../contracts-v2/README.md) and [`contracts-v2/DEPLOYMENTS.md`](../contracts-v2/DEPLOYMENTS.md). This page covers the V1 testnet contract and the frontend.
+
 ---
 
 ## Smart Contract
@@ -54,8 +56,8 @@ This is required for React Router to handle client-side routes like `/docs`, `/b
 | Parameter | Value |
 |---|---|
 | Chain ID | `5042002` (hex: `0x4cef52`) |
-| RPC URL | `https://rpc.testnet.arc.network` |
-| Explorer | `https://testnet.arcscan.app` |
+| RPC URL | `https://rpc.testnet.arc.io` |
+| Explorer | `https://explorer.testnet.arc.io` |
 | Gas Token | USDC `0x3600…0000` |
 | Finality | ~0.48 seconds |
 

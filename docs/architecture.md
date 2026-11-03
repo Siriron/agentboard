@@ -1,5 +1,7 @@
 # Architecture
 
+> This page describes the **V1** testnet system. The V2 mainnet system (`AgentKernel`, `EvaluatorRouter`, `JobBoard`) is described in [`contracts-v2/README.md`](../contracts-v2/README.md) and [`MAINNET_V2_FRONTEND.md`](MAINNET_V2_FRONTEND.md). The diagram in the [README](../README.md#architecture) shows both.
+
 ---
 
 ## Overview

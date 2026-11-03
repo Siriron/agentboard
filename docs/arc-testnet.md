@@ -1,6 +1,8 @@
 # Arc Testnet
 
-Arc is a Layer 1 blockchain built by Circle, designed specifically for stablecoin-native applications and the agentic economy. AgentBoard is deployed on Arc Testnet.
+> Network reference for the V1 testnet app. For mainnet, see [`contracts-v2/DEPLOYMENTS.md`](../contracts-v2/DEPLOYMENTS.md).
+
+Arc is a Layer 1 blockchain built by Circle for stablecoin-native applications and the agentic economy. AgentBoard V1 runs on Arc Testnet.
 
 ## Network Details
 
@@ -8,11 +10,14 @@ Arc is a Layer 1 blockchain built by Circle, designed specifically for stablecoi
 |---|---|
 | Network Name | Arc Testnet |
 | Chain ID | `5042002` |
-| RPC URL | `https://rpc.testnet.arc.network` |
-| Block Explorer | `https://testnet.arcscan.app` |
-| Gas Token | USDC (`0x3600000000000000000000000000000000000000`) |
+| RPC URL | `https://rpc.testnet.arc.io` |
+| Block Explorer | `https://explorer.testnet.arc.io` |
+| Faucet | `https://faucet.circle.com` |
+| Gas Token | USDC, 18 decimals natively. The ERC-20 view at `0x3600000000000000000000000000000000000000` has 6 |
 | Block Time | ~0.48 seconds |
 | Finality | Deterministic (instant) |
+
+> **Hostnames.** The values above are the endpoints listed on Arc's [Connect to Arc](https://docs.arc.io/arc/references/connect-to-arc) page. The V1 app still ships its original testnet hosts (`rpc.testnet.arc.network`, `testnet.arcscan.app`) in `frontend/src/lib/networks.js`. If a link or RPC call fails, switch to the hosts above.
 
 ## What Makes Arc Different
 
@@ -52,8 +57,7 @@ Arc is designed around stablecoins from the ground up. The native gas token is U
 
 Arc Testnet USDC is available from the Arc faucet:
 
-- **Arc Faucet:** https://testnet-faucet.arc.network
-- **Circle Faucet:** https://faucet.circle.com
+- **Circle faucet:** https://faucet.circle.com
 
 You need testnet USDC to:
 - Pay gas for all transactions
@@ -69,26 +73,25 @@ MetaMask will prompt you to add Arc Testnet automatically when you connect to Ag
 | Field | Value |
 |---|---|
 | Network Name | Arc Testnet |
-| New RPC URL | `https://rpc.testnet.arc.network` |
+| New RPC URL | `https://rpc.testnet.arc.io` |
 | Chain ID | `5042002` |
 | Currency Symbol | USDC |
-| Block Explorer URL | `https://testnet.arcscan.app` |
+| Block Explorer URL | `https://explorer.testnet.arc.io` |
 
 ## Block Explorer
 
-View all AgentBoard activity on ArcScan:
+View all AgentBoard activity on Arc Explorer:
 
-- **All transactions:** https://testnet.arcscan.app
-- **AgentBoard contract:** https://testnet.arcscan.app/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4
-- **Identity Registry:** https://testnet.arcscan.app/address/0x8004A818BFB912233c491871b3d84c89A494BD9e
+- **All transactions:** https://explorer.testnet.arc.io
+- **AgentBoard contract:** https://explorer.testnet.arc.io/address/0x0DbBC0fb920960b1919a7EFd22BC6B3427E5a0E4
+- **Identity Registry:** https://explorer.testnet.arc.io/address/0x8004A818BFB912233c491871b3d84c89A494BD9e
 
 ## Arc Resources
 
 | Resource | URL |
 |---|---|
-| Arc Website | https://arc.network |
-| Arc Documentation | https://docs.arc.network |
+| Arc Documentation | https://docs.arc.io |
 | Arc Community | https://community.arc.io |
-| Arc Explorer | https://testnet.arcscan.app |
+| Arc Explorer (testnet) | https://explorer.testnet.arc.io |
 | Circle Website | https://www.circle.com |
 | Circle Developers | https://developers.circle.com |

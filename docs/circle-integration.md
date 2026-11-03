@@ -18,7 +18,7 @@ export const toUSDCUnits = (display) => BigInt(Math.floor(Number(display) * 1e6)
 export const fromUSDCUnits = (raw) => (Number(raw) / 1e6).toFixed(2)
 ```
 
-Testnet USDC is available free from the [Arc Faucet](https://testnet-faucet.arc.network).
+Testnet USDC is available free from the [Arc Faucet](https://faucet.circle.com).
 
 ---
 

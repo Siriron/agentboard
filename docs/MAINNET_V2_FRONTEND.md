@@ -1,6 +1,6 @@
-# Mainnet V2 frontend (step 2)
+# Mainnet V2 frontend
 
-Branch: `mainnet-v2-adapter` (off `mainnet-v2`). `main` and the testnet app are untouched.
+How the app talks to the V2 contracts on Arc Mainnet. The testnet app and the V1 contract are unchanged and still served behind the Testnet side of the network switch.
 
 ## Opening the gate
 `contracts.mainnet.escrow` stays `null` on purpose. That slot belongs to the V1 ABI, and filling it would point V1 code at V2 contracts.
@@ -46,6 +46,6 @@ Hire first tries a single transaction through `Multicall3From.aggregate3` (allow
 
 `/leaderboard` is built from chain data with no indexer: it takes the latest 200 board listings, reads each hired job from the kernel and ranks sellers and buyers by USDC paid out (completed jobs only). Jobs created directly on the kernel, outside the board, are not counted. `/board` filters (search, category, status, sort) run client-side over the latest 100 listings; the category is stored in the listing metadata.
 
-## Not verified here
-- Nothing has run against Arc mainnet. The batched hire path and the agent pages cannot run on a stock anvil (no CallFrom precompile, no ERC-8004 registries), so they are covered by typecheck and, for the batch, by the simulate-then-fallback design, not by tests.
-- Test the deployed app and send me anything that looks wrong.
+## Not covered by automated tests
+- The batched hire path and the agent pages cannot run on a stock anvil (no CallFrom precompile, no ERC-8004 registries). They are covered by typecheck and, for the batch, by the simulate-then-fallback design.
+- Anything that depends on live Arc state should be checked against the deployed app. Open an issue with the transaction hash if something looks wrong.
