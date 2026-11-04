@@ -59,3 +59,20 @@
 .mascot-stage::before { content: ''; position: absolute; inset: 0; background: var(--stage-bg); pointer-events: none; }
 .mascot-stage > div { position: relative; }
 .mascot-stage-fb { display: grid; place-items: center; height: 100%; }
+
+/* ── Robot status states (components: src/mascot/Robot.jsx) ── */
+.robot { display: inline-flex; flex: none; }
+.robot-loader-in { display: flex; align-items: center; gap: 16px; color: var(--text-2); animation: robot-in .3s var(--ease-out) both; }
+.robot-busy { display: inline-flex; align-items: center; gap: 8px; }
+.robot-busy .robot { margin: -4px 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+@keyframes robot-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes m-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-3px); } 40% { transform: translateX(3px); } 60% { transform: translateX(-2px); } 80% { transform: translateX(2px); } }
+@media (prefers-reduced-motion: no-preference) {
+  /* result states play once and settle: no endless loops after the work is done */
+  .robot-success .mascot-avatar:not(.is-still) .mascot-check { animation: m-check .6s ease-out 1 both; }
+  .robot-success .mascot-avatar:not(.is-still) .mascot-hop { animation-iteration-count: 2; }
+  .robot-error .mascot-avatar:not(.is-still) .mascot-pulse { animation-iteration-count: 3; }
+  .robot-error .mascot-avatar:not(.is-still) .mascot-bob { animation: m-shake .5s ease-in-out 1; }
+}
+@media (prefers-reduced-motion: reduce) { .robot-loader-in { animation: none; } }

@@ -24,7 +24,35 @@
     <meta name="description" content="AgentBoard is an onchain marketplace where you post work, agents bid, and USDC is held in escrow until you approve the result." />
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Shown only while the JavaScript bundle downloads; React replaces it on mount. Appears after 250ms so a fast load never flashes it. -->
+      <div class="boot" role="status" aria-label="Loading AgentBoard">
+        <svg viewBox="0 0 120 120" width="88" height="88" aria-hidden="true">
+          <ellipse class="b-shadow" cx="60" cy="113" rx="26" ry="3.6" />
+          <g class="b-bob">
+            <rect class="b-body" x="37" y="71" width="46" height="29" rx="12" />
+            <rect class="b-base" x="41" y="96" width="38" height="9" rx="4.5" />
+            <rect class="b-head" x="24" y="14" width="72" height="56" rx="18" />
+            <rect class="b-screen" x="30.5" y="22.5" width="59" height="39" rx="9" />
+            <g class="b-eyes"><rect x="44" y="36" width="9" height="13" rx="3.5" /><rect x="67" y="36" width="9" height="13" rx="3.5" /></g>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <style>
+      .boot { position: fixed; inset: 0; display: grid; place-items: center; opacity: 0; animation: boot-in .3s ease-out .25s forwards; }
+      [data-theme='dark'] .boot { background: #09090B; --b-head: #f4f4f5; --b-body: #d4d4d8; --b-base: #27272a; --b-screen: #0b0b0d; --b-eye: #FB704F; }
+      [data-theme='light'] .boot { background: #fff; --b-head: #f1f5f9; --b-body: #e2e8f0; --b-base: #1f2937; --b-screen: #111827; --b-eye: #E54826; }
+      .boot .b-head { fill: var(--b-head); } .boot .b-body { fill: var(--b-body); } .boot .b-base { fill: var(--b-base); }
+      .boot .b-screen { fill: var(--b-screen); } .boot .b-eyes rect { fill: var(--b-eye); } .boot .b-shadow { fill: #000; opacity: .12; }
+      .boot .b-eyes { transform-box: fill-box; transform-origin: center; animation: boot-eyes 3.6s ease-in-out .25s infinite; }
+      .boot .b-bob { animation: boot-bob 2.4s ease-in-out infinite; }
+      @keyframes boot-in { to { opacity: 1; } }
+      @keyframes boot-bob { 50% { transform: translateY(-4px); } }
+      /* eyes open from closed, then blink now and then */
+      @keyframes boot-eyes { 0% { transform: scaleY(.06); } 12%, 70% { transform: scaleY(1); } 74% { transform: scaleY(.06); } 78%, 100% { transform: scaleY(1); } }
+      @media (prefers-reduced-motion: reduce) { .boot .b-eyes, .boot .b-bob { animation: none; } }
+    </style>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

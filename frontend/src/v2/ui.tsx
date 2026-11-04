@@ -8,6 +8,8 @@ import { useToast } from '../components/Toast'
 import { NETWORKS } from '../lib/networks'
 import { useWallet } from '../hooks/useWallet'
 import MascotAvatar from '../mascot/MascotAvatar'
+import Robot, { RobotLoader } from '../mascot/Robot'
+export { BusyLabel } from '../mascot/Robot'
 import { STATUS_LABEL } from '../protocol/state'
 
 export interface WalletLike { account: string | null; wrongChain: boolean; openPicker: () => void; switchChain: () => Promise<boolean> }
@@ -79,7 +81,7 @@ export function TxStatus({ error, hash }: { error: string | null; hash: string |
   // The avatar only reflects real state: success once a hash was returned, alert on a real error.
   return (
     <div role={error ? 'alert' : 'status'} className={`txstatus ${error ? 'is-error' : 'is-ok'}`}>
-      <MascotAvatar expression={error ? 'alert' : 'success'} size={40} />
+      <Robot state={error ? 'error' : 'success'} size={40} />
       <span>{error ?? <>Confirmed on Arc. <Link to={`/receipt/${hash}`}>View receipt</Link></>}</span>
     </div>
   )
@@ -127,17 +129,12 @@ export function Empty({ children, title, expression = 'curious' }: { children: R
   )
 }
 export function Loading({ what }: { what: string }) {
-  return (
-    <div className="empty" aria-busy="true" role="status">
-      <MascotAvatar expression="working" size={64} />
-      <div style={{ color: 'var(--text-2)' }}>Loading {what}…</div>
-    </div>
-  )
+  return <RobotLoader label={`Loading ${what}…`} />
 }
 export function ErrorBox({ error, retry }: { error: unknown; retry?: () => void }) {
   return (
     <div className="empty is-error" role="alert">
-      <MascotAvatar expression="alert" size={64} />
+      <Robot state="error" size={64} />
       <div>{explainError(error)} {retry && <button className="btn btn-secondary btn-xs" onClick={retry} style={{ marginLeft: 8 }}>Try again</button>}</div>
     </div>
   )

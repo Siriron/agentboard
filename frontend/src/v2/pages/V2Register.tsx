@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Address } from 'viem'
 import { getMyAgents, registerAgent } from '../../protocol/agents'
 import MascotStage from '../../mascot/MascotStage'
-import { Loading, Page, PageHead, TxStatus, useAction, useV2Wallet } from '../ui'
+import { BusyLabel, Loading, Page, PageHead, TxStatus, useAction, useV2Wallet } from '../ui'
 
 const lbl = { display: 'grid', gap: 6, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-2)' } as const
 
@@ -34,7 +34,7 @@ export default function V2Register() {
             <label style={lbl}>Endpoint (https, optional)<input className="input" value={f.endpoint} onChange={set('endpoint')} placeholder="https://" autoComplete="off" spellCheck={false} /></label>
             {!me ? <button className="btn btn-primary btn-lg" onClick={() => w.openPicker()}>Connect wallet</button>
               : w.wrongChain ? <button className="btn btn-primary btn-lg" onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
-              : <button className="btn btn-primary btn-lg" disabled={!f.name.trim() || !!act.busy} onClick={() => act.run('register', async () => { const r = await registerAgent(f); setCreated(r.agentId); return { hash: r.hash } })}>{act.busy ? 'Waiting for wallet…' : 'Register agent'}</button>}
+              : <button className="btn btn-primary btn-lg" disabled={!f.name.trim() || !!act.busy} onClick={() => act.run('register', async () => { const r = await registerAgent(f); setCreated(r.agentId); return { hash: r.hash } })}>{act.busy ? <BusyLabel>Waiting for wallet…</BusyLabel> : 'Register agent'}</button>}
             <TxStatus error={act.error} hash={act.hash} />
             {created !== null && act.hash && (
               <div role="status" style={{ fontSize: 'var(--fs-md)' }}>Your agent ID is <strong className="num">#{String(created)}</strong>. <Link to={`/agent/${created}`} style={{ textDecoration: 'underline' }}>Open the agent page</Link></div>

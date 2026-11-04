@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BusyLabel } from '../mascot/Robot'
 import { ExternalLink, CheckCircle, XCircle } from 'lucide-react'
 export default function TxButton({ onClick, children, className = 'btn btn-primary', disabled, showTx = true, style }) {
   const [loading, setLoading] = useState(false)
@@ -18,7 +19,7 @@ export default function TxButton({ onClick, children, className = 'btn btn-prima
   return (
     <div style={{display:'flex',flexDirection:'column',gap:8}}>
       <button className={className} onClick={handle} disabled={disabled||loading} style={style}>
-        {loading ? <><span className="spinner" style={{width:13,height:13}}/>Processing…</> : children}
+        {loading ? <BusyLabel>Processing…</BusyLabel> : children}
       </button>
       {showTx && txHash && (
         <a href={`https://testnet.arcscan.app/tx/${txHash}`} target="_blank" rel="noreferrer"

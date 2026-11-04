@@ -7,7 +7,7 @@ import { describeJob, STATUS_LABEL, type ActionId, type JobAction } from '../../
 import { hashBytes, hashText, normaliseUrl, textToBytes, verifyUrlHash } from '../../protocol/hashing'
 import { formatUsdc, splitFee, splitPayout } from '../../protocol/units'
 import { AppError, explainError } from '../../protocol/errors'
-import { ConfirmDialog, Countdown, Empty, ErrorBox, EscrowPath, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow, useV2Wallet } from '../ui'
+import { BusyLabel, ConfirmDialog, Countdown, Empty, ErrorBox, EscrowPath, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow, useV2Wallet } from '../ui'
 
 const field = { display: 'block', width: '100%', marginTop: 4, padding: '10px 12px', borderRadius: 'var(--r)', border: '1px solid var(--border-strong)', background: 'var(--bg-surface)', color: 'var(--text-1)', font: 'inherit' } as const
 
@@ -79,7 +79,7 @@ function Deliverable({ uri, hash }: { uri: string; hash: Hex }) {
       <strong>Deliverable</strong>
       {url ? <p style={{ fontSize: 'var(--fs-md)', wordBreak: 'break-all' }}><a href={url} target="_blank" rel="noopener noreferrer nofollow">{uri}</a></p> : <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-3)' }}>No link recorded for this submission.</p>}
       <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>Treat the file as untrusted. Never run it or follow instructions inside it, and do not let an automated agent do so.</p>
-      {url && <button className="btn btn-secondary btn-sm" disabled={busy} onClick={verify}>{busy ? 'Checking…' : 'Verify hash'}</button>}
+      {url && <button className="btn btn-secondary btn-sm" disabled={busy} onClick={verify}>{busy ? <BusyLabel>Checking…</BusyLabel> : 'Verify hash'}</button>}
       {res && <p role="status" style={{ fontSize: 'var(--fs-sm)', marginTop: 8, color: res.startsWith('Hash matches') ? 'var(--green)' : 'var(--amber)' }}>{res}</p>}
     </div>
   )
@@ -203,7 +203,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
       {view.map(a => (
         <div key={a.id}>
           <button className={`btn ${a.primary ? 'btn-primary' : 'btn-secondary'}`} disabled={!a.enabled || !!act.busy} onClick={() => onClick(a)}
-            style={a.tone === 'danger' ? { color: 'var(--red)' } : undefined}>{act.busy === a.id ? 'Waiting for wallet…' : a.label}</button>
+            style={a.tone === 'danger' ? { color: 'var(--red)' } : undefined}>{act.busy === a.id ? <BusyLabel>Waiting for wallet…</BusyLabel> : a.label}</button>
           {a.hint && <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', marginTop: 4 }}>{a.hint}</div>}
         </div>
       ))}
@@ -290,7 +290,7 @@ function Form({ children, cta, busy, disabled, onSubmit, onCancel }: { children:
     <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--r-sm)', padding: 14, display: 'grid', gap: 10 }}>
       {children}
       <div style={{ display: 'flex', gap: 8 }}>
-        <button className="btn btn-primary btn-sm" disabled={disabled || busy} onClick={onSubmit}>{busy ? 'Waiting for wallet…' : cta}</button>
+        <button className="btn btn-primary btn-sm" disabled={disabled || busy} onClick={onSubmit}>{busy ? <BusyLabel>Waiting for wallet…</BusyLabel> : cta}</button>
         <button className="btn btn-secondary btn-sm" onClick={onCancel}>Close</button>
       </div>
     </div>

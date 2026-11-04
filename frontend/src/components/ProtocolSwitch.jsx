@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { RobotLoader } from '../mascot/Robot'
 import { useNetwork } from '../hooks/useNetwork'
 import { protocolFor } from '../lib/networks'
 import MainnetGate from './MainnetGate'
@@ -14,7 +15,7 @@ export default function ProtocolSwitch({ v1, v2, feature }) {
   if (key === 'testnet') return v1 ?? <NotFound />
   const p = protocolFor('mainnet')
   if (p === 'v2' && v2) {
-    return <Suspense fallback={<div style={{ padding: 96, textAlign: 'center', color: 'var(--text-3)' }}>Loading…</div>}>{v2}</Suspense>
+    return <Suspense fallback={<div className="page" style={{ padding: '48px var(--gutter)' }}><RobotLoader label="Loading…" /></div>}>{v2}</Suspense>
   }
   return <MainnetGate feature={feature} testnetOnly={p === 'v2'}>{null}</MainnetGate>
 }

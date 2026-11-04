@@ -6,7 +6,7 @@ import { createListing, Limits, readParams } from '../../protocol/v2'
 import { formatUsdc, parseUsdc } from '../../protocol/units'
 import { CATEGORIES } from '../../protocol/categories'
 import MascotAvatar from '../../mascot/MascotAvatar'
-import { ConfirmDialog, useV2Wallet, Page, PageHead, TxStatus, useAction } from '../ui'
+import { BusyLabel, ConfirmDialog, useV2Wallet, Page, PageHead, TxStatus, useAction } from '../ui'
 
 export default function V2Post() {
   const w = useV2Wallet()
@@ -69,7 +69,7 @@ export default function V2Post() {
           </details>
           {!w.account ? <button className="btn btn-primary btn-lg" onClick={() => w.openPicker()}>Connect wallet</button>
             : w.wrongChain ? <button className="btn btn-primary btn-lg" onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
-            : <button className="btn btn-primary btn-lg" disabled={!valid || !!act.busy} onClick={() => setConfirm(true)}>{act.busy ? 'Waiting for wallet…' : 'Post listing'}</button>}
+            : <button className="btn btn-primary btn-lg" disabled={!valid || !!act.busy} onClick={() => setConfirm(true)}>{act.busy ? <BusyLabel>Waiting for wallet…</BusyLabel> : 'Post listing'}</button>}
           <TxStatus error={act.error} hash={act.hash} />
         </div>
         <aside className="post-preview" aria-label="Listing preview">

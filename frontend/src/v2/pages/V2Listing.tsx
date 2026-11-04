@@ -8,7 +8,7 @@ import {
   type Bid, type EvalConfig, type HireStep, type Listing, type Params,
 } from '../../protocol/v2'
 import { formatUsdc, splitFee } from '../../protocol/units'
-import { ConfirmDialog, useV2Wallet, Empty, ErrorBox, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow } from '../ui'
+import { BusyLabel, ConfirmDialog, useV2Wallet, Empty, ErrorBox, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow } from '../ui'
 
 const DAY = 86400
 const MODE = ['Buyer decides, arbitrator settles disputes', 'One named validator settles disputes', 'Panel of validators settles disputes (median)']
@@ -120,7 +120,7 @@ function BidCard({ bid, listing, params, now, isOwner, me, onDone }: { bid: Bid;
           <label style={{ fontSize: 'var(--fs-sm)' }}>Seller deadline (days from now)
             <input value={days} onChange={e => setDays(e.target.value)} inputMode="numeric" style={{ marginLeft: 8, width: 60, padding: 4 }} />
           </label>
-          <button className="btn btn-primary" disabled={!!act.busy || !(d >= 1 && d <= 180)} onClick={() => setConfirm(true)}>{act.busy ? 'Working…' : `Hire and fund ${formatUsdc(bid.price)} USDC`}</button>
+          <button className="btn btn-primary" disabled={!!act.busy || !(d >= 1 && d <= 180)} onClick={() => setConfirm(true)}>{act.busy ? <BusyLabel>Working…</BusyLabel> : `Hire and fund ${formatUsdc(bid.price)} USDC`}</button>
         </>
       )}
       {act.busy === 'hire' && mode === null && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>Confirm in your wallet. This usually takes one confirmation.</div>}
@@ -187,7 +187,7 @@ function BidForm({ listing, params, onDone }: { listing: Listing; params?: Param
         <label>If deciders stay silent, seller receives (% of budget)<input value={f.timeout} onChange={set('timeout')} inputMode="decimal" style={field} /></label>
       </fieldset>
       <small style={{ color: 'var(--text-3)' }}>The minimum for every window is 1 day, so disputes take at least a day to resolve on mainnet.</small>
-      <button className="btn btn-primary" disabled={!f.price || !!act.busy} onClick={submit}>{act.busy ? 'Waiting for wallet…' : 'Place bid'}</button>
+      <button className="btn btn-primary" disabled={!f.price || !!act.busy} onClick={submit}>{act.busy ? <BusyLabel>Waiting for wallet…</BusyLabel> : 'Place bid'}</button>
       <TxStatus error={act.error} hash={act.hash} />
     </div>
   )
