@@ -8,6 +8,7 @@ import {
 } from 'viem'
 import { boardAbi, kernelAbi, MULTICALL3_FROM, multicall3FromAbi, routerAbi, usdcAbi } from './abis'
 import { feeOverrides } from './fees'
+import { scanLogs } from './logscan'
 import { AppError } from './errors'
 import { decodeMeta, decodeUri, encodeMeta, encodeUri, hashBytes, hashText } from './hashing'
 import { parseUsdc } from './units'
@@ -78,23 +79,8 @@ export const BidStatus = { None: 0, Active: 1, Withdrawn: 2, Accepted: 3 } as co
 // ───────────── logs ─────────────
 
 async function getLogsRange(pc: PublicClient, args: Record<string, unknown>, opts: { from?: bigint; steps?: bigint[] } = {}): Promise<Log[]> {
-  const latest = await pc.getBlockNumber({ cacheTime: 0 }) // viem caches this for ~4s; a stale value hides logs from a just-confirmed transaction
-  const start = opts.from ?? env().fromBlock
-  const attempt = async (step: bigint): Promise<Log[]> => {
-    const out: Log[] = []
-    for (let from = start; from <= latest; from += step) {
-      const to = from + step - 1n > latest ? latest : from + step - 1n
-      const part = await (pc.getLogs as (a: unknown) => Promise<Log[]>)({ ...args, fromBlock: from, toBlock: to })
-      out.push(...part)
-    }
-    return out
-  }
-  const full = latest - start + 1n
-  for (const step of opts.steps ?? [full, 500_000n, 50_000n, 10_000n]) {
-    // A step of 0 means "the whole range in one request".
-    try { return await attempt(step === 0n ? (full > 0n ? full : 1n) : step) } catch { /* provider range limit: try a smaller step */ }
-  }
-  throw new AppError('The network could not return event history. Try again in a moment.')
+  try { return await scanLogs(pc, args, { from: opts.from ?? env().fromBlock, steps: opts.steps }) }
+  catch { throw new AppError('The network could not return event history. Try again in a moment.') }
 }
 
 // ───────────── reads ─────────────
@@ -131,12 +117,11 @@ async function listingUris(listingId?: bigint): Promise<Map<string, string>> {
   const logs = await getLogsRange(pc, {
     address: a.board,
     event: boardAbi.find(x => x.type === 'event' && x.name === 'ListingCreated'),
-    ...(listingId !== undefined ? { args: { listingId } } : {}),
   })
   const m = new Map<string, string>()
   for (const l of logs) {
     const d = decodeEventLog({ abi: boardAbi, data: l.data, topics: l.topics as [Hex, ...Hex[]] })
-    if (d.eventName === 'ListingCreated') m.set(String(d.args.listingId), d.args.uri)
+    if (d.eventName === 'ListingCreated' && (listingId === undefined || d.args.listingId === listingId)) m.set(String(d.args.listingId), d.args.uri)
   }
   return m
 }
@@ -194,13 +179,13 @@ export async function getBids(listing: Listing): Promise<Bid[]> {
   const ids = Array.from({ length: listing.bidCount }, (_, i) => i)
   const [raws, logs, arbitrator] = await Promise.all([
     Promise.all(ids.map(i => pc.readContract({ address: a.board, abi: boardAbi, functionName: 'bids', args: [listing.id, BigInt(i)] }))),
-    getLogsRange(pc, { address: a.board, event: boardAbi.find(x => x.type === 'event' && x.name === 'BidPlaced'), args: { listingId: listing.id } }),
+    getLogsRange(pc, { address: a.board, event: boardAbi.find(x => x.type === 'event' && x.name === 'BidPlaced') }), // one shared, cached scan for all listings
     pc.readContract({ address: a.router, abi: routerAbi, functionName: 'arbitrator' }),
   ])
   const uris = new Map<number, string>()
   for (const l of logs) {
     const d = decodeEventLog({ abi: boardAbi, data: l.data, topics: l.topics as [Hex, ...Hex[]] })
-    if (d.eventName === 'BidPlaced') uris.set(Number(d.args.bidId), d.args.uri)
+    if (d.eventName === 'BidPlaced' && d.args.listingId === listing.id) uris.set(Number(d.args.bidId), d.args.uri)
   }
   return Promise.all(raws.map(async (r, i) => {
     const t = r as unknown as readonly [Address, bigint, bigint, number, Hex]

@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Address } from 'viem'
 import { getMyAgents, registerAgent } from '../../protocol/agents'
 import MascotStage from '../../mascot/MascotStage'
-import { Loading, Page, PageHead, RealFundsBanner, TxStatus, useAction, useV2Wallet } from '../ui'
+import { Loading, Page, PageHead, TxStatus, useAction, useV2Wallet } from '../ui'
 
 const lbl = { display: 'grid', gap: 6, fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--text-2)' } as const
 
@@ -24,7 +24,6 @@ export default function V2Register() {
   const face = act.error ? 'alert' : act.hash ? 'success' : act.busy ? 'working' : f.name ? 'happy' : 'idle'
   return (
     <Page>
-      <RealFundsBanner />
       <PageHead title="Register an agent" lede="Mints an ERC-8004 identity for the connected wallet. One transaction, network fee only. The profile text is stored onchain and is public." />
       <div className="post-grid">
         <div style={{ display: 'grid', gap: 28 }}>

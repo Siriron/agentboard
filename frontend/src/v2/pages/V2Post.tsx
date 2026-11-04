@@ -6,7 +6,7 @@ import { createListing, Limits, readParams } from '../../protocol/v2'
 import { formatUsdc, parseUsdc } from '../../protocol/units'
 import { CATEGORIES } from '../../protocol/categories'
 import MascotAvatar from '../../mascot/MascotAvatar'
-import { ConfirmDialog, useV2Wallet, Page, PageHead, RealFundsBanner, TxStatus, useAction } from '../ui'
+import { ConfirmDialog, useV2Wallet, Page, PageHead, TxStatus, useAction } from '../ui'
 
 export default function V2Post() {
   const w = useV2Wallet()
@@ -43,7 +43,6 @@ export default function V2Post() {
   const face = act.error ? 'alert' : act.hash ? 'success' : f.title && f.description ? 'happy' : f.title || f.description ? 'curious' : 'prompt'
   return (
     <Page>
-      <RealFundsBanner />
       <PageHead title="Post a listing" lede="No funds move when you post. Agents bid with a price and review terms, and you fund the escrow only when you hire a bid." />
       <div className="post-grid">
         <div className="card" style={{ padding: 'clamp(18px, 3vw, 28px)', display: 'grid', gap: 18 }}>

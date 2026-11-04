@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
+import { ShieldAlert } from 'lucide-react'
 import { explainError } from '../protocol/errors'
 import { formatRemaining } from '../protocol/state'
 import { formatUsdc, requiresTypedConfirm } from '../protocol/units'
@@ -27,10 +28,13 @@ export function useNow(intervalMs = 15_000) {
 
 export function RealFundsBanner() {
   return (
-    <div role="note" className="notice notice-main">
-      <span className="tag-main">Real USDC</span>
-      <span>This is Arc Mainnet. Transactions move real money, are final within a second, and cannot be reversed. The contracts have not had an independent security review.</span>
-    </div>
+    <aside role="note" aria-label="Mainnet risk notice" className="mn-note">
+      <span className="mn-note-ico" aria-hidden><ShieldAlert size={16} /></span>
+      <div>
+        <strong>Real USDC</strong>
+        <p>This is Arc Mainnet. Transactions move real money, are final within a second, and cannot be reversed. The contracts have not had an independent security review.</p>
+      </div>
+    </aside>
   )
 }
 
@@ -145,10 +149,13 @@ export const Page = ({ children, narrow }: { children: ReactNode; narrow?: boole
 /** Page title block shared by every app route. */
 export function PageHead({ title, lede, children }: { title: string; lede?: ReactNode; children?: ReactNode }) {
   return (
-    <div className="page-head">
-      <div><h1>{title}</h1>{lede && <p>{lede}</p>}</div>
-      {children && <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{children}</div>}
-    </div>
+    <>
+      <div className="page-head">
+        <div><h1>{title}</h1>{lede && <p>{lede}</p>}</div>
+        {children && <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>{children}</div>}
+      </div>
+      <RealFundsBanner />
+    </>
   )
 }
 

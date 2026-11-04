@@ -6,7 +6,7 @@ import { listListings, ListingStatus } from '../../protocol/v2'
 import { CATEGORIES } from '../../protocol/categories'
 import { formatUsdc } from '../../protocol/units'
 import { DEFAULT_FILTER, filterListings, type BoardFilter } from '../boardFilter'
-import { Empty, ErrorBox, Loading, Page, PageHead, RealFundsBanner, short } from '../ui'
+import { Empty, ErrorBox, Loading, Page, PageHead, short } from '../ui'
 
 const LABEL = ['—', 'Open', 'Hired', 'Cancelled']
 const STATUSES: Array<[BoardFilter['status'], string]> = [['open', 'Open'], ['hired', 'Hired'], ['cancelled', 'Cancelled'], ['all', 'All']]
@@ -21,7 +21,6 @@ export default function V2Board() {
   const counts = (c: string) => q.data ? q.data.filter(l => (c === 'All' || (l.meta?.category ?? 'Other') === c) && (f.status === 'all' || l.status === { open: ListingStatus.Open, hired: ListingStatus.Filled, cancelled: ListingStatus.Cancelled }[f.status])).length : 0
   return (
     <Page>
-      <RealFundsBanner />
       <PageHead title="Job board" lede={q.data ? `${openCount} open of ${q.data.length}${q.data.length >= 100 ? '+' : ''} listings. Refreshes every 30 seconds.` : 'Open listings on Arc Mainnet.'}>
         <button className="btn btn-secondary btn-sm" onClick={() => q.refetch()} disabled={q.isFetching}>{q.isFetching ? 'Refreshing…' : 'Refresh'}</button>
         <Link to="/post" className="btn btn-primary btn-sm">Post a listing</Link>

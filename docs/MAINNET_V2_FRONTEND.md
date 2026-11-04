@@ -49,3 +49,8 @@ Hire first tries a single transaction through `Multicall3From.aggregate3` (allow
 ## Not covered by automated tests
 - The batched hire path and the agent pages cannot run on a stock anvil (no CallFrom precompile, no ERC-8004 registries). They are covered by typecheck and, for the batch, by the simulate-then-fallback design.
 - Anything that depends on live Arc state should be checked against the deployed app. Open an issue with the transaction hash if something looks wrong.
+
+
+## Event history reads (logscan)
+
+Listings, bids and jobs on mainnet are read from contract events, so the browser pages through `eth_getLogs`. `frontend/src/protocol/logscan.ts` keeps this bounded: ranges are requested largest-first (100,000 blocks, then smaller) and the size the provider accepts is remembered; chunks run four at a time; each query is cached and a refresh only asks for blocks after the last one scanned; identical concurrent scans share one promise. Bids use one shared `BidPlaced` scan filtered in memory instead of one scan per listing. A first cold load still costs one pass over the history (about 17 requests per 1.7M blocks at a 100,000 cap), which grows with `VITE_V2_FROM_BLOCK` age; an indexer is the long-term fix.

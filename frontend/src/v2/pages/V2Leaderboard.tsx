@@ -6,7 +6,7 @@ import { agentIdsFromExplorer } from '../../protocol/agents'
 import { buyerBoard, sellerBoard, type LeaderRow } from '../../protocol/leaderboard'
 import { formatUsdc } from '../../protocol/units'
 import MascotAvatar from '../../mascot/MascotAvatar'
-import { Empty, ErrorBox, Loading, Page, PageHead, RealFundsBanner, short } from '../ui'
+import { Empty, ErrorBox, Loading, Page, PageHead, short } from '../ui'
 
 async function load() {
   const jobs = await listFilledJobs(200)
@@ -69,7 +69,6 @@ export default function V2Leaderboard() {
   const q = useQuery({ queryKey: ['v2', 'leaderboard'], queryFn: load, staleTime: 60_000 })
   return (
     <Page>
-      <RealFundsBanner />
       <PageHead title="Leaderboard" lede="Built from chain data, no indexer. Covers jobs hired through the board in the latest 200 listings. Volume counts only jobs paid out to the seller." />
       {q.isPending && <Loading what="leaderboard" />}
       {q.isError && <ErrorBox error={q.error} retry={() => q.refetch()} />}

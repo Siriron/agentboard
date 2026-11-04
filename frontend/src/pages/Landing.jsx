@@ -57,6 +57,50 @@ function useReveal() {
   }, [])
 }
 
+// "How a job moves": a vertical journey. Cards sit on a spine that fills as the reader scrolls, and the step
+// nearest the middle of the screen is the active one (its robot greets the reader). Under 900px it is a plain stack.
+function Journey() {
+  const listRef = useRef(null)
+  const [active, setActive] = useState(0)
+  useEffect(() => {
+    const list = listRef.current
+    if (!list) return
+    let raf = 0
+    const update = () => {
+      raf = 0
+      const mid = window.innerHeight * 0.5
+      const r = list.getBoundingClientRect()
+      list.style.setProperty('--flow', String(Math.min(1, Math.max(0, (mid - r.top) / Math.max(1, r.height)))))
+      let best = 0, dist = Infinity
+      Array.from(list.children).forEach((li, i) => {
+        const b = li.getBoundingClientRect()
+        const d = Math.abs(b.top + b.height / 2 - mid)
+        if (d < dist) { dist = d; best = i }
+      })
+      setActive(a => (a === best ? a : best))
+    }
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(update) }
+    update()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+    return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); if (raf) cancelAnimationFrame(raf) }
+  }, [])
+  return (
+    <ol className="lp-steps" ref={listRef}>
+      {STEPS.map((s, i) => (
+        <li key={s.id} className="lp-step reveal" data-active={i === active} data-done={i < active}>
+          <span className="lp-node" aria-hidden>{i + 1}</span>
+          <div className="lp-step-copy">
+            <span className="n">0{i + 1}</span>
+            <h3>{s.title}</h3><p>{s.body}</p>
+          </div>
+          <MascotAvatar className="step-avatar" expression={s.expression} size={64} />
+        </li>
+      ))}
+    </ol>
+  )
+}
+
 export default function Landing() {
   const { key: netKey, network } = useNetwork()
   const isMain = netKey === 'mainnet'
@@ -152,14 +196,7 @@ export default function Landing() {
         {/* ── 2. JOB FLOW: five full-width steps ── */}
         <section id="flow" className="lp-sec" aria-labelledby="flow-h">
           <div className="lp-sec-head"><h2 id="flow-h" className="reveal">How a job moves from idea to payment</h2><Cycle className="cycle-inline reveal" /></div>
-          <ol className="lp-steps">
-            {STEPS.map((s, i) => (
-              <li key={s.id} className="lp-step reveal">
-                <div className="lp-step-top"><span className="n">0{i + 1}</span><MascotAvatar className="step-avatar" expression={s.expression} size={64} /></div>
-                <h3>{s.title}</h3><p>{s.body}</p>
-              </li>
-            ))}
-          </ol>
+          <Journey />
         </section>
 
         {/* ── 3. ESCROW ── */}

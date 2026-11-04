@@ -122,7 +122,10 @@ select.input, select.field { appearance: none; background-image: linear-gradient
 .netsel-opt[aria-checked='true'] .ns-check { opacity: 1; transform: none; }
 
 /* Real-funds banner */
-.realfunds-bar { height: var(--banner-h-px, 28px); line-height: 22px; background: var(--bg-surface); color: var(--text-2); border-bottom: 1px solid var(--border); font-size: var(--fs-xs); font-weight: 500; text-align: center; padding: 0 12px; border-top: 2px solid var(--main); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.realfunds-bar { display: flex; align-items: center; justify-content: center; gap: 8px; height: var(--banner-h-px, 28px); background: var(--bg-surface); color: var(--text-2); border-bottom: 1px solid var(--border); font-size: var(--fs-xs); font-weight: 500; letter-spacing: .01em; padding: 0 12px; white-space: nowrap; overflow: hidden; }
+.realfunds-bar::before { content: ''; flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--main); }
+@media (prefers-reduced-motion: no-preference) { .realfunds-bar::before { animation: mn-dot 2.4s ease-in-out infinite; } }
+@keyframes mn-dot { 50% { opacity: .35; } }
 
 /* page scaffolding for app routes */
 .page { max-width: var(--page-max); margin: 0 auto; padding: 28px var(--gutter) 96px; }
@@ -357,3 +360,9 @@ select.input, select.field { appearance: none; background-image: linear-gradient
 .ftr-net { display: inline-flex; align-items: center; gap: 7px; padding: 3px 10px 3px 8px; border: 1px solid var(--border); border-radius: var(--r-pill); background: var(--bg-card); color: var(--text-2); font-weight: 500; }
 .ftr-net i { width: 6px; height: 6px; border-radius: 50%; background: var(--test); box-shadow: 0 0 0 3px color-mix(in srgb, var(--test) 18%, transparent); }
 .ftr-net.is-main i { background: var(--main); box-shadow: 0 0 0 3px color-mix(in srgb, var(--main) 18%, transparent); }
+
+/* ── Mainnet risk notice: full disclosure, quiet surface, sits under the page title ── */
+.mn-note { display: flex; gap: 12px; align-items: flex-start; margin: -8px 0 24px; padding: 12px 14px; border: 1px solid var(--border); border-left: 3px solid var(--main); border-radius: var(--r); background: var(--bg-card); }
+.mn-note-ico { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: var(--main-dim); color: var(--main); }
+.mn-note strong { display: block; font-size: var(--fs-sm); font-weight: 600; letter-spacing: .01em; color: var(--text-1); }
+.mn-note p { margin: 2px 0 0; max-width: 78ch; font-size: var(--fs-sm); line-height: 1.55; color: var(--text-2); }

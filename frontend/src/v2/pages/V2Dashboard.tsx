@@ -31,7 +31,6 @@ export default function V2Dashboard() {
   const d = q.data
   return (
     <Page>
-      <RealFundsBanner />
       <PageHead title="My activity" lede="Everything tied to this wallet, read from the chain." />
       {q.isPending && <Loading what="your activity" />}
       {q.isError && <ErrorBox error={q.error} retry={() => q.refetch()} />}
