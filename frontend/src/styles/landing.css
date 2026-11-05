@@ -7,7 +7,7 @@
 .lp-hint { margin-top: 18px; font-size: var(--fs-sm); color: var(--text-2); }
 .h-test { color: var(--test); font-weight: 600; } .h-main { color: var(--main); font-weight: 600; }
 .lp-stage-wrap { position: relative; max-width: 1080px; margin: clamp(4px, 2vw, 16px) auto 0; padding: 0 var(--gutter); }
-.lp-stage { position: relative; height: clamp(250px, 62vw, 300px); will-change: transform; }
+.lp-stage { position: relative; height: clamp(250px, 62vw, 300px); will-change: transform, opacity; transform-origin: 50% 40%; }
 @media (min-width: 640px) { .lp-stage { height: clamp(340px, 46vw, 540px); } }
 .lp-h1 { font-size: clamp(36px, 9.2vw, 80px); line-height: 1.01; letter-spacing: -0.052em; font-weight: 680; color: var(--text-1); }
 .lp-h1 .ln { display: block; overflow: hidden; padding-bottom: .08em; white-space: nowrap; }

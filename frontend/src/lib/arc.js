@@ -126,7 +126,7 @@ function createMainnetPublicClient() {
   const client = createPublicClient({
     chain: net.chain,
     batch: { multicall: { batchSize: 1024 * 8, wait: 100, deployless: true } },
-    transport: fallback(urls.map(u => http(u, { retryCount: 2, retryDelay: 500 })), { rank: false }),
+    transport: fallback(urls.map(u => http(u, { retryCount: 2, retryDelay: 500, timeout: 8_000 })), { rank: false }),
   })
   return client.extend(c => ({
     async readContract(args) {

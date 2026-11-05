@@ -6,7 +6,11 @@ import { useNetwork } from '../hooks/useNetwork'
 import { CONTRACT_ABI, CONTRACT_ADDRESS, getPublicClient } from '../lib/arc'
 import '../styles/landing.css'
 
-const Mascot3D = lazy(() => import('../mascot/Mascot3D'))
+const loadMascot3D = () => import('../mascot/Mascot3D')
+const Mascot3D = lazy(loadMascot3D)
+// Start downloading the 3D robot (and three.js) as soon as this page's code runs, in parallel with first paint,
+// instead of waiting for React to render the hero. The 2D robot stands in until it is ready.
+if (typeof window !== 'undefined') { loadMascot3D().catch(() => {}); import('../mascot/scene').catch(() => {}) }
 
 // ── content (verified against the contracts and README; mainnet copy drops testnet-only claims) ──
 const STEPS = [
@@ -139,8 +143,16 @@ export default function Landing() {
       raf = 0
       const h = heroRef.current; if (!h) return
       const p = Math.min(1, Math.max(0, window.scrollY / Math.max(1, h.offsetHeight * 0.9)))
-      mascotRef.current?.setProgress(p * 0.34)
-      if (stageRef.current) stageRef.current.style.transform = `translate3d(0, ${(-p * 36).toFixed(1)}px, 0)`
+      // The robot recedes instead of scrolling off: it drifts down slower than the page, shrinks a little, and fades out
+      // over the second half of the hero, while the camera pushes in gently. Reduced motion keeps it still.
+      const e = p * p * (3 - 2 * p)
+      const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      mascotRef.current?.setProgress(calm ? 0 : e * 0.14)
+      const st = stageRef.current
+      if (st && !calm) {
+        st.style.transform = `translate3d(0, ${(e * 64).toFixed(1)}px, 0) scale(${(1 - e * 0.1).toFixed(3)})`
+        st.style.opacity = String(Math.max(0, 1 - Math.max(0, (e - 0.3) / 0.7) * 0.92).toFixed(3))
+      }
     }
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(run) }
     window.addEventListener('scroll', onScroll, { passive: true }); window.addEventListener('resize', onScroll); run()

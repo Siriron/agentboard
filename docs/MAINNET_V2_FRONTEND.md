@@ -53,4 +53,12 @@ Hire first tries a single transaction through `Multicall3From.aggregate3` (allow
 
 ## Event history reads (logscan)
 
-Listings, bids and jobs on mainnet are read from contract events, so the browser pages through `eth_getLogs`. `frontend/src/protocol/logscan.ts` keeps this bounded: ranges are requested largest-first (100,000 blocks, then smaller) and the size the provider accepts is remembered; chunks run four at a time; each query is cached and a refresh only asks for blocks after the last one scanned; identical concurrent scans share one promise. Bids use one shared `BidPlaced` scan filtered in memory instead of one scan per listing. A first cold load still costs one pass over the history (about 17 requests per 1.7M blocks at a 100,000 cap), which grows with `VITE_V2_FROM_BLOCK` age; an indexer is the long-term fix.
+Listings, bids and jobs on mainnet are read from contract events. Arc's public RPC gateway caps `eth_getLogs` at 30,000 blocks per request and rate-limits bursts (see circlefin/arc-node issue 83), and the chain adds about 170,000 blocks a day, so paging through all history from a browser costs dozens to hundreds of requests. `frontend/src/protocol/logscan.ts` handles it:
+
+- Old history comes from one Blockscout `logs/getLogs` query (`explorer.arc.io`, set `VITE_V2_EXPLORER_BULK=off` to disable). Every returned log is validated (address, event topic, hex) and anything odd falls back to the RPC. The last 2,000 blocks always go through the RPC because the explorer can lag.
+- The RPC path requests 30,000 blocks, steps down when refused, runs three chunks at a time and reads newest blocks first.
+- Progress is cached in memory and in localStorage, so a refresh or reload only asks for new blocks and an interrupted scan resumes.
+- The board and dashboard show contract state immediately and fill titles in as history arrives (`partial` listings poll every 3 seconds until complete).
+- HTTP requests time out after 8 seconds so a slow provider cannot stall a page.
+
+An indexer is still the long-term fix.

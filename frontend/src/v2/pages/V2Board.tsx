@@ -13,7 +13,7 @@ const STATUSES: Array<[BoardFilter['status'], string]> = [['open', 'Open'], ['hi
 const ZERO = '0x0000000000000000000000000000000000000000'
 
 export default function V2Board() {
-  const q = useQuery({ queryKey: ['v2', 'listings'], queryFn: () => listListings(100), refetchInterval: 30_000 })
+  const q = useQuery({ queryKey: ['v2', 'listings'], queryFn: () => listListings(100), refetchInterval: query => (query.state.data?.partial ? 3_000 : 30_000) })
   const [f, setF] = useState<BoardFilter>(DEFAULT_FILTER)
   const set = (p: Partial<BoardFilter>) => setF(prev => ({ ...prev, ...p }))
   const shown = q.data ? filterListings(q.data, f) : []

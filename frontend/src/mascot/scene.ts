@@ -53,7 +53,7 @@ export class MascotScene {
 
   constructor(o: SceneOptions) {
     this.reduced = o.reducedMotion; this.theme = o.theme; this.lowPower = o.lowPower; this.ownedCanvas = o.canvas
-    this.renderer = new WebGLRenderer({ canvas: o.canvas, antialias: !o.lowPower, alpha: true, powerPreference: 'high-performance' })
+    this.renderer = new WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true, powerPreference: 'high-performance' })
     this.renderer.setClearColor(0x000000, 0)
     this.renderer.toneMapping = ACESFilmicToneMapping
     this.renderer.outputColorSpace = SRGBColorSpace
@@ -204,9 +204,12 @@ export class MascotScene {
     ;(this.pad.material as MeshStandardMaterial).color.set(brand); (this.pad.material as MeshStandardMaterial).emissive.set(brand)
     this.renderOnce()
   }
+  // Sharp by default (phones render at their real density, up to 2x); if frames get slow the ratio steps down, never up.
+  private dpr = 1; private ratioCap = 2; private slow = 0
+  private applyRatio() { this.renderer.setPixelRatio(Math.min(this.dpr, this.ratioCap)); this.renderer.setSize(this.w, this.h, false) }
   resize(w: number, h: number, dpr: number) {
     this.w = Math.max(1, w); this.h = Math.max(1, h)
-    this.renderer.setPixelRatio(Math.min(dpr, this.lowPower ? 1.25 : 1.5)); this.renderer.setSize(this.w, this.h, false)
+    this.dpr = dpr; this.applyRatio()
     this.camera.aspect = this.w / this.h; this.camera.updateProjectionMatrix()
     if (this.pose !== 'hidden') { this.tgt = this.target(this.pose); if (this.reduced || !this.running) this.cur = { ...this.tgt } }
     this.renderOnce()
@@ -228,7 +231,10 @@ export class MascotScene {
   }
   private tick = (now: number) => {
     if (!this.running) return
-    const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now; this.time += dt
+    const raw = now - this.last
+    const dt = Math.min(0.05, raw / 1000); this.last = now; this.time += dt
+    if (raw > 28 && raw < 250) { if (++this.slow > 45 && this.ratioCap > 1.25) { this.ratioCap = Math.max(1.25, this.ratioCap - 0.25); this.slow = 0; this.applyRatio() } }
+    else if (this.slow > 0) this.slow--
     this.step(dt); this.raf = requestAnimationFrame(this.tick)
   }
   private renderOnce() { if (this.running) return; this.step(0.016, true) }

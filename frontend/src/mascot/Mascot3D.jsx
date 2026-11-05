@@ -11,6 +11,8 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
   const { resolved } = useTheme()
   const [failed, setFailed] = useState(false)
   const [ready, setReady] = useState(false)
+  const [attempt, setAttempt] = useState(0) // a lost WebGL context gets two fresh starts before the 2D robot takes over
+  const lost = useRef(0)
   const themeRef = useRef(resolved); themeRef.current = resolved
   // Imperative handle so scroll progress can be fed every frame without re-rendering React.
   useImperativeHandle(ref, () => ({ setProgress: p => sceneRef.current?.setProgress(p), react: () => sceneRef.current?.react() }), [])
@@ -25,7 +27,7 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
         const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
         const coarse = window.matchMedia('(pointer: coarse)').matches
         const lowPower = coarse || (navigator.deviceMemory && navigator.deviceMemory <= 4) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
-        scene = new MascotScene({ canvas, theme: themeRef.current, reducedMotion: reduced, lowPower: !!lowPower, onContextLost: () => setFailed(true) })
+        scene = new MascotScene({ canvas, theme: themeRef.current, reducedMotion: reduced, lowPower: !!lowPower, onContextLost: () => { if (++lost.current <= 2) { setReady(false); setAttempt(n => n + 1) } else setFailed(true) } })
         sceneRef.current = scene
         const fit = () => { const r = wrap.getBoundingClientRect(); scene.resize(r.width, r.height, window.devicePixelRatio || 1) }
         fit(); ro = new ResizeObserver(fit); ro.observe(wrap)
@@ -76,7 +78,7 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
       if (onDown) { wrap.removeEventListener('pointerdown', onDown); wrap.removeEventListener('pointermove', onDrag); wrap.removeEventListener('pointerup', onUp); wrap.removeEventListener('pointercancel', onUp) }
       scene?.dispose(); sceneRef.current = null
     }
-  }, [])
+  }, [attempt])
 
   useEffect(() => { sceneRef.current?.applyTheme(resolved) }, [resolved])
   useEffect(() => { sceneRef.current?.setExpression(expression) }, [expression, ready])
@@ -85,7 +87,7 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
   if (failed) return <div className="mascot-fallback" style={{ display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}><MascotAvatar expression={expression} size={fallbackSize} label={label} /></div>
   return (
     <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative', touchAction: 'pan-y', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', cursor: 'grab' }}>
-      <canvas ref={canvasRef} role="img" aria-label={label} style={{ width: '100%', height: '100%', display: 'block', opacity: ready ? 1 : 0, transition: 'opacity .6s var(--ease-out)' }} />
+      <canvas key={attempt} ref={canvasRef} role="img" aria-label={label} style={{ width: '100%', height: '100%', display: 'block', opacity: ready ? 1 : 0, transition: 'opacity .6s var(--ease-out)' }} />
       {!ready && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}><MascotAvatar expression="idle" size={fallbackSize * 0.6} /></div>}
     </div>
   )

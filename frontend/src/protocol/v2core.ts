@@ -8,7 +8,7 @@ import {
 } from 'viem'
 import { boardAbi, kernelAbi, MULTICALL3_FROM, multicall3FromAbi, routerAbi, usdcAbi } from './abis'
 import { feeOverrides } from './fees'
-import { scanLogs } from './logscan'
+import { blockscoutBulk, scanLogs, type BulkSource } from './logscan'
 import { AppError } from './errors'
 import { decodeMeta, decodeUri, encodeMeta, encodeUri, hashBytes, hashText } from './hashing'
 import { parseUsdc } from './units'
@@ -28,6 +28,8 @@ export interface V2Env {
   signMessage: (message: string) => Promise<Hex>
   addresses: () => V2Addresses
   fromBlock: bigint
+  /** Blockscout base URL used as a bulk source for old event history ('' or omitted: RPC only). */
+  explorer?: string
   /** Base URL of the serverless API ('' for same origin). */
   apiBase: string
 }
@@ -78,9 +80,17 @@ export const BidStatus = { None: 0, Active: 1, Withdrawn: 2, Accepted: 3 } as co
 
 // ───────────── logs ─────────────
 
-async function getLogsRange(pc: PublicClient, args: Record<string, unknown>, opts: { from?: bigint; steps?: bigint[] } = {}): Promise<Log[]> {
-  try { return await scanLogs(pc, args, { from: opts.from ?? env().fromBlock, steps: opts.steps }) }
+async function getLogsPartial(pc: PublicClient, args: Record<string, unknown>, opts: { from?: bigint; steps?: bigint[]; budgetMs?: number } = {}): Promise<{ logs: Log[]; complete: boolean }> {
+  try { return await scanLogs(pc, args, { from: opts.from ?? env().fromBlock, steps: opts.steps, budgetMs: opts.budgetMs, bulk: explorerBulk() }) }
   catch { throw new AppError('The network could not return event history. Try again in a moment.') }
+}
+async function getLogsRange(pc: PublicClient, args: Record<string, unknown>, opts: { from?: bigint; steps?: bigint[] } = {}): Promise<Log[]> {
+  return (await getLogsPartial(pc, args, opts)).logs
+}
+let _bulk: BulkSource | null | undefined
+function explorerBulk(): BulkSource | null {
+  if (_bulk === undefined) _bulk = (import.meta.env?.VITE_V2_EXPLORER_BULK === 'off' || typeof fetch === 'undefined') ? null : (env().explorer ? blockscoutBulk(env().explorer as string) : null)
+  return _bulk
 }
 
 // ───────────── reads ─────────────
@@ -112,18 +122,19 @@ function withMeta(raw: Omit<Listing, 'uri' | 'meta' | 'specMatches'>, uri: strin
   return { ...raw, uri, meta, specMatches }
 }
 
-async function listingUris(listingId?: bigint): Promise<Map<string, string>> {
+const META_BUDGET_MS = 4_000
+async function listingUris(listingId?: bigint, budgetMs?: number): Promise<{ uris: Map<string, string>; complete: boolean }> {
   const pc = client(); const a = v2Addresses()
-  const logs = await getLogsRange(pc, {
+  const { logs, complete } = await getLogsPartial(pc, {
     address: a.board,
     event: boardAbi.find(x => x.type === 'event' && x.name === 'ListingCreated'),
-  })
+  }, { budgetMs })
   const m = new Map<string, string>()
   for (const l of logs) {
     const d = decodeEventLog({ abi: boardAbi, data: l.data, topics: l.topics as [Hex, ...Hex[]] })
     if (d.eventName === 'ListingCreated' && (listingId === undefined || d.args.listingId === listingId)) m.set(String(d.args.listingId), d.args.uri)
   }
-  return m
+  return { uris: m, complete }
 }
 
 export async function getListingCount(): Promise<number> {
@@ -145,22 +156,25 @@ export async function listFilledJobs(scan = 200): Promise<FilledJob[]> {
   return out
 }
 
-export async function listListings(limit = 50): Promise<Listing[]> {
+/** `partial` is true while titles and descriptions are still being read from event history. */
+export type ListingList = Listing[] & { partial?: boolean }
+export async function listListings(limit = 50): Promise<ListingList> {
   const pc = client(); const a = v2Addresses()
   const count = await pc.readContract({ address: a.board, abi: boardAbi, functionName: 'listingCount' })
   if (count === 0n) return []
   const from = count > BigInt(limit) ? count - BigInt(limit) + 1n : 1n
   const ids: bigint[] = []
   for (let i = count; i >= from; i--) ids.push(i)
-  const [raws, uris] = await Promise.all([Promise.all(ids.map(readListingRaw)), listingUris()])
-  return raws.map(r => withMeta(r, uris.get(String(r.id)) ?? ''))
+  // State first: the rows never wait on event history for longer than META_BUDGET_MS; titles fill in as it arrives.
+  const [raws, meta] = await Promise.all([Promise.all(ids.map(readListingRaw)), listingUris(undefined, META_BUDGET_MS)])
+  return Object.assign(raws.map(r => withMeta(r, meta.uris.get(String(r.id)) ?? '')), { partial: !meta.complete })
 }
 
 export async function getListing(id: bigint): Promise<Listing | null> {
   const count = await client().readContract({ address: v2Addresses().board, abi: boardAbi, functionName: 'listingCount' })
   if (id < 1n || id > count) return null
   const [raw, uris] = await Promise.all([readListingRaw(id), listingUris(id)])
-  return withMeta(raw, uris.get(String(id)) ?? '')
+  return withMeta(raw, uris.uris.get(String(id)) ?? '')
 }
 
 export async function configHashOf(cfg: EvalConfig, arbitrator?: Address): Promise<Hex> {
@@ -267,7 +281,7 @@ export async function getJobBundle(jobId: bigint, me: Address | null): Promise<J
   return { jobId, job: { ...job, status: Number(job.status), feeBps: Number(job.feeBps) }, rs, listingId: lid, bid, windows, deliverableUri, description, hasVoted: !!hasVoted }
 }
 
-export interface Dashboard { listings: Listing[]; bids: { listing: Listing; bid: Bid }[]; jobs: JobRow[]; claimable: bigint }
+export interface Dashboard { listings: Listing[]; bids: { listing: Listing; bid: Bid }[]; jobs: JobRow[]; claimable: bigint; partial?: boolean }
 
 export async function getDashboard(me: Address, scan = 100): Promise<Dashboard> {
   const pc = client(); const a = v2Addresses()
@@ -284,7 +298,7 @@ export async function getDashboard(me: Address, scan = 100): Promise<Dashboard> 
     pc.readContract({ address: a.kernel, abi: kernelAbi, functionName: 'claimable', args: [me] }),
     getMyJobs(me, boardJobIds),
   ])
-  return { listings: mine, bids: bidRows, jobs, claimable }
+  return { listings: mine, bids: bidRows, jobs, claimable, partial: all.partial }
 }
 
 export async function usdcBalance(who: Address): Promise<bigint> {

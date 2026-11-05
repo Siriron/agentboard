@@ -21,7 +21,7 @@ export default function V2Dashboard() {
   const w = useV2Wallet()
   const qc = useQueryClient()
   const me = w.account as Address | null
-  const q = useQuery({ queryKey: ['v2', 'dash', me], enabled: !!me, queryFn: () => getDashboard(me as Address) })
+  const q = useQuery({ queryKey: ['v2', 'dash', me], enabled: !!me, queryFn: () => getDashboard(me as Address), refetchInterval: query => (query.state.data?.partial ? 3_000 : false) })
   const act = useAction(() => qc.invalidateQueries({ queryKey: ['v2', 'dash'] }))
   if (!me) return (
     <Page narrow><RealFundsBanner />
