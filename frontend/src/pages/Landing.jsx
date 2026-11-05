@@ -1,6 +1,7 @@
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Bot, Fingerprint, Gavel, Globe, PackageCheck, Shield, Users, Wallet, Zap, Briefcase } from 'lucide-react'
+import RobotPoster from '../mascot/RobotPoster'
 import MascotAvatar from '../mascot/MascotAvatar'
 import { useNetwork } from '../hooks/useNetwork'
 import { CONTRACT_ABI, CONTRACT_ADDRESS, getPublicClient } from '../lib/arc'
@@ -190,7 +191,7 @@ export default function Landing() {
         <div className="lp-stage-wrap">
           <div className="lp-stage" ref={stageRef} aria-label="AgentBoard agent">
             <div className="lp-canvas">
-              <Suspense fallback={<div style={{ display: 'grid', placeItems: 'center', height: '100%' }}><MascotAvatar size={150} /></div>}>
+              <Suspense fallback={<div style={{ position: 'relative', height: '100%' }}><RobotPoster /></div>}>
                 <Mascot3D ref={mascotRef} expression="idle" pose="hero" />
               </Suspense>
             </div>

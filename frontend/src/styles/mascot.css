@@ -76,3 +76,9 @@
   .robot-error .mascot-avatar:not(.is-still) .mascot-bob { animation: m-shake .5s ease-in-out 1; }
 }
 @media (prefers-reduced-motion: reduce) { .robot-loader-in { animation: none; } }
+
+/* Snapshot of the 3D robot shown while the live scene loads (or if it cannot start). Height-fit and centred, like the camera. */
+.mascot-poster { position: absolute; top: 1.25%; left: 50%; height: 97.5%; width: auto; max-width: none; transform: translateX(-50%); pointer-events: none; user-select: none; transition: opacity .6s var(--ease-out); }
+.mascot-poster.is-gone { opacity: 0; }
+@media (prefers-reduced-motion: no-preference) { .mascot-poster:not(.is-gone) { animation: poster-float 4.2s ease-in-out infinite; } }
+@keyframes poster-float { 0%, 100% { transform: translateX(-50%) translateY(0); } 50% { transform: translateX(-50%) translateY(-5px); } }

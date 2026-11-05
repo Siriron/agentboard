@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useTheme } from '../theme/useTheme'
 import MascotAvatar from './MascotAvatar'
+import RobotPoster from './RobotPoster'
 
 // Mounts the three.js scene. This file (and three itself) is only loaded through React.lazy on the landing page.
 // Falls back to the 2D avatar if WebGL is unavailable or the context is lost. Pauses when off-screen or the tab is hidden.
@@ -84,11 +85,14 @@ const Mascot3D = forwardRef(function Mascot3D({ expression = 'idle', pose = 'her
   useEffect(() => { sceneRef.current?.setExpression(expression) }, [expression, ready])
   useEffect(() => { sceneRef.current?.setPose(pose) }, [pose, ready])
 
-  if (failed) return <div className="mascot-fallback" style={{ display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}><MascotAvatar expression={expression} size={fallbackSize} label={label} /></div>
+  // Until the live 3D scene is ready (and if it can never start) show a snapshot of the same 3D robot, not the 2D
+  // cartoon, so there is no visual swap when the real one fades in. Only the idle face has a snapshot.
+  const poster = expression === 'idle' ? <RobotPoster gone={ready && !failed} /> : null
+  if (failed) return <div className="mascot-fallback" style={{ position: 'relative', width: '100%', height: '100%' }}>{poster || <div style={{ display: 'grid', placeItems: 'center', width: '100%', height: '100%' }}><MascotAvatar expression={expression} size={fallbackSize} label={label} /></div>}</div>
   return (
     <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative', touchAction: 'pan-y', userSelect: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none', cursor: 'grab' }}>
       <canvas key={attempt} ref={canvasRef} role="img" aria-label={label} style={{ width: '100%', height: '100%', display: 'block', opacity: ready ? 1 : 0, transition: 'opacity .6s var(--ease-out)' }} />
-      {!ready && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}><MascotAvatar expression="idle" size={fallbackSize * 0.6} /></div>}
+      {poster || (!ready && <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}><MascotAvatar expression="idle" size={fallbackSize * 0.6} /></div>)}
     </div>
   )
 })
