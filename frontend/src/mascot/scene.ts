@@ -208,12 +208,15 @@ export class MascotScene {
   // Sharp by default (phones render at their real density, up to 2x); if frames get slow the ratio steps down, never up.
   private dpr = 1; private ratioCap = 2; private slow = 0
   private applyRatio() { this.renderer.setPixelRatio(Math.min(this.dpr, this.ratioCap)); this.renderer.setSize(this.w, this.h, false) }
+  /** Jump straight to the resting pose with no entrance or camera glide. Used when a scene is attached while a snapshot of the robot is already on screen, so the hand-over never shows the robot growing in. */
+  settle() { this.cur = { ...this.tgt }; this.appear = this.appearTarget }
   resize(w: number, h: number, dpr: number) {
     this.w = Math.max(1, w); this.h = Math.max(1, h)
     this.dpr = dpr; this.applyRatio()
     this.camera.aspect = this.w / this.h; this.camera.updateProjectionMatrix()
     if (this.pose !== 'hidden') { this.tgt = this.target(this.pose); if (this.reduced || !this.running) this.cur = { ...this.tgt } }
-    this.renderOnce()
+    // setSize clears the canvas, so draw right away; waiting for the next animation frame leaves a blank flash on every resize.
+    if (this.running) this.step(0); else this.renderOnce()
   }
   start() { if (this.running || this.reduced) { this.renderOnce(); return } this.running = true; this.last = performance.now(); this.raf = requestAnimationFrame(this.tick) }
   stop() { this.running = false; cancelAnimationFrame(this.raf) }
