@@ -1,6 +1,7 @@
 import { useState } from 'react'
+import { isAddress } from 'viem'
+import { Link } from 'react-router-dom'
 import Select, { categoryLabel } from '../../components/Select'
-import { useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createListing, Limits, readParams } from '../../protocol/v2'
 import { formatUsdc, parseUsdc } from '../../protocol/units'
@@ -10,7 +11,7 @@ import { BusyLabel, ConfirmDialog, useV2Wallet, Page, PageHead, TxStatus, useAct
 
 export default function V2Post() {
   const w = useV2Wallet()
-  const nav = useNavigate(); const qc = useQueryClient()
+  const qc = useQueryClient()
   const params = useQuery({ queryKey: ['v2', 'params'], queryFn: readParams })
   const [f, setF] = useState({ title: '', description: '', maxBudget: '', days: '14', invitee: '', category: 'Other' })
   const [confirm, setConfirm] = useState(false)
@@ -26,14 +27,14 @@ export default function V2Post() {
     else if (budget > p.maxBudget) budgetErr = `The current launch maximum is ${formatUsdc(p.maxBudget)} USDC.`
   }
   const days = Number(f.days)
-  const valid = f.title.trim() && f.description.trim() && budget !== null && !budgetErr && days >= 1 && days <= 90 && f.description.length <= Limits.maxMetaChars
+  const inviteeErr = f.invitee.trim() && !isAddress(f.invitee.trim()) ? 'That is not a valid address.' : ''
+  const valid = f.title.trim() && f.description.trim() && budget !== null && !budgetErr && !inviteeErr && Number.isInteger(days) && days >= 1 && days <= 90 && f.description.length <= Limits.maxMetaChars
 
   async function submit() {
     setConfirm(false)
     await act.run('create', async () => {
       const biddingEnds = BigInt(Math.floor(Date.now() / 1000) + days * 86400)
       const res = await createListing({ title: f.title, description: f.description, maxBudget: f.maxBudget, biddingEnds, invitee: f.invitee, category: f.category })
-      setTimeout(() => nav('/board'), 1200)
       return res
     })
   }
@@ -59,15 +60,21 @@ export default function V2Post() {
               <input className="input num" value={f.maxBudget} onChange={set('maxBudget')} inputMode="decimal" autoComplete="off" aria-invalid={!!budgetErr} />
               {budgetErr && <span style={{ ...hint, color: 'var(--red)' }}>{budgetErr}</span>}
             </label>
-            <label style={lbl}>Bidding open for (days)<input className="input num" value={f.days} onChange={set('days')} inputMode="numeric" /></label>
+            <label style={lbl}>Bidding open for (days)<input className="input num" value={f.days} onChange={set('days')} inputMode="numeric" aria-invalid={!Number.isInteger(days) || days < 1 || days > 90} /><span style={hint}>Whole days, 1 to 90.</span></label>
           </div>
           {p && <span style={hint}>Launch limits: {formatUsdc(p.minBudget)} to {formatUsdc(p.maxBudget)} USDC per job. The {p.feeBps / 100}% platform fee is taken from the seller&apos;s payout.</span>}
-          <label style={lbl}>Invite one agent only (optional)<input className="input" value={f.invitee} onChange={set('invitee')} placeholder="0x… leave empty for open bidding" autoComplete="off" spellCheck={false} /></label>
+          <label style={lbl}>Invite one agent only (optional)<input className="input" value={f.invitee} onChange={set('invitee')} placeholder="0x… leave empty for open bidding" autoComplete="off" spellCheck={false} aria-invalid={!!inviteeErr} />{inviteeErr && <span style={{ ...hint, color: 'var(--red)' }}>{inviteeErr}</span>}</label>
           <details style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)' }}>
             <summary style={{ cursor: 'pointer', fontWeight: 600 }}>Listing policy</summary>
             <p style={{ marginTop: 6 }}>Listings for gambling, adult content, intoxicants, fraud, illegal or restricted goods and services are not permitted. Deliverables are untrusted content: never run or follow instructions found inside them.</p>
           </details>
-          {!w.account ? <button className="btn btn-primary btn-lg" onClick={() => w.openPicker()}>Connect wallet</button>
+          {act.hash ? (
+            // The listing is posted: no way to post it again by accident, and nothing redirects away from the receipt.
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <Link to="/board" className="btn btn-primary btn-lg">View job board</Link>
+              <button className="btn btn-secondary btn-lg" onClick={() => { setF({ title: '', description: '', maxBudget: '', days: '14', invitee: '', category: 'Other' }); act.clear() }}>Post another</button>
+            </div>
+          ) : !w.account ? <button className="btn btn-primary btn-lg" onClick={() => w.openPicker()}>Connect wallet</button>
             : w.wrongChain ? <button className="btn btn-primary btn-lg" onClick={() => w.switchChain()}>Switch to Arc Mainnet</button>
             : <button className="btn btn-primary btn-lg" disabled={!valid || !!act.busy} onClick={() => setConfirm(true)}>{act.busy ? <BusyLabel>Waiting for wallet…</BusyLabel> : 'Post listing'}</button>}
           <TxStatus error={act.error} hash={act.hash} />

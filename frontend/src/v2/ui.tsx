@@ -95,14 +95,32 @@ export function ConfirmDialog({ title, amount, lines, confirmLabel, onConfirm, o
   const needsTyping = amount !== undefined && requiresTypedConfirm(amount)
   const expected = amount !== undefined ? formatUsdc(amount) : ''
   const ok = !needsTyping || typed.trim() === expected || typed.trim() === expected.replace(/,/g, '')
+  const dialogRef = useRef<HTMLDivElement>(null)
+  const cancelRef = useRef(onCancel); cancelRef.current = onCancel
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+    // Modal behaviour: focus moves into the dialog (on Cancel, the safe choice, unless an amount has to be typed),
+    // Tab stays inside it, the page behind does not scroll, and focus returns to the button that opened it.
+    const el = dialogRef.current
+    const opener = document.activeElement as HTMLElement | null
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    if (!needsTyping) (el?.querySelector<HTMLElement>('.btn-secondary') ?? el)?.focus()
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { cancelRef.current(); return }
+      if (e.key !== 'Tab' || !el) return
+      const items = Array.from(el.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled])'))
+      if (items.length === 0) { e.preventDefault(); return }
+      const first = items[0], last = items[items.length - 1]
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === el)) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onCancel])
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = prevOverflow; opener?.focus?.() }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return (
     <div className="mc-overlay" onMouseDown={e => { if (e.target === e.currentTarget) onCancel() }}>
-      <div role="dialog" aria-modal="true" aria-label={title} className="mc-dialog" style={{ width: 'min(460px, 100%)' }}>
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label={title} className="mc-dialog" style={{ width: 'min(460px, 100%)', outline: 'none' }}>
         <h3 style={{ fontSize: 'var(--fs-3xl)' }}>{title}</h3>
         <ul style={{ paddingLeft: 18, margin: '0 0 6px', fontSize: 'var(--fs-base)', lineHeight: 1.6, color: 'var(--text-2)' }}>{lines.map((l, i) => <li key={i}>{l}</li>)}</ul>
         {needsTyping && (

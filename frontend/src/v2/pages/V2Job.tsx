@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { type Hex } from 'viem'
@@ -7,6 +7,7 @@ import { describeJob, STATUS_LABEL, type ActionId, type JobAction } from '../../
 import { hashBytes, hashText, normaliseUrl, textToBytes, verifyUrlHash } from '../../protocol/hashing'
 import { formatUsdc, splitFee, splitPayout } from '../../protocol/units'
 import { AppError, explainError } from '../../protocol/errors'
+import { MAX_HOSTED_BYTES } from '../../protocol/v2core'
 import { BusyLabel, ConfirmDialog, Countdown, Empty, ErrorBox, EscrowPath, Loading, Page, RealFundsBanner, short, TxStatus, useAction, useNow, useV2Wallet } from '../ui'
 
 const field = { display: 'block', width: '100%', marginTop: 4, padding: '10px 12px', borderRadius: 'var(--r)', border: '1px solid var(--border-strong)', background: 'var(--bg-surface)', color: 'var(--text-1)', font: 'inherit' } as const
@@ -130,6 +131,7 @@ interface Ev { hash: Hex; bytes: Uint8Array; name: string; mime: string }
 function Evid({ label, onChange }: { label: string; onChange: (e: Ev | null) => void }) {
   const [text, setText] = useState('')
   const [file, setFile] = useState<string | null>(null)
+  const [tooBig, setTooBig] = useState(false)
   return (
     <div style={{ display: 'grid', gap: 6 }}>
       <label style={{ fontSize: 'var(--fs-sm)' }}>{label}
@@ -142,11 +144,14 @@ function Evid({ label, onChange }: { label: string; onChange: (e: Ev | null) => 
       <label style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)' }}>or a file, 4 MB max (its hash is committed)
         <input type="file" onChange={async e => {
           const f = e.target.files?.[0]; if (!f) return; setText('')
+          if (f.size > MAX_HOSTED_BYTES) { setTooBig(true); setFile(null); e.target.value = ''; return onChange(null) } // checked before reading, so a huge file never gets loaded into memory
+          setTooBig(false)
           const bytes = new Uint8Array(await f.arrayBuffer()); setFile(f.name)
           onChange({ hash: hashBytes(bytes), bytes, name: f.name, mime: f.type || 'application/octet-stream' })
         }} />
       </label>
       {file && <small>{file} hashed.</small>}
+      {tooBig && <small role="alert" style={{ color: 'var(--red)' }}>That file is over 4 MB. Choose a smaller one.</small>}
     </div>
   )
 }
@@ -168,6 +173,13 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
   const [confirm, setConfirm] = useState<ActionId | null>(null)
   const id = job.jobId
   const budget = job.job.budget
+  const [bigDeliv, setBigDeliv] = useState(false)
+  // Each form's fields live in this parent, so they must be cleared whenever a form closes or another opens.
+  // Otherwise evidence typed into one form stays attached (invisibly) to the next one and its hash gets committed.
+  const resetForms = () => { setEv(null); setReason(null); setDeliv(null); setUri(''); setHostNote(null); setBigDeliv(false) }
+  const closeForm = () => { setOpen(null); resetForms() }
+  // After a transaction lands the action usually disappears from the job; close its form instead of leaving a dead one open.
+  useEffect(() => { if (open && !view.some(a => a.id === open)) closeForm() }, [view, open]) // eslint-disable-line react-hooks/exhaustive-deps
   const need = <T,>(x: T | null, msg: string): T => { if (x === null) throw new AppError(msg); return x }
   /** Hosting is best effort: the hash is what counts onchain, so a hosting failure never blocks the action. */
   async function tryHost(e: Ev, kind: v2.PinKind) {
@@ -195,7 +207,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
 
   function onClick(a: JobAction) {
     if (direct[a.id]) { moneyConfirm[a.id] ? setConfirm(a.id) : act.run(a.id, direct[a.id]!); return }
-    setOpen(open === a.id ? null : a.id)
+    resetForms(); setOpen(open === a.id ? null : a.id)
   }
 
   return (
@@ -209,7 +221,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
       ))}
 
       {open === 'submit' && (
-        <Form onCancel={() => setOpen(null)} cta="Submit work" busy={!!act.busy} disabled={!deliv || (!(canHost && hostIt) && !normaliseUrl(uri))}
+        <Form onCancel={closeForm} cta="Submit work" busy={!!act.busy} disabled={!deliv || (!(canHost && hostIt) && !normaliseUrl(uri))}
           onSubmit={() => act.run('submit', async () => {
             const d = need(deliv, 'Choose the deliverable file.')
             let link = uri.trim()
@@ -219,11 +231,14 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
           <label style={{ fontSize: 'var(--fs-sm)' }}>Deliverable file, 4 MB max (hashed in your browser)
             <input type="file" onChange={async e => {
               const f = e.target.files?.[0]; if (!f) return setDeliv(null)
+              if (f.size > MAX_HOSTED_BYTES) { setBigDeliv(true); setDeliv(null); e.target.value = ''; return }
+              setBigDeliv(false)
               const bytes = new Uint8Array(await f.arrayBuffer())
               setDeliv({ hash: hashBytes(bytes), bytes, name: f.name, mime: f.type || 'application/octet-stream' })
             }} />
           </label>
           {deliv && <small style={{ fontFamily: 'var(--font-mono)' }}>keccak256 {deliv.hash.slice(0, 18)}…</small>}
+          {bigDeliv && <small role="alert" style={{ color: 'var(--red)' }}>That file is over 4 MB. Choose a smaller one.</small>}
           {canHost && (
             <label style={{ fontSize: 'var(--fs-sm)' }}><input type="checkbox" checked={hostIt} onChange={e => setHostIt(e.target.checked)} /> Host this file for me (asks for a free wallet signature)</label>
           )}
@@ -236,7 +251,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
         </Form>
       )}
       {open === 'reject' && (
-        <Form onCancel={() => setOpen(null)} cta="Open dispute" busy={!!act.busy} disabled={!reason || !ev}
+        <Form onCancel={closeForm} cta="Open dispute" busy={!!act.busy} disabled={!reason || !ev}
           onSubmit={() => act.run('reject', async () => {
             const r = need(reason, 'Add a reason.'); const e = need(ev, 'Add evidence.')
             await tryHost(r, 'reason'); await tryHost(e, 'evidence')
@@ -248,13 +263,13 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
         </Form>
       )}
       {open === 'contest' && (
-        <Form onCancel={() => setOpen(null)} cta="Contest rejection" busy={!!act.busy} disabled={!ev}
+        <Form onCancel={closeForm} cta="Contest rejection" busy={!!act.busy} disabled={!ev}
           onSubmit={() => act.run('contest', async () => { const e = need(ev, 'Add evidence.'); await tryHost(e, 'evidence'); return v2.contest(id, e.hash) })}>
           <Evid label="Your evidence (text or file)" onChange={setEv} />
         </Form>
       )}
       {open === 'vote' && (
-        <Form onCancel={() => setOpen(null)} cta="Cast decision" busy={!!act.busy} disabled={!ev}
+        <Form onCancel={closeForm} cta="Cast decision" busy={!!act.busy} disabled={!ev}
           onSubmit={() => act.run('vote', async () => { const e = need(ev, 'Add your reasoning.'); await tryHost(e, 'reason'); return v2.vote(id, bps * 100, e.hash) })}>
           <label style={{ fontSize: 'var(--fs-sm)' }}>Share of the budget the seller should receive: <strong>{bps}%</strong>
             <input type="range" min={0} max={100} value={bps} onChange={e => setBps(Number(e.target.value))} style={{ width: '100%' }} />
@@ -264,7 +279,7 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
         </Form>
       )}
       {open === 'extend' && (
-        <Form onCancel={() => setOpen(null)} cta="Extend deadline" busy={!!act.busy} disabled={!(Number(days) >= 1)}
+        <Form onCancel={closeForm} cta="Extend deadline" busy={!!act.busy} disabled={!(Number(days) >= 1)}
           onSubmit={() => act.run('extend', () => v2.extendDeadline(id, job.job.expiredAt + BigInt(Math.floor(Number(days) * 86400))))}>
           <label style={{ fontSize: 'var(--fs-sm)' }}>Add days<input value={days} onChange={e => setDays(e.target.value)} inputMode="numeric" style={field} /></label>
         </Form>
