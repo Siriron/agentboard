@@ -4,7 +4,8 @@
 // Agent signs off-chain, this endpoint verifies and submits on-chain
 // No private key needed from the agent
 
-import { createPublicClient, http, createWalletClient } from 'viem'
+import { createPublicClient, http, createWalletClient, isAddress, isHex } from 'viem'
+import { privateKeyToAccount } from 'viem/accounts'
 
 const arcTestnet = {
   id: 5042002,
@@ -44,8 +45,15 @@ export default async function handler(req, res) {
   const { from, to, value, validAfter, validBefore, nonce, v, r, s, memo } = req.body || {}
 
   // Validate all required fields
-  const missing = ['from','to','value','validAfter','validBefore','nonce','v','r','s'].filter(k => !req.body?.[k])
+  // Presence check: 0 is a valid validAfter, so only null, undefined and empty strings count as missing.
+  const missing = ['from','to','value','validAfter','validBefore','nonce','v','r','s'].filter(k => req.body?.[k] == null || req.body[k] === '')
   if (missing.length) return res.status(400).json({ error: `Missing: ${missing.join(', ')}` })
+  // Shape check before anything is signed or sent, so malformed input fails with a clear 400 instead of a relay error.
+  const uint = x => /^\d{1,78}$/.test(String(x))
+  if (!isAddress(from) || !isAddress(to)) return res.status(400).json({ error: 'Bad address' })
+  if (![value, validAfter, validBefore].every(uint)) return res.status(400).json({ error: 'Bad number field' })
+  if (!isHex(nonce, { strict: true }) || nonce.length !== 66 || !isHex(r, { strict: true }) || r.length !== 66 || !isHex(s, { strict: true }) || s.length !== 66) return res.status(400).json({ error: 'Bad signature fields' })
+  if (!Number.isInteger(Number(v)) || Number(v) < 0 || Number(v) > 255) return res.status(400).json({ error: 'Bad v' })
 
   // Validate timing
   const now = Math.floor(Date.now() / 1000)
@@ -83,6 +91,6 @@ export default async function handler(req, res) {
     })
   } catch (err) {
     console.error('[pay]', err.message)
-    return res.status(500).json({ error: err.message })
+    return res.status(500).json({ error: 'Relay failed. The authorization may be invalid, already used or expired.' })
   }
 }
