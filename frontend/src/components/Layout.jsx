@@ -89,6 +89,7 @@ export default function Layout() {
     const proto = protocolFor(netKey)
     let cancelled = false
     async function load() {
+      if (document.hidden) return // no RPC polling from a background tab; the next tick after it returns catches up
       try {
         let n
         if (proto === 'v1') {

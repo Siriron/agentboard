@@ -10,8 +10,11 @@ import '../styles/landing.css'
 const loadMascot3D = () => import('../mascot/Mascot3D')
 const Mascot3D = lazy(loadMascot3D)
 // Start downloading the 3D robot (and three.js) as soon as this page's code runs, in parallel with first paint,
-// instead of waiting for React to render the hero. The 2D robot stands in until it is ready.
-if (typeof window !== 'undefined') { loadMascot3D().catch(() => {}); import('../mascot/scene').catch(() => {}) }
+// instead of waiting for React to render the hero, and build the scene in the background. A snapshot of the robot stands in until it is ready.
+// Only on routes that show the 3D robot: other pages (docs, board) never pay for three.js or a WebGL context.
+if (typeof window !== 'undefined' && ['/', '/testnet', '/mainnet', '/register'].includes(window.location.pathname) && !navigator.connection?.saveData) {
+  loadMascot3D().then(m => m.prewarmMascot()).catch(() => {})
+}
 
 // ── content (verified against the contracts and README; mainnet copy drops testnet-only claims) ──
 const STEPS = [

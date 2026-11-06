@@ -32,6 +32,7 @@ export class MascotScene {
   private leds: MeshStandardMaterial[] = []
   private halo!: MeshStandardMaterial
   private pad!: Mesh
+  private torso!: Mesh
   private hemi = new HemisphereLight(); private key = new DirectionalLight(); private rim = new DirectionalLight(); private fill = new PointLight(); private amb = new AmbientLight()
   private faceCanvas = document.createElement('canvas'); private faceCtx: CanvasRenderingContext2D
   private prevFace = document.createElement('canvas')
@@ -120,7 +121,7 @@ export class MascotScene {
 
     // body: badge-shaped torso with a status-LED plate
     this.add(this.robot, new CylinderGeometry(0.2, 0.26, 0.2, 24), graphite, 0, 0.26, 0)
-    this.add(this.robot, new RoundedBoxGeometry(1.3, 1.04, 0.82, 6, 0.3), ceramic, 0, -0.3, 0)
+    this.torso = this.add(this.robot, new RoundedBoxGeometry(1.3, 1.04, 0.82, 6, 0.3), ceramic, 0, -0.3, 0)
     this.add(this.robot, new RoundedBoxGeometry(0.86, 0.34, 0.06, 3, 0.1), graphite, 0, -0.14, 0.42, false)
     const ledColors = [0x2dd4bf, 0xe54826, 0x94a3b8]
     ledColors.forEach((c, i) => {
@@ -245,7 +246,7 @@ export class MascotScene {
     if (!this.faceDirty && !(animated && this.faceAcc >= 1 / 30)) return // idle face: no canvas redraw, no texture upload
     this.faceAcc = 0; this.faceDirty = false
     if (this.blinkT >= 0) { this.blinkT += dt; if (this.blinkT > 0.18) this.blinkT = -1 }
-    else if (this.time > this.blinkAt) { this.blinkT = 0; this.blinkAt = this.time + 2.5 + Math.random() * 3 }
+    else if (this.time > this.blinkAt) { this.blinkT = 0; this.blinkAt = this.time + (Math.random() < 0.18 ? 0.32 : 2.5 + Math.random() * 3) }
     const blink = this.blinkT < 0 ? 0 : Math.sin((this.blinkT / 0.18) * Math.PI)
     drawFace(this.faceCtx, this.expr, this.time - this.exprStart, this.expr === 'idle' || this.expr === 'curious' ? blink : 0)
     if (this.fade < 1) { this.fade = Math.min(1, this.fade + (dt || 0.016) * 5); this.faceCtx.globalAlpha = 1 - this.fade; this.faceCtx.drawImage(this.prevFace, 0, 0); this.faceCtx.globalAlpha = 1 }
@@ -268,8 +269,11 @@ export class MascotScene {
     const front = Math.max(0, Math.cos(this.spin)) // the head only tracks the pointer while facing forward
     const idle = this.reduced ? 0 : 1
     this.robot.position.y = 0.1 + Math.sin(t * 1.3) * 0.045 * idle
+    const breath = Math.sin(t * 1.55) * idle // slow chest rise, about 4s per breath
+    this.torso.scale.set(1 + breath * 0.006, 1 + breath * 0.014, 1 + breath * 0.006)
+    const wander = (Math.sin(t * 0.37) * 0.05 + Math.sin(t * 0.83 + 1.4) * 0.03) * idle * (1 - Math.min(1, Math.hypot(this.ptr.sx, this.ptr.sy) * 3)) // idle glance, fades out while the pointer is steering
     this.robot.rotation.y = this.cur.bodyYaw + this.spin + this.ptr.sx * 0.1 * front
-    this.head.rotation.y = this.cur.headYaw - this.cur.bodyYaw + this.ptr.sx * 0.42 * front
+    this.head.rotation.y = this.cur.headYaw - this.cur.bodyYaw + this.ptr.sx * 0.42 * front + wander
     this.head.rotation.x = -(this.cur.headPitch) - this.ptr.sy * 0.16 + Math.sin(t * 0.9) * 0.02 * idle + Math.sin(this.impulse * Math.PI) * 0.16
     this.head.rotation.z = Math.sin(t * 0.7) * 0.02 * idle
     this.handL.position.y = -0.36 + Math.sin(t * 1.3 + 1) * 0.04 * idle; this.handR.position.y = -0.36 + Math.sin(t * 1.3 + 2.2) * 0.04 * idle
