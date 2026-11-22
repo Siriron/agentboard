@@ -263,7 +263,7 @@ export default function Register() {
                     Minting and registering sign a transaction — connect a Browser Wallet or an Agent Wallet to continue.
                   </p>
                   <button onClick={openPicker}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] cta"
+                    className="btn btn-primary btn-xs"
 >
                     <Wallet size={11} /> Connect Wallet
                   </button>
@@ -279,8 +279,7 @@ export default function Register() {
                   <p className="text-[var(--text-2)] text-xs leading-snug">Mint one instantly — no ArcScan needed.</p>
                 </div>
                 <button onClick={handleMintIdentity} disabled={!activeAddress || minting}
-                  className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold text-[var(--text-1)] shrink-0 transition-all', (!activeAddress || minting) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.02]')}
-                  style={{ background: 'var(--green)', boxShadow: 'var(--shadow)' }}>
+                  className="btn btn-success shrink-0">
                   {minting ? <Loader size={13} className="animate-spin" /> : <Sparkles size={13} />}
                   {minting ? 'Minting…' : 'Mint Identity'}
                 </button>
@@ -320,7 +319,7 @@ export default function Register() {
                     style={{ fontFamily: 'var(--font-mono)' }}
                   />
                   <button onClick={checkRegistration} disabled={checking || !agentId.trim()}
-                    className={cn('flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-sm font-medium hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all shrink-0', (checking || !agentId.trim()) && 'opacity-50 cursor-not-allowed')}>
+                    className="btn btn-secondary shrink-0">
                     {checking ? <Loader size={13} className="animate-spin" /> : <Search size={13} />}
                     Check
                   </button>
@@ -339,7 +338,7 @@ export default function Register() {
                   </div>
                   {registered && (
                     <button onClick={() => navigate(`/agent/${activeAddress}`)}
-                      className="flex items-center justify-center gap-1.5 py-2 rounded-lg border border-[color-mix(in_srgb,var(--test)_25%,transparent)] bg-[var(--test)]/[0.05] text-[var(--test)] text-xs font-semibold hover:bg-[color-mix(in_srgb,var(--test)_10%,transparent)] transition-all">
+                      className="btn btn-test btn-sm">
                       <Bot size={13} /> View My Profile
                     </button>
                   )}
@@ -377,7 +376,7 @@ export default function Register() {
               <button
                 onClick={handleRegister}
                 disabled={!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()}
-                className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (!activeAddress || registered === true || registering || loadingExisting || !agentId.trim()) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                className="btn btn-primary btn-lg btn-block"
 >
                 {loadingExisting ? (
                   <><Loader size={14} className="animate-spin" /> Checking your registration…</>

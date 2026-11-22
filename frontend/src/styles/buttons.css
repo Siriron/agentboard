@@ -1,0 +1,135 @@
+/* ═══════════════════════════════════════════════════════════════
+   AGENTBOARD BUTTON SYSTEM
+   One recipe for every button, link-button and toggle in the app.
+   Pattern: .btn + one variant + optional size.
+     variants : btn-primary  btn-secondary  btn-ghost  btn-danger
+                btn-success  btn-info  btn-warning  btn-net
+                btn-test  btn-main  btn-link
+     sizes    : btn-xs (28)  btn-sm (32)  default (40)  btn-lg (48)
+     shapes   : btn-block (full width)  btn-icon  btn-chip (toggle pill)
+     states   : :hover  :active  :focus-visible  :disabled
+                aria-busy="true" (spinner)  aria-pressed / .is-active
+   Colours come only from theme tokens, so light and dark both follow.
+═══════════════════════════════════════════════════════════════ */
+
+.btn {
+  --h: 40px; --px: 16px; --fs: var(--fs-md); --radius: 8px;
+  --bg: transparent; --fg: var(--text-1); --bd: transparent;
+  --bg-h: var(--bg); --bd-h: var(--bd); --fg-h: var(--fg);
+  --sh: none; --sh-h: var(--sh);
+  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: var(--h); padding: 0 var(--px); border-radius: var(--radius);
+  border: 1px solid var(--bd); background: var(--bg); color: var(--fg); box-shadow: var(--sh);
+  font-family: var(--font-body); font-size: var(--fs); font-weight: 500; line-height: 1; letter-spacing: -0.006em;
+  white-space: nowrap; text-decoration: none; cursor: pointer; user-select: none; -webkit-user-select: none;
+  transition: background-color var(--t-short) var(--ease-out), border-color var(--t-short) var(--ease-out),
+    color var(--t-short) var(--ease-out), box-shadow var(--t-short) var(--ease-out), transform var(--t-micro) var(--ease-out);
+}
+.btn svg { flex-shrink: 0; }
+@media (hover: hover) {
+  .btn:hover:not(:disabled):not([aria-disabled='true']) { background: var(--bg-h); border-color: var(--bd-h); color: var(--fg-h); box-shadow: var(--sh-h); }
+}
+.btn:active:not(:disabled):not([aria-disabled='true']) { transform: translateY(1px) scale(.985); transition-duration: var(--t-micro); }
+.btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px color-mix(in srgb, var(--net) 60%, transparent); }
+.btn:disabled, .btn[aria-disabled='true'] { opacity: .5; cursor: not-allowed; box-shadow: none; }
+
+/* sizes */
+.btn-xs { --h: 28px; --px: 10px; --fs: var(--fs-xs); --radius: 6px; gap: 5px; }
+.btn-sm { --h: 32px; --px: 12px; --fs: var(--fs-sm); --radius: 7px; gap: 6px; }
+.btn-lg { --h: 48px; --px: 22px; --fs: var(--fs-base); --radius: 10px; }
+.btn-block { width: 100%; }
+
+/* primary: solid, inverts with the theme */
+.btn-primary {
+  --bg: var(--btn-bg); --fg: var(--btn-fg); --bd: var(--btn-bg);
+  --bg-h: color-mix(in srgb, var(--btn-bg) 84%, var(--bg-card)); --bd-h: var(--bg-h);
+  --sh: 0 1px 2px rgba(17,24,39,.16), inset 0 1px 0 rgba(255,255,255,.10);
+  --sh-h: 0 4px 14px -4px rgba(17,24,39,.30), inset 0 1px 0 rgba(255,255,255,.10);
+}
+:root[data-theme='dark'] .btn-primary { --sh: 0 1px 2px rgba(0,0,0,.4); --sh-h: 0 4px 14px -4px rgba(250,250,250,.18); }
+.btn-primary:focus-visible { box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px var(--text-2); }
+
+/* secondary: hairline border on the card surface */
+.btn-secondary {
+  --bg: var(--bg-card); --fg: var(--text-1); --bd: var(--border-strong);
+  --bg-h: var(--bg-surface); --bd-h: color-mix(in srgb, var(--text-1) 28%, var(--border));
+  --sh: var(--shadow-sm); --sh-h: var(--shadow);
+}
+
+/* ghost: no chrome until hover, for tertiary actions, back links, copy */
+.btn-ghost { --bg: transparent; --fg: var(--text-2); --bd: transparent; --bg-h: var(--bg-subtle); --fg-h: var(--text-1); }
+.btn-ghost.is-success { --fg: var(--green); --bg: var(--green-dim); }
+
+/* semantic tints */
+.btn-danger  { --bg: var(--red-dim);   --fg: var(--red);   --bd: color-mix(in srgb, var(--red) 28%, transparent);   --bg-h: color-mix(in srgb, var(--red) 15%, transparent);   --bd-h: color-mix(in srgb, var(--red) 45%, transparent); }
+.btn-warning { --bg: var(--amber-dim); --fg: var(--amber); --bd: color-mix(in srgb, var(--amber) 30%, transparent); --bg-h: color-mix(in srgb, var(--amber) 16%, transparent); --bd-h: color-mix(in srgb, var(--amber) 48%, transparent); }
+.btn-net     { --bg: color-mix(in srgb, var(--net) 9%, transparent); --fg: var(--net); --bd: color-mix(in srgb, var(--net) 30%, transparent); --bg-h: color-mix(in srgb, var(--net) 16%, transparent); --bd-h: color-mix(in srgb, var(--net) 48%, transparent); }
+.btn-test    { --bg: var(--test-dim);  --fg: var(--text-1); --bd: color-mix(in srgb, var(--test) 45%, transparent); --bg-h: color-mix(in srgb, var(--test) 16%, transparent); }
+.btn-main    { --bg: var(--main-dim);  --fg: var(--text-1); --bd: color-mix(in srgb, var(--main) 50%, transparent); --bg-h: color-mix(in srgb, var(--main) 16%, transparent); }
+
+/* solid status buttons: release payment, submit work */
+.btn-success { --bg: var(--green); --fg: #fff; --bd: var(--green); --bg-h: color-mix(in srgb, var(--green) 88%, #000); --bd-h: var(--bg-h); --sh: 0 1px 2px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.14); --sh-h: 0 4px 14px -4px color-mix(in srgb, var(--green) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.14); }
+.btn-info    { --bg: var(--blue);  --fg: #fff; --bd: var(--blue);  --bg-h: color-mix(in srgb, var(--blue) 88%, #000);  --bd-h: var(--bg-h); --sh: 0 1px 2px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.14); --sh-h: 0 4px 14px -4px color-mix(in srgb, var(--blue) 55%, transparent), inset 0 1px 0 rgba(255,255,255,.14); }
+:root[data-theme='dark'] .btn-success, :root[data-theme='dark'] .btn-info { --fg: #09090B; }
+:root[data-theme='dark'] .btn-success { --bg-h: color-mix(in srgb, var(--green) 86%, #fff); }
+:root[data-theme='dark'] .btn-info    { --bg-h: color-mix(in srgb, var(--blue) 86%, #fff); }
+
+/* inline text action */
+.btn-link { --h: auto; --px: 0; --radius: 4px; --bg: transparent; --fg: var(--net); --bd: transparent; height: auto; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.btn-link.btn-danger-text { --fg: var(--red); }
+.btn-link:hover:not(:disabled) { text-decoration-color: currentColor; }
+
+/* toggle pill: categories, filters, tabs */
+.btn-chip {
+  --h: 32px; --px: 13px; --fs: var(--fs-sm); --radius: 999px; --bg: transparent; --fg: var(--text-2); --bd: var(--border-strong);
+  --bg-h: var(--bg-subtle); --fg-h: var(--text-1);
+}
+.btn-chip[aria-pressed='true'], .btn-chip.is-active { --bg: var(--text-1); --fg: var(--text-inverse); --bd: var(--text-1); --bg-h: var(--text-1); --fg-h: var(--text-inverse); }
+.btn-chip.is-net[aria-pressed='true'], .btn-chip.is-net.is-active { --bg: color-mix(in srgb, var(--net) 14%, transparent); --fg: var(--net); --bd: color-mix(in srgb, var(--net) 40%, transparent); --bg-h: color-mix(in srgb, var(--net) 20%, transparent); --fg-h: var(--net); }
+
+/* tab: flat segmented option inside a track */
+.btn-tab { --h: 32px; --px: 14px; --fs: var(--fs-sm); --radius: 7px; --bg: transparent; --fg: var(--text-2); --bd: transparent; --bg-h: var(--bg-subtle); --fg-h: var(--text-1); }
+.btn-tab[aria-selected='true'], .btn-tab.is-active { --bg: var(--bg-card); --fg: var(--text-1); --bd: var(--border-strong); --bg-h: var(--bg-card); --sh: var(--shadow-sm); }
+
+/* icon-only */
+.btn-icon { --bg: transparent; --fg: var(--text-2); --bd: var(--border); --bg-h: var(--bg-subtle); --bd-h: var(--border-strong); --fg-h: var(--text-1);
+  display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: var(--r); border: 1px solid var(--bd); background: var(--bg); color: var(--fg);
+  cursor: pointer; transition: background-color var(--t-short), border-color var(--t-short), color var(--t-short), transform var(--t-micro); }
+@media (hover: hover) { .btn-icon:hover:not(:disabled) { background: var(--bg-h); border-color: var(--bd-h); color: var(--fg-h); } }
+.btn-icon:active:not(:disabled) { transform: scale(.94); }
+.btn-icon:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px color-mix(in srgb, var(--net) 60%, transparent); }
+
+/* loading: label hides, spinner takes over (use aria-busy="true") */
+.btn[aria-busy='true'] { color: transparent !important; pointer-events: none; }
+.btn[aria-busy='true'] > * { visibility: hidden; }
+.btn[aria-busy='true']::after { content: ''; position: absolute; width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--fg-spin, var(--btn-fg)); border-top-color: transparent; animation: spin .6s linear infinite; }
+.btn-secondary[aria-busy='true']::after, .btn-ghost[aria-busy='true']::after, .btn-chip[aria-busy='true']::after, .btn-test[aria-busy='true']::after, .btn-main[aria-busy='true']::after,
+.btn-danger[aria-busy='true']::after, .btn-net[aria-busy='true']::after, .btn-warning[aria-busy='true']::after { border-color: var(--text-1); border-top-color: transparent; }
+.btn-success[aria-busy='true']::after, .btn-info[aria-busy='true']::after { border-color: #fff; border-top-color: transparent; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* arrow nudge for call-to-action labels */
+.btn .btn-arrow { transition: transform var(--t-short) var(--ease-out); }
+@media (hover: hover) { .btn:hover .btn-arrow { transform: translateX(3px); } }
+
+/* Option rows that are buttons (wallet picker): hover, press and focus feedback without touching their inline colours */
+.opt-btn { transition: box-shadow var(--t-short) var(--ease-out), transform var(--t-micro) var(--ease-out), border-color var(--t-short); }
+@media (hover: hover) { .opt-btn:hover:not(:disabled) { box-shadow: 0 0 0 3px color-mix(in srgb, var(--net) 12%, transparent), var(--shadow); } }
+.opt-btn:active:not(:disabled) { transform: scale(.99); }
+.opt-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px color-mix(in srgb, var(--net) 60%, transparent); }
+.opt-btn:disabled { opacity: .55; cursor: not-allowed; }
+
+/* Sidebar / menu rows (docs nav, header menus) */
+.nav-btn { transition: background-color var(--t-short), color var(--t-short); }
+@media (hover: hover) { .nav-btn:hover { background: var(--bg-subtle) !important; color: var(--text-1) !important; } }
+.nav-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--bg-card), 0 0 0 4px color-mix(in srgb, var(--net) 60%, transparent); }
+
+/* Compatibility: older markup that still says .cta gets the primary look */
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-weight: 500; background: var(--btn-bg); color: var(--btn-fg) !important; border: 1px solid var(--btn-bg); cursor: pointer; box-shadow: 0 1px 2px rgba(17,24,39,.16);
+  transition: background-color var(--t-short), box-shadow var(--t-short), transform var(--t-micro); }
+.cta:hover:not(:disabled) { background: color-mix(in srgb, var(--btn-bg) 84%, var(--bg-card)); box-shadow: var(--shadow); }
+.cta:active:not(:disabled) { transform: translateY(1px) scale(.985); }
+.cta:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Touch: comfortable targets, desktop density unchanged */
+@media (pointer: coarse) { .btn-xs, .btn-sm, .btn-chip, .btn-tab { min-height: 40px; } .btn-link { min-height: 0; } }

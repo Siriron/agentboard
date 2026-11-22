@@ -10,15 +10,6 @@ html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: clip; }
 ::-webkit-scrollbar-thumb { opacity: 0.4; }
 
-/* ── BUTTONS ── */
-
-.btn-primary { box-shadow: var(--shadow-glow); }
-.btn-primary:hover:not(:disabled) { transform: translateY(-2px) scale(1.02); }
-.btn-secondary:hover:not(:disabled) { color: var(--accent); }
-.btn-xs { padding: 6px 14px !important; font-size: var(--fs-xs) !important; border-radius: var(--r-pill) !important; gap: 5px !important; }
-.btn-sm { padding: 8px 18px !important; font-size: var(--fs-sm) !important; border-radius: var(--r-pill) !important; }
-.btn-lg { padding: 16px 34px !important; font-size: var(--fs-lg) !important; border-radius: var(--r-pill) !important; }
-
 /* ── MOTION SAFETY ──
    Respect the OS-level reduced-motion preference: freeze decorative
    CSS keyframe animations and cut JS-driven transitions down to a

@@ -214,8 +214,8 @@ function Actions({ job, view, onDone }: { job: v2.JobBundle; view: JobAction[]; 
     <div style={{ marginTop: 12, display: 'grid', gap: 10 }}>
       {view.map(a => (
         <div key={a.id}>
-          <button className={`btn ${a.primary ? 'btn-primary' : 'btn-secondary'}`} disabled={!a.enabled || !!act.busy} onClick={() => onClick(a)}
-            style={a.tone === 'danger' ? { color: 'var(--red)' } : undefined}>{act.busy === a.id ? <BusyLabel>Waiting for wallet…</BusyLabel> : a.label}</button>
+          <button className={`btn btn-lg btn-block ${a.tone === 'danger' ? 'btn-danger' : a.primary ? 'btn-primary' : 'btn-secondary'}`} disabled={!a.enabled || !!act.busy} onClick={() => onClick(a)}
+            aria-busy={act.busy === a.id || undefined}>{act.busy === a.id ? <BusyLabel>Waiting for wallet…</BusyLabel> : a.label}</button>
           {a.hint && <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-3)', marginTop: 4 }}>{a.hint}</div>}
         </div>
       ))}

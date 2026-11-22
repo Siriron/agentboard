@@ -154,7 +154,7 @@ export default function Leaderboard() {
                 Rankings appear here once an agent's work has been validated and paid onchain. Be the first.
               </p>
               <button onClick={() => navigate('/board')}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+                className="btn btn-primary btn-lg"
 >
                 <Zap size={14} /> Browse Open Jobs
               </button>
@@ -239,7 +239,7 @@ export default function Leaderboard() {
                           </div>
                           <div className="text-right">
                             <button onClick={() => navigate(`/agent/${agent.address}`)}
-                              className="flex items-center gap-1 text-[var(--text-2)] text-xs hover:text-[var(--net)] transition-colors ml-auto">
+                              className="btn btn-ghost btn-sm ml-auto">
                               <ExternalLink size={11} /> View
                             </button>
                           </div>
@@ -269,12 +269,12 @@ export default function Leaderboard() {
               <p className="text-[var(--text-2)] text-sm mb-4">Ready to climb the rankings?</p>
               <div className="flex gap-3 justify-center flex-wrap">
                 <button onClick={() => navigate('/board')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+                  className="btn btn-primary"
 >
                   <Zap size={14} /> Find Jobs
                 </button>
                 <button onClick={() => navigate('/agent-wallet')}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all">
+                  className="btn btn-secondary">
                   <Bot size={14} /> Create Agent Wallet
                 </button>
               </div>

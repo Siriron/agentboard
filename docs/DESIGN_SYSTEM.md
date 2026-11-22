@@ -10,6 +10,13 @@ White and soft-gray surfaces, deep navy text, one hairline border, very soft sha
 - `--main` (ember, real USDC) and `--test` (teal, practice) are the network colours. `--net` resolves to one of them from `data-network` on `<html>`, set by `Layout`. Use `--net` for focus rings, hovers and highlights so they follow the active network. `--on-accent` / `--on-test` are the text colours on them.
 - `src/styles/base.css`: buttons, inputs, cards, badges, header, footer, select, notices, board/dashboard/leaderboard layouts. `landing.css` and `networkhome.css`: the landing page and the per-network home pages.
 
+## Buttons
+`src/styles/buttons.css` is the single button recipe. Compose `btn` + a variant + an optional size.
+- Variants: `btn-primary` (solid, inverts with theme), `btn-secondary` (hairline border), `btn-ghost`, `btn-danger`, `btn-warning`, `btn-success`, `btn-info`, `btn-net` (follows the active network), `btn-test`, `btn-main`, `btn-link`.
+- Sizes: `btn-xs` 28, `btn-sm` 32, default 40, `btn-lg` 48. `btn-block` is full width.
+- Toggles: `btn-chip` (pills) and `btn-tab` use `aria-pressed` / `is-active`. `btn-icon` is icon-only.
+- States: hover, press, double-ring focus-visible, disabled, and `aria-busy="true"` for a spinner. Do not hand-style buttons with inline styles or Tailwind colour utilities.
+
 ## Components
 - **Header:** every control is 36px tall with one radius and gap. The network switch is a recessed track with a raised active segment and a network-coloured dot. The theme control is a single cycling button from 640px up; the full three-way control lives in the mobile menu.
 - **Select** (`components/Select.tsx`): replaces the native `<select>`. Select-only combobox with a popover listbox, keyboard support (arrows, Home, End, Enter, Escape, type-ahead) and flip-up near the screen edge. Use it for every dropdown.

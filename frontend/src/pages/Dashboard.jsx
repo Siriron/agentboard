@@ -55,7 +55,7 @@ function EmptyState({ icon, title, desc, action, actionLabel }) {
       <p className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-xl)', letterSpacing: '-0.02em' }}>{title}</p>
       <p className="text-[var(--text-2)] text-sm max-w-xs leading-relaxed mb-6">{desc}</p>
       <button onClick={action}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+        className="btn btn-primary"
 >
         <Plus size={13}/>{actionLabel}
       </button>
@@ -126,7 +126,7 @@ export default function Dashboard() {
         </p>
       </div>
       <button onClick={openPicker}
-        className="relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+        className="btn btn-primary btn-lg"
 >
         Connect Wallet
       </button>
@@ -169,19 +169,19 @@ export default function Dashboard() {
             </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => load(true)} disabled={refreshing}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-xs font-medium hover:text-[var(--text-1)] transition-all', refreshing && 'opacity-50 pointer-events-none')}>
+                className="btn btn-secondary btn-sm">
                 <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
               <button onClick={() => navigate('/leaderboard')}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[color-mix(in_srgb,var(--amber)_20%,transparent)] bg-[var(--amber)]/[0.06] text-[var(--amber)] text-xs font-semibold hover:bg-[color-mix(in_srgb,var(--amber)_10%,transparent)] transition-all">
+                className="btn btn-warning btn-sm">
                 <Trophy size={12}/> Leaderboard
               </button>
               <button onClick={() => navigate('/register')}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-xs font-medium hover:text-[var(--text-1)] transition-all">
+                className="btn btn-secondary btn-sm">
                 <Bot size={12}/> Register Agent
               </button>
               <button onClick={() => navigate('/post')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+                className="btn btn-primary btn-sm"
 >
                 <Plus size={12}/> Post Job
               </button>
@@ -204,7 +204,8 @@ export default function Dashboard() {
           <div className="flex gap-2 p-1 rounded-xl bg-[var(--bg-card)] border border-[var(--border)]">
             {[['client', `Client (${clientJobs.length})`], ['agent', `Agent (${agentJobs.length})`]].map(([key, label]) => (
               <button key={key} onClick={() => { setTab(key); setStatusFilter('all') }}
-                className={cn('px-4 py-2 rounded-lg text-xs font-semibold transition-all', tab === key ? 'bg-[color-mix(in_srgb,var(--net)_20%,transparent)] text-[var(--net)] border border-[color-mix(in_srgb,var(--net)_30%,transparent)]' : 'text-[var(--text-2)] hover:text-[var(--text-1)]')}>
+                aria-pressed={tab === key}
+                className={cn('btn btn-tab', tab === key && 'is-active')}>
                 {label}
               </button>
             ))}

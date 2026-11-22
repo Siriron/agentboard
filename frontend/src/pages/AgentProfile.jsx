@@ -77,7 +77,7 @@ export default function AgentProfile() {
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-1)] px-6 py-12">
       <div className="max-w-4xl mx-auto">
         <button onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-[var(--text-2)] text-sm hover:text-[var(--text-1)] transition-colors mb-8">
+          className="btn btn-ghost btn-sm mb-8">
           <ArrowLeft size={14} /> Back
         </button>
 

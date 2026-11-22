@@ -231,19 +231,12 @@ export default function Layout() {
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
             <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}><span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', fontWeight: 600 }}>Theme</span><ThemeSwitch wide /></div>
             {activeMode === 'browser' && wrongChain && (
-              <button onClick={() => { setMobileOpen(false); switchChain() }} style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'var(--amber-dim)',
-                border: '1.5px solid rgba(245,158,11,0.3)', color: 'var(--amber)', fontSize: 'var(--fs-sm)', fontWeight: 700, padding: '10px 14px',
-                borderRadius: 10, cursor: 'pointer', fontFamily: 'var(--font-body)', marginBottom: 8,
-              }}><AlertTriangle size={12} /> Switch to {network.label}</button>
+              <button onClick={() => { setMobileOpen(false); switchChain() }} className="btn btn-warning btn-block" style={{ marginBottom: 8 }}><AlertTriangle size={12} /> Switch to {network.label}</button>
             )}
             {activeAddress ? (
-              <button onClick={() => { setMobileOpen(false); disconnect() }} style={{
-                width: '100%', background: 'var(--bg-subtle)', border: '1.5px solid var(--border)', borderRadius: 10, padding: '11px 14px',
-                color: 'var(--text-2)', fontSize: 'var(--fs-md)', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-body)', textAlign: 'left',
-              }}>Disconnect {formatAddress(activeAddress)}</button>
+              <button onClick={() => { setMobileOpen(false); disconnect() }} className="btn btn-secondary btn-block">Disconnect {formatAddress(activeAddress)}</button>
             ) : (
-              <button onClick={() => { openPicker(); setMobileOpen(false) }} className="btn btn-primary" style={{ width: '100%' }}>Connect Wallet</button>
+              <button onClick={() => { openPicker(); setMobileOpen(false) }} className="btn btn-primary btn-block">Connect Wallet</button>
             )}
           </div>
         </div>

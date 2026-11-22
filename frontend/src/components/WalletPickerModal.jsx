@@ -58,12 +58,7 @@ export default function WalletPickerModal() {
             <h3 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--fs-xl)', letterSpacing: '-0.02em', color: 'var(--text-1)', margin: 0 }}>Connect Wallet</h3>
             <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-1)', opacity: 0.45, margin: '4px 0 0' }}>Choose how you want to sign transactions</p>
           </div>
-          <button onClick={closePicker} aria-label="Close" style={{
-            background: 'var(--bg-subtle)', border: '1px solid var(--border)',
-            borderRadius: 9, width: 30, height: 30, display: 'flex',
-            alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            color: 'var(--text-1)', opacity: 0.6, flexShrink: 0,
-          }}>
+          <button onClick={closePicker} aria-label="Close" className="btn-icon" style={{ width: 32, height: 32, flexShrink: 0 }}>
             <X size={15} />
           </button>
         </div>
@@ -78,7 +73,7 @@ export default function WalletPickerModal() {
               instead of guessing from window.ethereum. */}
           {availableProviders.length > 1 ? (
             availableProviders.map(({ info, provider }) => (
-              <button key={info.uuid} onClick={() => pickBrowser(info.uuid)} disabled={connecting} style={{
+              <button key={info.uuid} onClick={() => pickBrowser(info.uuid)} disabled={connecting} className="opt-btn" style={{
                 display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
                 width: '100%', padding: '15px 16px', borderRadius: 14,
                 border: providerUuid === info.uuid && activeMode === 'browser' ? '1px solid var(--accent)' : '1px solid var(--border)',
@@ -106,7 +101,7 @@ export default function WalletPickerModal() {
               </button>
             ))
           ) : (
-            <button onClick={() => pickBrowser(availableProviders[0]?.info.uuid)} disabled={connecting} style={{
+            <button onClick={() => pickBrowser(availableProviders[0]?.info.uuid)} disabled={connecting} className="opt-btn" style={{
               display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
               width: '100%', padding: '15px 16px', borderRadius: 14,
               border: activeMode === 'browser' ? '1px solid var(--accent)' : '1px solid var(--border)',
@@ -136,7 +131,7 @@ export default function WalletPickerModal() {
 
           {/* Agent wallet option */}
           {agentWallet ? (
-            <button onClick={pickAgent} style={{
+            <button onClick={pickAgent} className="opt-btn" style={{
               display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
               width: '100%', padding: '15px 16px', borderRadius: 14,
               border: activeMode === 'agent' ? '1px solid var(--pink-border)' : '1px solid var(--border)',
@@ -159,7 +154,7 @@ export default function WalletPickerModal() {
               <ArrowRight size={15} style={{ color: 'var(--text-1)', opacity: 0.25, flexShrink: 0 }} />
             </button>
           ) : (
-            <button onClick={goCreateAgentWallet} style={{
+            <button onClick={goCreateAgentWallet} className="opt-btn" style={{
               display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left',
               width: '100%', padding: '15px 16px', borderRadius: 14,
               border: '1.5px dashed var(--border)', background: 'var(--bg-subtle)',

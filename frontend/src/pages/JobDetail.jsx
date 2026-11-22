@@ -32,7 +32,7 @@ function CodeSnip({ code }) {
       <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--bg-card)]">
         <span className="text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider">javascript</span>
         <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          className={cn('flex items-center gap-1 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-[var(--test)]' : 'text-[var(--text-2)] hover:text-[var(--text-1)]')}>
+          className={cn('btn btn-ghost btn-xs', copied && 'is-success')}>
           {copied ? <Check size={10}/> : <Copy size={10}/>}{copied ? 'Copied' : 'Copy'}
         </button>
       </div>
@@ -185,7 +185,7 @@ export default function JobDetail() {
     <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-5 text-center px-6">
       <p className="font-bold text-[var(--text-1)] text-2xl" style={{ fontFamily: 'var(--font-display)' }}>Job not found</p>
       <button onClick={() => navigate('/board')}
-        className="px-5 py-2.5 rounded-xl font-semibold text-sm text-[var(--text-1)] cta"
+        className="btn btn-primary"
 >
         Back to Board
       </button>
@@ -239,7 +239,7 @@ await client.createContractExecutionTransaction({
         {/* Back + lifecycle */}
         <div className="mb-8">
           <button onClick={() => navigate('/board')}
-            className="flex items-center gap-2 text-[var(--text-2)] text-sm hover:text-[var(--text-1)] transition-colors mb-5">
+            className="btn btn-ghost btn-sm mb-5">
             <ArrowLeft size={14} /> Board
           </button>
 
@@ -271,7 +271,7 @@ await client.createContractExecutionTransaction({
                 className="flex items-center gap-1 text-xs text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors">
                 <ExternalLink size={11}/> View on ArcScan
               </a>
-              <button onClick={() => setLastTx(null)} className="text-[var(--text-3)] hover:text-[var(--text-1)] transition-colors">
+              <button onClick={() => setLastTx(null)} className="btn btn-ghost btn-xs" aria-label="Dismiss">
                 <X size={13}/>
               </button>
             </div>
@@ -353,7 +353,7 @@ await client.createContractExecutionTransaction({
                             <div className="text-[var(--text-2)] text-[11px] mb-3">USDC</div>
                             {isClient && sn === 0 && (
                               <button onClick={() => handleHire(idx)} disabled={submitting === 'hire'}
-                                className={cn('cta flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-[var(--text-1)] transition-all', submitting === 'hire' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.02]')}
+                                className="btn btn-primary btn-xs"
 >
                                 {submitting === 'hire' ? <Loader size={10} className="animate-spin"/> : <UserCheck size={10}/>} Hire
                               </button>
@@ -395,7 +395,7 @@ await client.createContractExecutionTransaction({
                   <div className="flex gap-1 p-1 rounded-xl bg-[var(--bg-card)] mb-5">
                     {[['wallet', <Wallet size={11}/>, 'Submit Bid'], ['headless', <Terminal size={11}/>, 'Copy Code']].map(([key, icon, label]) => (
                       <button key={key} onClick={() => setBidTab(key)}
-                        className={cn('flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold border transition-all', bidTab === key ? 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-1)]' : 'border-transparent text-[var(--text-2)] hover:text-[var(--text-2)]')}>
+                        className={cn('btn btn-tab flex-1', bidTab === key && 'is-active')}>
                         {icon}{label}
                       </button>
                     ))}
@@ -410,7 +410,7 @@ await client.createContractExecutionTransaction({
                             {activeMode === 'agent' ? <Bot size={9}/> : <Wallet size={9}/>}{activeMode === 'agent' ? 'Agent Wallet' : 'Browser'}
                           </span>
                         ) : (
-                          <button onClick={openPicker} className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full text-[var(--text-1)] cta" >
+                          <button onClick={openPicker} className="btn btn-primary btn-xs" >
                             <Wallet size={9}/> Connect
                           </button>
                         )}
@@ -435,7 +435,7 @@ await client.createContractExecutionTransaction({
                             style={{ fontFamily: 'var(--font-body)' }} />
                         </div>
                         <button onClick={activeAddress ? handleBid : openPicker} disabled={submitting === 'bid'}
-                          className={cn('cta w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'bid' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                          className="btn btn-primary btn-lg btn-block"
 >
                           {submitting === 'bid' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                           {submitting === 'bid' ? 'Submitting…' : activeAddress ? 'Submit Bid' : 'Connect Wallet to Bid'}
@@ -479,8 +479,7 @@ await client.createContractExecutionTransaction({
                       <input type="file" className="hidden" onChange={handleIPFSUpload} disabled={uploading} />
                     </label>
                     <button onClick={handleSubmitWork} disabled={submitting === 'submit' || !workUri.trim()}
-                      className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (submitting === 'submit' || !workUri.trim()) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                      style={{ background: 'var(--blue)' }}>
+                      className="btn btn-info btn-lg btn-block">
                       {submitting === 'submit' ? <Loader size={14} className="animate-spin"/> : <Send size={14}/>}
                       Submit Work
                     </button>
@@ -501,8 +500,7 @@ await client.createContractExecutionTransaction({
                         value={validatorNotes} onChange={e => setValidatorNotes(e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
                     </div>
                     <button onClick={handleValidate} disabled={submitting === 'validate'}
-                      className={cn('w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', submitting === 'validate' ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
-                      style={{ background: 'var(--green)', color: '#000' }}>
+                      className="btn btn-success btn-lg btn-block">
                       {submitting === 'validate' ? <Loader size={14} className="animate-spin"/> : <CheckCircle size={14}/>}
                       Release Payment
                     </button>
@@ -513,7 +511,7 @@ await client.createContractExecutionTransaction({
                         value={disputeReason} onChange={e => setDisputeReason(e.target.value)} style={{ fontFamily: 'var(--font-body)' }} />
                     </div>
                     <button onClick={handleDispute} disabled={submitting === 'dispute' || !disputeReason.trim()}
-                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm text-[var(--text-2)] border border-[color-mix(in_srgb,var(--red)_20%,transparent)] bg-[var(--red)]/[0.06] hover:bg-[color-mix(in_srgb,var(--red)_10%,transparent)] transition-all">
+                      className="btn btn-danger btn-lg btn-block">
                       <AlertTriangle size={14}/> Raise Dispute
                     </button>
                   </div>
@@ -525,7 +523,7 @@ await client.createContractExecutionTransaction({
             {isClient && sn === 0 && activeBids.length === 0 && (
               <BlurFade delay={0.12} inView>
                 <button onClick={handleCancel} disabled={submitting === 'cancel'}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm text-[var(--text-2)] border border-[var(--border)] bg-[var(--bg-card)] hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all">
+                  className="btn btn-secondary btn-lg btn-block">
                   Cancel & Refund USDC
                 </button>
               </BlurFade>

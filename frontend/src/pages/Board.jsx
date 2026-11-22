@@ -205,11 +205,11 @@ export default function Board() {
             </div>
             <div className="flex gap-2 flex-wrap">
               <button onClick={() => loadJobs(true)} disabled={refreshing || loading}
-                className={cn('flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-xs font-medium hover:text-[var(--text-1)] transition-all', (refreshing || loading) && 'opacity-40 pointer-events-none')}>
+                className="btn btn-secondary btn-sm">
                 <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} /> Refresh
               </button>
               <button onClick={() => navigate('/post')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl font-semibold text-xs text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+                className="btn btn-primary btn-sm"
 >
                 <Zap size={12} /> Post Job
               </button>
@@ -233,8 +233,8 @@ export default function Board() {
             ].map((sel, i) => (
               <Select key={i} size="sm" auto ariaLabel={i === 0 ? 'Status' : 'Sort'} value={sel.value} onChange={sel.onChange} options={sel.options} />
             ))}
-            <button onClick={() => setShowFilters(f => !f)}
-              className={cn('flex items-center gap-1.5 px-3 py-2.5 rounded-xl border text-xs font-medium transition-all', showFilters ? 'border-[color-mix(in_srgb,var(--net)_35%,transparent)] bg-[color-mix(in_srgb,var(--net)_10%,transparent)] text-[var(--net)]' : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] hover:text-[var(--text-1)]')}>
+            <button onClick={() => setShowFilters(f => !f)} aria-pressed={showFilters}
+              className={cn('btn', showFilters ? 'btn-net' : 'btn-secondary')}>
               <SlidersHorizontal size={12} /> Filters
               {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-[var(--net)] ml-0.5" />}
             </button>
@@ -256,7 +256,7 @@ export default function Board() {
               ))}
               {hasActiveFilters && (
                 <button onClick={() => { setBudgetMin(''); setBudgetMax(''); setSearch(''); setCategory('All'); setStatus('all') }}
-                  className="px-3 py-2 rounded-lg text-[var(--text-2)] text-xs hover:text-[var(--text-1)] transition-colors border border-[var(--border)]">
+                  className="btn btn-secondary btn-sm">
                   Clear all
                 </button>
               )}
@@ -266,10 +266,8 @@ export default function Board() {
           {/* Category pills */}
           <div className="flex gap-1.5 flex-wrap">
             {CATEGORIES.map(cat => (
-              <button key={cat} onClick={() => setCategory(cat)}
-                className={cn('px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-all', category === cat
-                  ? 'bg-[color-mix(in_srgb,var(--net)_15%,transparent)] border-[color-mix(in_srgb,var(--net)_35%,transparent)] text-[var(--net)]'
-                  : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-2)] hover:text-[var(--text-2)] hover:border-[var(--border)]')}>
+              <button key={cat} onClick={() => setCategory(cat)} aria-pressed={category === cat}
+                className="btn btn-chip is-net">
                 {cat}
               </button>
             ))}
@@ -307,7 +305,7 @@ export default function Board() {
             </p>
             <p className="text-[var(--text-2)] text-sm mb-6 max-w-sm">{error}</p>
             <button onClick={() => loadJobs()}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[color-mix(in_srgb,var(--red)_25%,transparent)] bg-[color-mix(in_srgb,var(--red)_8%,transparent)] text-[var(--red)] text-sm font-semibold hover:bg-[color-mix(in_srgb,var(--red)_15%,transparent)] transition-all">
+              className="btn btn-danger btn-sm">
               <RefreshCw size={13} /> Retry
             </button>
           </div>
@@ -324,7 +322,7 @@ export default function Board() {
             </p>
             {hasActiveFilters && (
               <button onClick={() => { setSearch(''); setCategory('All'); setStatus('all'); setBudgetMin(''); setBudgetMax('') }}
-                className="text-[var(--net)] text-sm hover:text-[var(--net)] transition-colors underline underline-offset-2">
+                className="btn btn-link">
                 Clear filters
               </button>
             )}
@@ -351,8 +349,7 @@ export default function Board() {
                 </div>
               </div>
               <button onClick={() => navigate('/docs#headless')}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[color-mix(in_srgb,var(--net)_25%,transparent)] bg-[color-mix(in_srgb,var(--net)_8%,transparent)] text-[var(--net)] text-xs font-semibold hover:bg-[color-mix(in_srgb,var(--net)_15%,transparent)] transition-all shrink-0"
-                style={{ border: 'none', cursor: 'pointer', fontFamily: 'var(--font-body)' }}>
+                className="btn btn-net btn-sm shrink-0">
                 View API Docs <ChevronRight size={12} />
               </button>
             </div>

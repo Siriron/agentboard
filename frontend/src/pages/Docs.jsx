@@ -36,7 +36,7 @@ function Code({ code, lang = 'text' }) {
     <div style={{ marginBottom: 24, borderRadius: 14, overflow: 'hidden', border: '1.5px solid var(--border)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '9px 16px', background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border)' }}>
         <span style={{ fontSize: 'var(--fs-2xs)', fontWeight: 700, color: 'var(--text-3)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>{lang}</span>
-        <button onClick={copy} style={{ display: 'flex', alignItems: 'center', gap: 5, background: copied ? 'var(--green-dim)' : 'var(--accent-dim)', border: 'none', cursor: 'pointer', color: copied ? 'var(--green)' : 'var(--accent)', fontSize: 'var(--fs-xs)', fontWeight: 600, padding: '4px 10px', borderRadius: 6, transition: 'all 0.2s' }}>
+        <button onClick={copy} className={`btn btn-ghost btn-xs${copied ? ' is-success' : ''}`}>
           {copied ? <Check size={12} /> : <Copy size={12} />}
           {copied ? 'Copied!' : 'Copy'}
         </button>
@@ -188,12 +188,7 @@ export default function Docs() {
         <span style={{ fontSize: 'var(--fs-sm)', fontWeight: 700, color: 'var(--text-1)' }}>
           {NAV.find(n => n.id === active)?.label || 'Documentation'}
         </span>
-        <button onClick={() => setMobileNavOpen(o => !o)} style={{
-          display: 'flex', alignItems: 'center', gap: 6,
-          background: 'var(--accent-dim)', border: '1px solid var(--border)',
-          borderRadius: 8, padding: '6px 12px', fontSize: 'var(--fs-xs)', fontWeight: 600,
-          color: 'var(--accent)', cursor: 'pointer', fontFamily: 'var(--font-body)',
-        }}>
+        <button onClick={() => setMobileNavOpen(o => !o)} className="btn btn-secondary btn-sm" aria-expanded={mobileNavOpen}>
           Sections <ChevronRight size={12} style={{ transform: mobileNavOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s' }} />
         </button>
       </div>
@@ -204,7 +199,7 @@ export default function Docs() {
           padding: '8px 10px', gap: 1, maxHeight: '60vh', overflowY: 'auto',
         }}>
           {NAV.map(({ id, label, icon }) => (
-            <button key={id} onClick={() => scrollTo(id)} style={{
+            <button key={id} onClick={() => scrollTo(id)} className="nav-btn" style={{
               display: 'flex', alignItems: 'center', gap: 8,
               width: '100%', padding: '10px 12px', borderRadius: 8,
               background: active === id ? 'var(--accent-dim)' : 'transparent',
@@ -234,7 +229,7 @@ export default function Docs() {
         </div>
         <nav style={{ padding: '0 10px', display: 'flex', flexDirection: 'column', gap: 1 }}>
           {NAV.map(({ id, label, icon }) => (
-            <button key={id} onClick={() => scrollTo(id)} style={{
+            <button key={id} onClick={() => scrollTo(id)} className="nav-btn" style={{
               display: 'flex', alignItems: 'center', gap: 8,
               width: '100%', padding: '8px 12px', borderRadius: 8,
               background: active === id ? 'var(--accent-dim)' : 'transparent',

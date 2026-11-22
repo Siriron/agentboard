@@ -17,7 +17,7 @@ function CodeSnip({ code }) {
       <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)] bg-[var(--bg-card)]">
         <span className="text-[var(--text-2)] text-[11px] font-bold uppercase tracking-wider">javascript</span>
         <button onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000) }}
-          className={cn('flex items-center gap-1.5 text-xs px-2 py-1 rounded transition-colors', copied ? 'text-[var(--test)]' : 'text-[var(--text-2)] hover:text-[var(--text-1)]')}>
+          className={cn('btn btn-ghost btn-xs', copied && 'is-success')}>
           {copied ? <Check size={11} /> : <Copy size={11} />}{copied ? 'Copied' : 'Copy'}
         </button>
       </div>
@@ -248,7 +248,7 @@ await client.createContractExecutionTransaction({
                     <button
                       onClick={runDiagnostics}
                       disabled={diagnosing}
-                      className="mt-2 text-xs font-semibold text-[var(--red)] underline underline-offset-2 hover:text-[var(--red)] disabled:opacity-50"
+                      className="btn btn-link btn-danger-text mt-2"
                     >
                       {diagnosing ? 'Checking Circle credentials…' : 'Diagnose this error'}
                     </button>
@@ -272,7 +272,7 @@ await client.createContractExecutionTransaction({
                 </div>
               )}
               <button onClick={handleCreateWalletSet} disabled={loading}
-                className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                className="btn btn-primary btn-lg btn-block"
 >
                 {loading ? <Loader size={15} className="animate-spin" /> : <Zap size={15} />}
                 {loading ? 'Creating…' : 'Create Wallet Set'}
@@ -317,7 +317,7 @@ await client.createContractExecutionTransaction({
                     <button
                       onClick={runDiagnostics}
                       disabled={diagnosing}
-                      className="mt-2 text-xs font-semibold text-[var(--red)] underline underline-offset-2 hover:text-[var(--red)] disabled:opacity-50"
+                      className="btn btn-link btn-danger-text mt-2"
                     >
                       {diagnosing ? 'Checking Circle credentials…' : 'Diagnose this error'}
                     </button>
@@ -341,7 +341,7 @@ await client.createContractExecutionTransaction({
                 </div>
               )}
               <button onClick={handleCreateWallet} disabled={loading}
-                className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', loading ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                className="btn btn-primary btn-lg btn-block"
 >
                 {loading ? <Loader size={15} className="animate-spin" /> : <Bot size={15} />}
                 {loading ? 'Creating wallet on Arc…' : 'Create Agent Wallet'}
@@ -359,7 +359,7 @@ await client.createContractExecutionTransaction({
                   <span className="text-[var(--test)] font-bold text-sm">Agent wallet created on Arc Testnet</span>
                 </div>
                 <button onClick={startOver}
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border)] text-[var(--text-2)] hover:text-[var(--text-1)] transition-colors shrink-0">
+                  className="btn btn-secondary btn-xs shrink-0">
                   <RotateCcw size={11} /> New wallet
                 </button>
               </div>
@@ -381,7 +381,7 @@ await client.createContractExecutionTransaction({
                     </div>
                     {copyable && (
                       <button onClick={copyAddress}
-                        className={cn('flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-lg border transition-all shrink-0 mt-4', copiedAddr ? 'text-[var(--test)] border-[color-mix(in_srgb,var(--test)_30%,transparent)] bg-[color-mix(in_srgb,var(--test)_10%,transparent)]' : 'text-[var(--text-2)] border-[var(--border)] hover:text-[var(--text-1)]')}>
+                        className={cn('btn btn-secondary btn-xs shrink-0 mt-4', copiedAddr && 'btn-test')}>
                         {copiedAddr ? <Check size={11} /> : <Copy size={11} />}
                         {copiedAddr ? 'Copied' : 'Copy'}
                       </button>
@@ -443,16 +443,16 @@ await client.createContractExecutionTransaction({
             {/* Action buttons */}
             <div className="flex gap-3 mt-5 flex-wrap">
               <button onClick={() => navigate('/register')}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.01] cta"
+                className="btn btn-primary btn-lg"
 >
                 <Shield size={14} /> Register ERC-8004 Identity
               </button>
               <a href="https://faucet.circle.com" target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 px-5 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-sm font-semibold hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all">
+                className="btn btn-secondary btn-lg">
                 <ExternalLink size={13} /> Get Testnet USDC
               </a>
               <button onClick={() => navigate('/board')}
-                className="flex items-center gap-2 px-5 py-3 rounded-xl border border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-2)] text-sm font-semibold hover:text-[var(--text-1)] hover:bg-[var(--bg-subtle)] transition-all">
+                className="btn btn-secondary btn-lg">
                 Browse Jobs <ChevronRight size={14} />
               </button>
             </div>

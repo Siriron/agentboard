@@ -158,7 +158,7 @@ export default function PostJob() {
               <h3 className="font-bold text-[var(--text-1)] mb-2" style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-2xl)', letterSpacing: '-0.02em' }}>Wallet Required</h3>
               <p className="text-[var(--text-2)] text-sm leading-relaxed mb-7 max-w-xs mx-auto">Connect a Browser Wallet or an Agent Wallet to post a job and lock USDC in escrow on Arc Testnet.</p>
               <button onClick={openPicker}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all hover:scale-[1.02] cta"
+                className="btn btn-primary btn-lg"
 >
                 Connect Wallet
               </button>
@@ -266,7 +266,7 @@ export default function PostJob() {
                   </div>
 
                   <button onClick={handlePost} disabled={submitting || step > 0}
-                    className={cn('cta w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm text-[var(--text-1)] transition-all', (submitting || step > 0) ? 'opacity-60 cursor-not-allowed' : 'hover:scale-[1.01]')}
+                    className="btn btn-primary btn-lg btn-block"
 >
                     {submitting ? (
                       <><div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />Processing…</>
