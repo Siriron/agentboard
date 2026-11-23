@@ -133,3 +133,25 @@
 
 /* Touch: comfortable targets, desktop density unchanged */
 @media (pointer: coarse) { .btn-xs, .btn-sm, .btn-chip, .btn-tab { min-height: 40px; } .btn-link { min-height: 0; } }
+
+/* ═══ MENU ITEMS ═══
+   Icon + label rows for the mobile menu and the wallet dropdown.
+   Quiet by default, subtle fill on hover, filled row with a darker icon when active. */
+.menu-item { position: relative; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--text-2); font-family: var(--font-body); font-size: var(--fs-base); font-weight: 500; letter-spacing: -0.006em; text-align: left; text-decoration: none; cursor: pointer;
+  transition: background-color var(--t-short) var(--ease-out), color var(--t-short) var(--ease-out), transform var(--t-micro) var(--ease-out); -webkit-tap-highlight-color: transparent; }
+.menu-icon { flex-shrink: 0; color: var(--text-3); transition: color var(--t-short) var(--ease-out); }
+.menu-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: var(--fs-2xs); font-weight: 700; line-height: 1; }
+@media (hover: hover) { .menu-item:hover { background: var(--bg-subtle); color: var(--text-1); } .menu-item:hover .menu-icon { color: var(--text-1); } }
+.menu-item:active { background: var(--bg-subtle); transform: scale(.985); }
+.menu-item:focus-visible { outline: none; background: var(--bg-subtle); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--net) 55%, transparent); }
+.menu-item.is-active { background: var(--bg-subtle); color: var(--text-1); font-weight: 600; }
+.menu-item.is-active .menu-icon { color: var(--net); }
+.menu-item.is-active::before { content: ''; position: absolute; left: 0; top: 11px; bottom: 11px; width: 3px; border-radius: 0 3px 3px 0; background: var(--net); }
+.menu-item.is-warn, .menu-item.is-warn .menu-icon { color: var(--amber); }
+.menu-item.is-danger:hover, .menu-item.is-danger:hover .menu-icon { color: var(--red); }
+.menu-sep { height: 1px; margin: 4px 6px; background: var(--border); }
+/* Dropdown density */
+.hdr-menu .menu-item { display: flex; min-height: 36px; padding: 0 10px; gap: 10px; font-size: var(--fs-md); border-radius: 8px; color: var(--text-1); }
+.hdr-menu .menu-item.is-warn { color: var(--amber); }

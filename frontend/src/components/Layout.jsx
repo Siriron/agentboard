@@ -8,7 +8,7 @@ import { protocolFor } from '../lib/networks'
 import ThemeSwitch from './ThemeSwitch'
 import NetworkSwitch from './NetworkSwitch'
 import { formatAddress, getPublicClient, CONTRACT_ADDRESS, CONTRACT_ABI } from '../lib/arc'
-import { Menu, X, Wallet, ChevronDown, AlertTriangle } from 'lucide-react'
+import { Menu, X, Wallet, ChevronDown, AlertTriangle, LayoutList, FilePlus2, Bot, Trophy, LayoutDashboard, Fingerprint, BookOpen, User, Copy, LogOut, Repeat } from 'lucide-react'
 
 export default function Layout() {
   const { activeAddress, activeMode, agentWallet, openPicker, connecting, disconnect, error: walletError, wrongChain, switchChain } = useWallet()
@@ -123,6 +123,7 @@ export default function Layout() {
   const navLinks = (network.features.circleAgentWallets ? allNavLinks : allNavLinks.filter(l => l.to !== '/agent-wallet'))
     .map(l => (netKey === 'mainnet' && l.to === '/post' ? { ...l, label: 'Post Listing' } : l))
 
+  const NAV_ICONS = { '/board': LayoutList, '/post': FilePlus2, '/agent-wallet': Bot, '/leaderboard': Trophy, '/dashboard': LayoutDashboard, '/register': Fingerprint, '/docs': BookOpen }
   const isTestnet = netKey === 'testnet'
   const copyAddress = () => { try { navigator.clipboard?.writeText(activeAddress) } catch { /* clipboard blocked */ } setMenuOpen(false) }
   const navStyle = ({ isActive }) => ({
@@ -174,16 +175,17 @@ export default function Layout() {
               {menuOpen && (
                 <div className="hdr-menu" role="menu">
                   {activeMode === 'browser' && wrongChain && (
-                    <button role="menuitem" onClick={() => { setMenuOpen(false); switchChain() }} style={{ color: 'var(--amber)', fontWeight: 700 }}>Switch to {network.label}</button>
+                    <button role="menuitem" onClick={() => { setMenuOpen(false); switchChain() }} className="menu-item is-warn"><AlertTriangle size={16} strokeWidth={1.75} className="menu-icon" />Switch to {network.label}</button>
                   )}
                   {isTestnet
-                    ? <button role="menuitem" onClick={() => { setMenuOpen(false); navigate(`/agent/${activeAddress}`) }}>Profile</button>
+                    ? <button role="menuitem" onClick={() => { setMenuOpen(false); navigate(`/agent/${activeAddress}`) }} className="menu-item"><User size={16} strokeWidth={1.75} className="menu-icon" />Profile</button>
                     : <>
-                        <button role="menuitem" onClick={() => { setMenuOpen(false); navigate('/dashboard') }}>My activity</button>
-                        <button role="menuitem" onClick={() => { setMenuOpen(false); navigate('/register') }}>My agents</button>
+                        <button role="menuitem" onClick={() => { setMenuOpen(false); navigate('/dashboard') }} className="menu-item"><LayoutDashboard size={16} strokeWidth={1.75} className="menu-icon" />My activity</button>
+                        <button role="menuitem" onClick={() => { setMenuOpen(false); navigate('/register') }} className="menu-item"><Fingerprint size={16} strokeWidth={1.75} className="menu-icon" />My agents</button>
                       </>}
-                  <button role="menuitem" onClick={copyAddress}>Copy address</button>
-                  <button role="menuitem" onClick={() => { setMenuOpen(false); disconnect() }}>Disconnect</button>
+                  <button role="menuitem" onClick={copyAddress} className="menu-item"><Copy size={16} strokeWidth={1.75} className="menu-icon" />Copy address</button>
+                  <div className="menu-sep" role="separator" />
+                  <button role="menuitem" onClick={() => { setMenuOpen(false); disconnect() }} className="menu-item is-danger"><LogOut size={16} strokeWidth={1.75} className="menu-icon" />Disconnect</button>
                 </div>
               )}
             </div>
@@ -222,19 +224,23 @@ export default function Layout() {
           borderBottom: '1px solid var(--border-strong)', padding: '12px 16px 20px',
           display: 'flex', flexDirection: 'column', gap: 3,
         }}>
-          {navLinks.map(({ to, label, badge }) => (
-            <NavLink key={to} to={to} style={({ isActive }) => ({ ...navStyle({ isActive }), padding: '12px 14px', fontSize: 'var(--fs-base)', fontWeight: 600, borderRadius: 10 })}>
-              {label}
-              {badge && <span style={{ background: 'var(--accent)', color: 'var(--on-accent)', fontSize: 'var(--fs-2xs)', fontWeight: 700, padding: '1px 6px', borderRadius: 6 }}>{badge}</span>}
-            </NavLink>
-          ))}
+          {navLinks.map(({ to, label, badge }) => {
+            const Icon = NAV_ICONS[to]
+            return (
+              <NavLink key={to} to={to} className={({ isActive }) => `menu-item${isActive ? ' is-active' : ''}`}>
+                {Icon && <Icon size={18} strokeWidth={1.75} className="menu-icon" aria-hidden="true" />}
+                <span className="menu-label">{label}</span>
+                {badge && <span className="menu-badge">{badge}</span>}
+              </NavLink>
+            )
+          })}
           <div style={{ marginTop: 8, paddingTop: 12, borderTop: '1px solid var(--border)' }}>
             <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}><span style={{ fontSize: 'var(--fs-sm)', color: 'var(--text-2)', fontWeight: 600 }}>Theme</span><ThemeSwitch wide /></div>
             {activeMode === 'browser' && wrongChain && (
               <button onClick={() => { setMobileOpen(false); switchChain() }} className="btn btn-warning btn-block" style={{ marginBottom: 8 }}><AlertTriangle size={12} /> Switch to {network.label}</button>
             )}
             {activeAddress ? (
-              <button onClick={() => { setMobileOpen(false); disconnect() }} className="btn btn-secondary btn-block">Disconnect {formatAddress(activeAddress)}</button>
+              <button onClick={() => { setMobileOpen(false); disconnect() }} className="btn btn-secondary btn-block"><LogOut size={15} strokeWidth={1.75} />Disconnect {formatAddress(activeAddress)}</button>
             ) : (
               <button onClick={() => { openPicker(); setMobileOpen(false) }} className="btn btn-primary btn-block">Connect Wallet</button>
             )}
